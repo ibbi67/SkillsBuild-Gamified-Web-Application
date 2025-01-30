@@ -2,5 +2,5 @@ Definition of Done:
 1. User acceptance criteria met
 2. Code is written and reviewed by at least 1 other team member. 
 3. Unit and Integration tests all pass
-4. Code is merged to main branch with no conflicts
+4. Create a user manual for each User Story
 5. No Critical Bugs
