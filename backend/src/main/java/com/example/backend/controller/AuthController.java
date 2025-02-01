@@ -1,8 +1,10 @@
 package com.example.backend.controller;
 
+import com.example.backend.dao.LoginDao;
+import com.example.backend.dao.SignupDao;
 import com.example.backend.domain.User;
+import com.example.backend.service.AuthService;
 import com.example.backend.service.JwtService;
-import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,35 +16,56 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+    private final JwtService JwtService;
+    private final AuthService authService;
+
+    public AuthController(JwtService JwtService, AuthService authService) {
+        this.JwtService = JwtService;
+        this.authService = authService;
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
-        if (user.getUsername() == null || user.getPassword() == null) {
+    public ResponseEntity<String> login(@RequestBody LoginDao loginDao) {
+        if (loginDao.getUsername() == null || loginDao.getPassword() == null) {
             return ResponseEntity.badRequest().body("Invalid request body");
         }
 
-        if (user.getUsername().equals("johnDoe") && user.getPassword().equals("password123")) {
-            String token = JwtService.generateToken(user.getUsername());
+        String token = JwtService.generateToken(loginDao.getUsername(), loginDao.getPassword());
+
+        if (token != null) {
             return ResponseEntity.ok(token);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
     }
 
-
-    /**
-     * Validate a token, ensure the request body is a raw string.
-     *
-     * @param token The token to validate, such as eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqb2huRG9lIiwiaWF0IjoxNzM4MzY3MTc4LCJleHAiOjE3Mzg0NTM1Nzh9.oGO24nf9GvFkZ7VV-D-RV1AHlz_zvfQQiRT7EOY5uQAQ3fts_mHwgbSPqibNn1Eg6g97_8XR8-61n7Etxn2SsA
-     * @return A string indicating whether the token is valid or not
-     */
-    @PostMapping("/validate")
-    public String validateToken(@RequestBody String token) {
-        Claims claims = JwtService.verifyToken(token);
-        if (claims != null) {
-            return "Token is valid";
-        } else {
-            return "Token is invalid";
+    @PostMapping("/signup")
+    public ResponseEntity<String> signup(@RequestBody SignupDao signupDao) {
+        if (signupDao.getUsername() == null || signupDao.getPassword() == null) {
+            return ResponseEntity.badRequest().body("Invalid request body");
         }
+
+        User user = authService.signup(signupDao);
+
+        if (user != null) {
+            return ResponseEntity.ok("User created successfully");
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create user");
+    }
+
+    @PostMapping("/validate")
+    public ResponseEntity<String> validateToken(@RequestBody String token) {
+        if (token == null) {
+            return ResponseEntity.badRequest().body("Invalid request body");
+        }
+
+        boolean isValid = JwtService.verifyToken(token);
+
+        if (isValid) {
+            return ResponseEntity.ok("Token is valid");
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is invalid");
     }
 }

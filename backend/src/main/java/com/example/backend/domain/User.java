@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 @Data
 @Entity
@@ -18,4 +20,7 @@ public class User {
     @Column(unique = true)
     private String username;
     private String password;
+
+    @OneToMany
+    private List<Role> roles;
 }
