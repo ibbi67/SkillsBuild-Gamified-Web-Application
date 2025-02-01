@@ -65,4 +65,10 @@ public class JwtService {
         return true;
     }
 
+    public User getUserDetails(String token) {
+        Claims claims = Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
+        String username = claims.getSubject();
+        return userService.findByUsername(username);
+    }
+
 }

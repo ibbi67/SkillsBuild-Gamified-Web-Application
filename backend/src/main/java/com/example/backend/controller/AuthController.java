@@ -8,10 +8,8 @@ import com.example.backend.service.JwtService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -41,18 +39,6 @@ public class AuthController {
         return ResponseEntity.ok("User created successfully");
     }
 
-    @PostMapping("/validate")
-    public ResponseEntity<String> validateToken(@RequestBody String token) {
-        if (token == null) {
-            return ResponseEntity.badRequest().body("Invalid request body");
-        }
-
-        boolean isValid = JwtService.verifyToken(token);
-
-        if (isValid) {
-            return ResponseEntity.ok("Token is valid");
-        }
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token is invalid");
-    }
+    @GetMapping("/me")
+    public User getMe(@AuthenticationPrincipal User user) {return user;}
 }
