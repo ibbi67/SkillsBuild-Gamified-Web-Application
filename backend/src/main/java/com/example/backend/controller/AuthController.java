@@ -5,6 +5,7 @@ import com.example.backend.dao.SignupDao;
 import com.example.backend.domain.User;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.JwtService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,33 +26,19 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDao loginDao) {
-        if (loginDao.getUsername() == null || loginDao.getPassword() == null) {
-            return ResponseEntity.badRequest().body("Invalid request body");
-        }
-
+    public ResponseEntity<String> login(@Valid @RequestBody LoginDao loginDao) {
         String token = JwtService.generateToken(loginDao.getUsername(), loginDao.getPassword());
+        if (token == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
 
-        if (token != null) {
-            return ResponseEntity.ok(token);
-        }
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+        return ResponseEntity.ok(token);
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody SignupDao signupDao) {
-        if (signupDao.getUsername() == null || signupDao.getPassword() == null) {
-            return ResponseEntity.badRequest().body("Invalid request body");
-        }
-
+    public ResponseEntity<String> signup(@Valid @RequestBody SignupDao signupDao) {
         User user = authService.signup(signupDao);
+        if (user == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exists");
 
-        if (user != null) {
-            return ResponseEntity.ok("User created successfully");
-        }
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create user");
+        return ResponseEntity.ok("User created successfully");
     }
 
     @PostMapping("/validate")
