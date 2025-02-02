@@ -23,6 +23,11 @@ public class UserService {
 
     public User save(User user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+
+        try {
+            return userRepository.save(user);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
