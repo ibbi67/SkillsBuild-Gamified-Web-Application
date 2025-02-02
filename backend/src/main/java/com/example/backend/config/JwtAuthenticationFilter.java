@@ -19,8 +19,8 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
+    public JwtAuthenticationFilter(JwtService jwtService) {this.jwtService = jwtService;}
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -28,27 +28,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
         String token = request.getHeader("Authorization");
 
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-
-            try {
-                boolean isValid = jwtService.verifyToken(token);
-                if (!isValid) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
-                }
-
-                User userDetails = jwtService.getUserDetails(token);
-                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails,
-                        null,
-                        AuthorityUtils.NO_AUTHORITIES);
-
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        if (!token.startsWith("Bearer ")) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        token = token.substring(7);
+
+        if (!jwtService.verifyToken(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        User userDetails = jwtService.getUserDetails(token);
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(userDetails,
+                null,
+                AuthorityUtils.NO_AUTHORITIES);
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
     }
