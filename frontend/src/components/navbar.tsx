@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function NavBar() {
     return (
-        <nav className="grid grid-cols-3 items-center p-4 rounded-2xl bg-gray-50 grow shadow-lg">
+        <nav className="grid grid-cols-3 items-center py-4 px-8 rounded-2xl bg-white grow shadow-lg">
             <div className="flex items-center">
                 <Image src="logo.svg" height="50" width="50" alt="logo" />
                 <p className="invisible md:visible font-bold text-xl text-blue-500">SkillShare++</p>
