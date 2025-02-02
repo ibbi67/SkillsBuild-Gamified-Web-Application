@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
@@ -59,6 +60,11 @@ public class AuthControllerTest {
 
         return mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
                 .andReturn();
+    }
+
+    private MvcResult me(String token) throws Exception {
+        return mockMvc.perform(get("/auth/me").header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)).andReturn();
     }
 
     @Test
@@ -203,5 +209,168 @@ public class AuthControllerTest {
         ValidationErrorResponse errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(),
                 ValidationErrorResponse.class);
         assertTrue(errorResponse.getMessages().contains("Password cannot be empty"));
+    }
+
+    @Test
+    public void Me_WithValidToken_ShouldPass() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        MvcResult loginResult = login(testUser.getUsername(), testUser.getPassword());
+        String token = loginResult.getResponse().getContentAsString();
+
+        // Act
+        MvcResult result = me(token);
+
+        // Assert
+        // Check if the response status is OK
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+
+        // Check if the response contains the correct user details
+        System.out.println(result.getResponse().getContentAsString());
+        User user = objectMapper.readValue(result.getResponse().getContentAsString(), User.class);
+        assertEquals(testUser.getUsername(), user.getUsername());
+    }
+
+    @Test
+    public void Me_WithInvalidToken_ShouldFail() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        MvcResult loginResult = login(testUser.getUsername(), testUser.getPassword());
+        String token = loginResult.getResponse().getContentAsString() + "invalid";
+
+        // Act
+        MvcResult result = me(token);
+
+        // Assert
+        // Check if the response status is UNAUTHORIZED
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+
+        // Check if the response is empty
+        assertTrue(result.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
+    public void Me_WithEmptyToken_ShouldFail() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        login(testUser.getUsername(), testUser.getPassword());
+        String token = " ";
+
+        // Act
+        MvcResult result = me(token);
+
+        // Assert
+        // Check if the response status is UNAUTHORIZED
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+
+        // Check if the response is empty
+        assertTrue(result.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
+    public void Me_WithTestUserToken_ShouldFail() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        login(testUser.getUsername(), testUser.getPassword());
+        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNTE2MjM5MDIyfQ.3Q2jPCIyjXDkXEgJyUUkm1hsLE0vg_ipi_lJLpNt9_w";
+
+        // Act
+        MvcResult result = me(token);
+
+        // Assert
+        // Check if the response status is UNAUTHORIZED
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+
+        // Check if the response is empty
+        assertTrue(result.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
+    public void Me_WithRandomUsernameToken_ShouldFail() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        login(testUser.getUsername(), testUser.getPassword());
+        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IjFsaTI5ZXVudWluanNrZG5jOTAxMmllamtta3ptLHggY21uIHVobzFiMjl1ZWpvbXNkO2NtayIsImlhdCI6MTUxNjIzOTAyMn0.Dw02vCy9IfzsyajfUU35g4g732gqw1CEPMf61VwH6Co";
+
+        // Act
+        MvcResult result = me(token);
+
+        // Assert
+        // Check if the response status is UNAUTHORIZED
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+
+        // Check if the response is empty
+        assertTrue(result.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
+    public void Me_WithNullToken_ShouldFail() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        login(testUser.getUsername(), testUser.getPassword());
+
+        // Act
+        MvcResult result = me(null);
+
+        // Assert
+        // Check if the response status is UNAUTHORIZED
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+
+        // Check if the response is empty
+        assertTrue(result.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
+    public void Me_WithEmptyStringToken_ShouldFail() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        login(testUser.getUsername(), testUser.getPassword());
+
+        // Act
+        MvcResult result = me("");
+
+        // Assert
+        // Check if the response status is UNAUTHORIZED
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+
+        // Check if the response is empty
+        assertTrue(result.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
+    public void Me_WithBear_ShouldFail() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        login(testUser.getUsername(), testUser.getPassword());
+
+        // Act
+        MvcResult result = mockMvc.perform(get("/auth/me").header("Authorization", "Bear")
+                .contentType(MediaType.APPLICATION_JSON)).andReturn();
+
+        System.out.println(result.getResponse().getContentAsString());
+
+        // Assert
+        // Check if the response status is UNAUTHORIZED
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+
+        // Check if the response is empty
+        assertTrue(result.getResponse().getContentAsString().isBlank());
+    }
+
+    @Test
+    public void Me_WithNoHeader_ShouldFail() throws Exception {
+        // Arrange
+        signup(testUser.getUsername(), testUser.getPassword());
+        login(testUser.getUsername(), testUser.getPassword());
+
+        // Act
+        MvcResult result = mockMvc.perform(get("/auth/me").contentType(MediaType.APPLICATION_JSON)).andReturn();
+
+        // Assert
+        // Check if the response status is UNAUTHORIZED
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+
+        // Check if the response is empty
+        assertTrue(result.getResponse().getContentAsString().isBlank());
     }
 }

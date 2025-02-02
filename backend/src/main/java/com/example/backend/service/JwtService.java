@@ -48,15 +48,10 @@ public class JwtService {
      * @return true if the token is valid, false otherwise
      */
     public boolean verifyToken(String token) {
+        if (token.isBlank()) {return false;}
+
         try {
-            Claims claims = Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
-
-            String username = claims.getSubject();
-            User user = userService.findByUsername(username);
-
-            if (user == null) {
-                return false;
-            }
+            Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
         } catch (JwtException e) {
             System.out.println(e.getMessage());
             return false;
