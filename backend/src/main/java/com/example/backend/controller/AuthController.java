@@ -26,7 +26,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@Valid @RequestBody LoginDao loginDao) {
         String token = JwtService.generateToken(loginDao.getUsername(), loginDao.getPassword());
-        if (token == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        if (token == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid credentials");
 
         return ResponseEntity.ok(token);
     }
