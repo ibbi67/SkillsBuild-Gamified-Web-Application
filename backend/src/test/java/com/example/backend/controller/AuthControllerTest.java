@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dao.SignupDao;
 import com.example.backend.domain.User;
+import com.example.backend.domain.ValidationErrorResponse;
 import com.example.backend.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
@@ -25,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @AutoConfigureMockMvc
 @WithMockUser
 public class AuthControllerTest {
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,7 +45,6 @@ public class AuthControllerTest {
     }
 
     private MvcResult signup(String username, String password) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
         String jsonContent = objectMapper.writeValueAsString(new SignupDao(username, password));
 
         return mockMvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
@@ -73,12 +75,44 @@ public class AuthControllerTest {
         User user = userRepository.findByUsername(testUser.getUsername());
         assertEquals(testUser.getUsername(), user.getUsername());
 
-        // Act, Second signup attempt with the same username - should fail
+        // Act
         MvcResult result = signup(testUser.getUsername(), testUser.getPassword());
 
         // Assert
         // Check if the response status is BAD_REQUEST and the response message is correct
         assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+
+        // Check if the response contains the correct message
         assertEquals("User already exists", result.getResponse().getContentAsString());
+    }
+
+    @Test
+    public void Signup_WithEmptyUsername_ShouldFail() throws Exception {
+        // Arrange + Act
+        MvcResult result = signup("", testUser.getPassword());
+        ValidationErrorResponse errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(),
+                ValidationErrorResponse.class);
+
+        // Assert
+        // Check if the response status is BAD_REQUEST
+        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+
+        // Check if the response contains the correct validation message
+        assertTrue(errorResponse.getMessages().contains("Username cannot be empty"));
+    }
+
+    @Test
+    public void Signup_WithEmptyPassword_ShouldFail() throws Exception {
+        // Arrange + Act
+        MvcResult result = signup(testUser.getUsername(), "");
+        ValidationErrorResponse errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(),
+                ValidationErrorResponse.class);
+
+        // Assert
+        // Check if the response status is BAD_REQUEST
+        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+
+        // Check if the response contains the correct validation message
+        assertTrue(errorResponse.getMessages().contains("Password cannot be empty"));
     }
 }

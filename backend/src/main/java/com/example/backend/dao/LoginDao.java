@@ -8,9 +8,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class LoginDao {
-    @NotBlank(message = "Username is mandatory")
+    @NotBlank(message = "Username cannot be empty")
     private String username;
 
-    @NotBlank(message = "Password is mandatory")
+    @NotBlank(message = "Password cannot be empty")
     private String password;
 }
