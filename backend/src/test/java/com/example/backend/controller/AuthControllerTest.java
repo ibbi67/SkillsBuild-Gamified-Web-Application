@@ -67,14 +67,14 @@ public class AuthControllerTest {
     @Test
     public void Signup_WithDuplicateUsername_ShouldFail() throws Exception {
         // Arrange
-        MvcResult result = signup(testUser.getUsername(), testUser.getPassword());
+        signup(testUser.getUsername(), testUser.getPassword());
 
         // Check if the user was created in the database
         User user = userRepository.findByUsername(testUser.getUsername());
         assertEquals(testUser.getUsername(), user.getUsername());
 
         // Act, Second signup attempt with the same username - should fail
-        result = signup(testUser.getUsername(), testUser.getPassword());
+        MvcResult result = signup(testUser.getUsername(), testUser.getPassword());
 
         // Assert
         // Check if the response status is BAD_REQUEST and the response message is correct
