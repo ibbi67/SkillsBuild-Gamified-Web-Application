@@ -2,21 +2,31 @@
 
 import { useApi } from "@/hooks/useApi";
 import { useState } from "react";
-import { SignupRequest } from "@/types/auth";
+import { LoginRequest } from "@/types/auth";
 
-export default function SignUpPage() {
+export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const { isLoading, isError, message, fetchData } = useApi<null, SignupRequest>("auth/signup", {
-        method: "POST",
-        data: { username, password },
-    });
+    const { isLoading, isError, message, fetchData, data } = useApi<string, LoginRequest>(
+        "auth/login",
+        {
+            method: "POST",
+            data: {
+                username,
+                password,
+            } as LoginRequest,
+        },
+    );
+
+    if (!isError && data) {
+        localStorage.setItem("token", data);
+    }
 
     return (
         <div className="flex justify-center items-center h-screen">
             <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg gap-4 grow max-w-96">
-                <h1 className="font-bold text-center md:text-2xl">Sign Up</h1>
+                <h1 className="font-bold text-center md:text-2xl">Login</h1>
 
                 {isError && <div className="text-red-500 text-sm mb-2">{message}</div>}
 
@@ -24,7 +34,6 @@ export default function SignUpPage() {
                     type="text"
                     placeholder="Username"
                     className="py-1 px-2 md:py-2 border border-gray-300 rounded-lg"
-                    value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
 
@@ -32,7 +41,6 @@ export default function SignUpPage() {
                     type="password"
                     placeholder="Password"
                     className="py-1 px-2 md:py-2 border border-gray-300 rounded-lg"
-                    value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
@@ -41,7 +49,7 @@ export default function SignUpPage() {
                     onClick={fetchData}
                     disabled={isLoading}
                 >
-                    {isLoading ? "Signing up..." : "Confirm"}
+                    {isLoading ? "Logging in..." : "Confirm"}
                 </button>
             </div>
         </div>
