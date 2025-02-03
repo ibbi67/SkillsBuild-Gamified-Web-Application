@@ -1,6 +1,6 @@
-package com.example.backend.controller;
+package com.example.backend.config;
 
-import com.example.backend.domain.ValidationErrorResponse;
+import com.example.backend.domain.ApiResponse;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,20 +9,21 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.List;
+import java.util.stream.Collectors;
 
 
 @ControllerAdvice
 public class ValidationExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiResponse<String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         BindingResult bindingResult = ex.getBindingResult();
-        List<String> messages = bindingResult.getFieldErrors()
+        String message = bindingResult.getFieldErrors()
                 .stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .toList();
+                .collect(Collectors.joining(", "));
 
-        return new ResponseEntity<>(new ValidationErrorResponse(messages), HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), message));
     }
 }

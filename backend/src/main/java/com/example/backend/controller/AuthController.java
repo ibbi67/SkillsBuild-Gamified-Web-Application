@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dao.LoginDao;
 import com.example.backend.dao.SignupDao;
+import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.User;
 import com.example.backend.service.AuthService;
 import com.example.backend.service.JwtService;
@@ -23,25 +24,23 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginDao loginDao) {
-        String token = JwtService.generateToken(loginDao.getUsername(), loginDao.getPassword());
-        if (token == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid credentials");
-
-        return ResponseEntity.ok(token);
+    @PostMapping("/signup")
+    public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestBody SignupDao signupDao) {
+        ApiResponse<Void> response = authService.signup(signupDao);
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<String> signup(@Valid @RequestBody SignupDao signupDao) {
-        User user = authService.signup(signupDao);
-        if (user == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exists");
-
-        return ResponseEntity.ok("User created successfully");
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<String>> login(@Valid @RequestBody LoginDao loginDao) {
+        ApiResponse<String> response = JwtService.generateToken(loginDao.getUsername(), loginDao.getPassword());
+        return ResponseEntity.status(response.getStatus()).body(response);
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getMe(@AuthenticationPrincipal User user) {
-        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<ApiResponse<User>> getMe(@AuthenticationPrincipal User user) {
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.failed(HttpStatus.UNAUTHORIZED.value(), "User not found"));
+        return ResponseEntity.ok(ApiResponse.success("User found",
+                new User(user.getId(), user.getUsername(), user.getPassword(), user.getRoles())));
     }
 }

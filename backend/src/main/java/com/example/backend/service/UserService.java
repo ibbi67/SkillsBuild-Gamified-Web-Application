@@ -1,8 +1,10 @@
 package com.example.backend.service;
 
+import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.User;
 import com.example.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +23,14 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-    public User save(User user) {
+    public ApiResponse<Void> save(User user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 
         try {
-            return userRepository.save(user);
+            userRepository.save(user);
+            return ApiResponse.success("User created successfully");
         } catch (Exception e) {
-            return null;
+            return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "User already exists");
         }
     }
 }

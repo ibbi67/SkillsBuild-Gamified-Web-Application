@@ -1,8 +1,8 @@
 package com.example.backend.controller;
 
 import com.example.backend.dao.SignupDao;
+import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.User;
-import com.example.backend.domain.ValidationErrorResponse;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,34 +48,35 @@ public class AuthControllerTest {
         testUser = new SignupDao(username, "testpassword");
     }
 
-    private MvcResult signup(String username, String password) throws Exception {
+    private ApiResponse<Void> signup(String username, String password) throws Exception {
         String jsonContent = objectMapper.writeValueAsString(new SignupDao(username, password));
-
-        return mockMvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
-                .andReturn();
+        MvcResult result = mockMvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON)
+                .content(jsonContent)).andReturn();
+        return ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
     }
 
-    private MvcResult login(String username, String password) throws Exception {
+    private ApiResponse<String> login(String username, String password) throws Exception {
         String jsonContent = objectMapper.writeValueAsString(new SignupDao(username, password));
-
-        return mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
-                .andReturn();
+        MvcResult result = mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content(jsonContent)).andReturn();
+        return ApiResponse.deserialise(result.getResponse().getContentAsString(), String.class);
     }
 
-    private MvcResult me(String token) throws Exception {
-        return mockMvc.perform(get("/auth/me").header("Authorization", "Bearer " + token)
+    private ApiResponse<User> me(String token) throws Exception {
+        MvcResult result = mockMvc.perform(get("/auth/me").header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)).andReturn();
+        return ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
     }
 
     @Test
     public void Signup_WithNewUsername_ShouldPass() throws Exception {
-        // Arrange + Act
-        MvcResult result = signup(testUser.getUsername(), testUser.getPassword());
+        // Act
+        ApiResponse<Void> response = signup(testUser.getUsername(), testUser.getPassword());
 
         // Assert
         // Check if the response status is OK and the response message is correct
-        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
-        assertEquals("User created successfully", result.getResponse().getContentAsString());
+        assertEquals(HttpStatus.OK.value(), response.getStatus());
+        assertEquals("User created successfully", response.getMessage());
 
         // Check if the user was created in the database
         User user = userRepository.findByUsername(testUser.getUsername());
@@ -88,44 +89,40 @@ public class AuthControllerTest {
         signup(testUser.getUsername(), testUser.getPassword());
 
         // Act
-        MvcResult result = signup(testUser.getUsername(), testUser.getPassword());
+        ApiResponse<Void> response = signup(testUser.getUsername(), testUser.getPassword());
 
         // Assert
         // Check if the response status is BAD_REQUEST and the response message is correct
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 
         // Check if the response contains the correct message
-        assertEquals("User already exists", result.getResponse().getContentAsString());
+        assertEquals("User already exists", response.getMessage());
     }
 
     @Test
     public void Signup_WithEmptyUsername_ShouldFail() throws Exception {
-        // Arrange + Act
-        MvcResult result = signup("", testUser.getPassword());
+        // Act
+        ApiResponse<Void> response = signup("", testUser.getPassword());
 
         // Assert
         // Check if the response status is BAD_REQUEST
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 
         // Check if the response contains the correct validation message
-        ValidationErrorResponse errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(),
-                ValidationErrorResponse.class);
-        assertTrue(errorResponse.getMessages().contains("Username cannot be empty"));
+        assertTrue(response.getMessage().contains("Username cannot be empty"));
     }
 
     @Test
     public void Signup_WithEmptyPassword_ShouldFail() throws Exception {
-        // Arrange + Act
-        MvcResult result = signup(testUser.getUsername(), "");
+        // Act
+        ApiResponse<Void> response = signup(testUser.getUsername(), "");
 
         // Assert
         // Check if the response status is BAD_REQUEST
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 
         // Check if the response contains the correct validation message
-        ValidationErrorResponse errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(),
-                ValidationErrorResponse.class);
-        assertTrue(errorResponse.getMessages().contains("Password cannot be empty"));
+        assertTrue(response.getMessage().contains("Password cannot be empty"));
     }
 
     @Test
@@ -134,17 +131,18 @@ public class AuthControllerTest {
         signup(testUser.getUsername(), testUser.getPassword());
 
         // Act
-        MvcResult result = login(testUser.getUsername(), testUser.getPassword());
+        ApiResponse<String> response = login(testUser.getUsername(), testUser.getPassword());
 
         // Assert
         // Check if the response status is OK
-        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.OK.value(), response.getStatus());
+
+        String tokenString = response.getData();
 
         // Check if response is not empty
-        assertFalse(result.getResponse().getContentAsString().isEmpty());
+        assertFalse(tokenString.isEmpty());
 
         // Check if the response is a valid JWT token
-        String tokenString = result.getResponse().getContentAsString();
         assertTrue(jwtService.verifyToken(tokenString));
 
         // Check if the extracted user from the token is the same as the test user
@@ -158,95 +156,89 @@ public class AuthControllerTest {
         signup(testUser.getUsername(), testUser.getPassword());
 
         // Act
-        MvcResult result = login(testUser.getUsername(), "wrongpassword");
+        ApiResponse<String> response = login(testUser.getUsername(), "wrongpassword");
 
         // Assert
         // Check if the response status is BAD_REQUEST
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 
         // Check if the response contains the correct message
-        assertEquals("Invalid credentials", result.getResponse().getContentAsString());
+        assertEquals("Invalid credentials", response.getMessage());
     }
 
     @Test
     public void Login_WithNonExistentUser_ShouldFail() throws Exception {
-        // Arrange + Act
-        MvcResult result = login("nonexistentuser", "password");
+        // Act
+        ApiResponse<String> response = login("nonexistentuser", "password");
 
         // Assert
         // Check if the response status is BAD_REQUEST
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 
         // Check if the response contains the correct message
-        assertEquals("Invalid credentials", result.getResponse().getContentAsString());
+        assertEquals("User not found", response.getMessage());
     }
 
     @Test
     public void Login_WithEmptyUsername_ShouldFail() throws Exception {
-        // Arrange + Act
-        MvcResult result = login("", testUser.getPassword());
+        // Act
+        ApiResponse<String> response = login("", testUser.getPassword());
 
         // Assert
         // Check if the response status is BAD_REQUEST
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 
         // Check if the response contains the correct validation message
-        ValidationErrorResponse errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(),
-                ValidationErrorResponse.class);
-        assertTrue(errorResponse.getMessages().contains("Username cannot be empty"));
+        assertTrue(response.getMessage().contains("Username cannot be empty"));
     }
 
     @Test
     public void Login_WithEmptyPassword_ShouldFail() throws Exception {
-        // Arrange + Act
-        MvcResult result = login(testUser.getUsername(), "");
+        // Act
+        ApiResponse<String> response = login(testUser.getUsername(), "");
 
         // Assert
         // Check if the response status is BAD_REQUEST
-        assertEquals(HttpStatus.BAD_REQUEST.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 
         // Check if the response contains the correct validation message
-        ValidationErrorResponse errorResponse = objectMapper.readValue(result.getResponse().getContentAsString(),
-                ValidationErrorResponse.class);
-        assertTrue(errorResponse.getMessages().contains("Password cannot be empty"));
+        assertTrue(response.getMessage().contains("Password cannot be empty"));
     }
 
     @Test
     public void Me_WithValidToken_ShouldPass() throws Exception {
         // Arrange
         signup(testUser.getUsername(), testUser.getPassword());
-        MvcResult loginResult = login(testUser.getUsername(), testUser.getPassword());
-        String token = loginResult.getResponse().getContentAsString();
+        ApiResponse<String> response = login(testUser.getUsername(), testUser.getPassword());
+        String token = response.getData();
 
         // Act
-        MvcResult result = me(token);
+        ApiResponse<User> meResponse = me(token);
 
         // Assert
         // Check if the response status is OK
-        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.OK.value(), meResponse.getStatus());
 
         // Check if the response contains the correct user details
-        System.out.println(result.getResponse().getContentAsString());
-        User user = objectMapper.readValue(result.getResponse().getContentAsString(), User.class);
-        assertEquals(testUser.getUsername(), user.getUsername());
+        assertEquals(testUser.getUsername(), meResponse.getData().getUsername());
     }
 
     @Test
     public void Me_WithInvalidToken_ShouldFail() throws Exception {
         // Arrange
         signup(testUser.getUsername(), testUser.getPassword());
-        MvcResult loginResult = login(testUser.getUsername(), testUser.getPassword());
-        String token = loginResult.getResponse().getContentAsString() + "invalid";
+        ApiResponse<String> response = login(testUser.getUsername(), testUser.getPassword());
+        String token = response.getData() + "invalid";
 
         // Act
-        MvcResult result = me(token);
+        ApiResponse<User> meResponse = me(token);
 
         // Assert
         // Check if the response status is UNAUTHORIZED
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), meResponse.getStatus());
 
         // Check if the response is empty
-        assertTrue(result.getResponse().getContentAsString().isBlank());
+        assertNull(meResponse.getData());
     }
 
     @Test
@@ -257,14 +249,14 @@ public class AuthControllerTest {
         String token = " ";
 
         // Act
-        MvcResult result = me(token);
+        ApiResponse<User> response = me(token);
 
         // Assert
         // Check if the response status is UNAUTHORIZED
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
         // Check if the response is empty
-        assertTrue(result.getResponse().getContentAsString().isBlank());
+        assertNull(response.getData());
     }
 
     @Test
@@ -275,14 +267,14 @@ public class AuthControllerTest {
         String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNTE2MjM5MDIyfQ.3Q2jPCIyjXDkXEgJyUUkm1hsLE0vg_ipi_lJLpNt9_w";
 
         // Act
-        MvcResult result = me(token);
+        ApiResponse<User> response = me(token);
 
         // Assert
         // Check if the response status is UNAUTHORIZED
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
         // Check if the response is empty
-        assertTrue(result.getResponse().getContentAsString().isBlank());
+        assertNull(response.getData());
     }
 
     @Test
@@ -293,14 +285,14 @@ public class AuthControllerTest {
         String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IjFsaTI5ZXVudWluanNrZG5jOTAxMmllamtta3ptLHggY21uIHVobzFiMjl1ZWpvbXNkO2NtayIsImlhdCI6MTUxNjIzOTAyMn0.Dw02vCy9IfzsyajfUU35g4g732gqw1CEPMf61VwH6Co";
 
         // Act
-        MvcResult result = me(token);
+        ApiResponse<User> response = me(token);
 
         // Assert
         // Check if the response status is UNAUTHORIZED
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
         // Check if the response is empty
-        assertTrue(result.getResponse().getContentAsString().isBlank());
+        assertNull(response.getData());
     }
 
     @Test
@@ -310,14 +302,14 @@ public class AuthControllerTest {
         login(testUser.getUsername(), testUser.getPassword());
 
         // Act
-        MvcResult result = me(null);
+        ApiResponse<User> response = me(null);
 
         // Assert
         // Check if the response status is UNAUTHORIZED
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
         // Check if the response is empty
-        assertTrue(result.getResponse().getContentAsString().isBlank());
+        assertNull(response.getData());
     }
 
     @Test
@@ -327,14 +319,14 @@ public class AuthControllerTest {
         login(testUser.getUsername(), testUser.getPassword());
 
         // Act
-        MvcResult result = me("");
+        ApiResponse<User> response = me("");
 
         // Assert
         // Check if the response status is UNAUTHORIZED
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
         // Check if the response is empty
-        assertTrue(result.getResponse().getContentAsString().isBlank());
+        assertNull(response.getData());
     }
 
     @Test
@@ -346,15 +338,14 @@ public class AuthControllerTest {
         // Act
         MvcResult result = mockMvc.perform(get("/auth/me").header("Authorization", "Bear")
                 .contentType(MediaType.APPLICATION_JSON)).andReturn();
-
-        System.out.println(result.getResponse().getContentAsString());
+        ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
 
         // Assert
         // Check if the response status is UNAUTHORIZED
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
         // Check if the response is empty
-        assertTrue(result.getResponse().getContentAsString().isBlank());
+        assertNull(response.getData());
     }
 
     @Test
@@ -365,12 +356,13 @@ public class AuthControllerTest {
 
         // Act
         MvcResult result = mockMvc.perform(get("/auth/me").contentType(MediaType.APPLICATION_JSON)).andReturn();
+        ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
 
         // Assert
         // Check if the response status is UNAUTHORIZED
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), result.getResponse().getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
 
         // Check if the response is empty
-        assertTrue(result.getResponse().getContentAsString().isBlank());
+        assertNull(response.getData());
     }
 }

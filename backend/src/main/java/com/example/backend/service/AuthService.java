@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.example.backend.dao.SignupDao;
+import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ public class AuthService {
         this.userService = userService;
     }
 
-    public User signup(SignupDao signupDao) {
+    public ApiResponse<Void> signup(SignupDao signupDao) {
         User user = new User();
         user.setUsername(signupDao.getUsername());
         user.setPassword(signupDao.getPassword());

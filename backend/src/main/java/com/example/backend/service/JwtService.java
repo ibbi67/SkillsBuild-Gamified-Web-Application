@@ -1,10 +1,12 @@
 package com.example.backend.service;
 
+import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -27,18 +29,20 @@ public class JwtService {
         this.userService = userService;
     }
 
-    public String generateToken(String username, String password) {
+    public ApiResponse<String> generateToken(String username, String password) {
         User user = userService.findByUsername(username);
 
-        if (user == null) return null;
-        if (!bCryptPasswordEncoder.matches(password, user.getPassword())) return null;
+        if (user == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "User not found");
+        if (!bCryptPasswordEncoder.matches(password, user.getPassword()))
+            return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid credentials");
 
-        return Jwts.builder()
-                .subject(username)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 86400000))
-                .signWith(SECRET_KEY)
-                .compact();
+        return ApiResponse.success("Token generated successfully",
+                Jwts.builder()
+                        .subject(username)
+                        .issuedAt(new Date())
+                        .expiration(new Date(System.currentTimeMillis() + 86400000))
+                        .signWith(SECRET_KEY)
+                        .compact());
     }
 
     /**
@@ -48,7 +52,9 @@ public class JwtService {
      * @return true if the token is valid, false otherwise
      */
     public boolean verifyToken(String token) {
-        if (token.isBlank()) {return false;}
+        if (token.isBlank()) {
+            return false;
+        }
 
         try {
             Jwts.parser().verifyWith(SECRET_KEY).build().parseSignedClaims(token).getPayload();
