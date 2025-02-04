@@ -48,12 +48,14 @@ export const useApi = <ResponseData, RequestData>(
                 setIsError(true);
 
                 if (error.response) {
+                    console.log("set message to error.response.data.message");
                     setMessage(error.response.data.message);
                     setStatus(error.response.status);
                 } else if (error.request) {
-                    setMessage("No response received");
+                    setMessage("No response received (hint: did you start the spring server?)");
                     setStatus(0);
                 } else {
+                    console.log("set message to error.message");
                     setMessage(error.message);
                     setStatus(500);
                 }
@@ -67,10 +69,10 @@ export const useApi = <ResponseData, RequestData>(
             setIsLoading(false);
         }
 
-        console.log(response?.data);
-
         if (response && !isError) {
+            console.log("Setting data to response.data.data");
             setData(response?.data?.data);
+            setMessage(response?.data?.message);
         }
     };
 
