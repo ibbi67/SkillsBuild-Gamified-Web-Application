@@ -1,12 +1,11 @@
 package com.example.backend.service;
 
-import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -29,20 +28,22 @@ public class JwtService {
         this.userService = userService;
     }
 
-    public ApiResponse<String> generateToken(String username, String password) {
-        User user = userService.findByUsername(username);
+    public String generateToken(String username) {
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 86400000))
+                .signWith(SECRET_KEY)
+                .compact();
+    }
 
-        if (user == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "User not found");
-        if (!bCryptPasswordEncoder.matches(password, user.getPassword()))
-            return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid credentials");
-
-        return ApiResponse.success("Token generated successfully",
-                Jwts.builder()
-                        .subject(username)
-                        .issuedAt(new Date())
-                        .expiration(new Date(System.currentTimeMillis() + 86400000))
-                        .signWith(SECRET_KEY)
-                        .compact());
+    public Cookie generateCookie(String username) {
+        String token = generateToken(username);
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge(86400);
+        return cookie;
     }
 
     /**
@@ -71,5 +72,4 @@ public class JwtService {
         String username = claims.getSubject();
         return userService.findByUsername(username);
     }
-
 }

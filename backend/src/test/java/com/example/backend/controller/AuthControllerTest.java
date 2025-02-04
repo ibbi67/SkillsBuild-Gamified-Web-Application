@@ -6,6 +6,7 @@ import com.example.backend.domain.User;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,12 @@ public class AuthControllerTest {
         String jsonContent = objectMapper.writeValueAsString(new SignupDao(username, password));
         MvcResult result = mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(jsonContent)).andReturn();
+        Cookie cookie = result.getResponse().getCookie("token");
+
+        if (cookie != null) {
+            return ApiResponse.success(result.getResponse().getContentAsString(), cookie.getValue());
+        }
+
         return ApiResponse.deserialise(result.getResponse().getContentAsString(), String.class);
     }
 
@@ -139,6 +146,8 @@ public class AuthControllerTest {
 
         String tokenString = response.getData();
 
+        System.out.println("here here here:" + tokenString);
+
         // Check if response is not empty
         assertFalse(tokenString.isEmpty());
 
@@ -176,7 +185,7 @@ public class AuthControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
 
         // Check if the response contains the correct message
-        assertEquals("User not found", response.getMessage());
+        assertEquals("Invalid credentials", response.getMessage());
     }
 
     @Test
