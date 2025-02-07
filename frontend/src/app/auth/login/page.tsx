@@ -6,8 +6,10 @@ import { LoginRequest } from "@/types/auth";
 import Logo from "@/components/Logo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function LoginPage() {
+    const { setIsAuthenticated } = useAuth();
     const router = useRouter();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -22,10 +24,10 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (isLoginSucessful) {
-            localStorage.setItem("login", "true");
+            setIsAuthenticated(true);
             router.push("/");
         }
-    }, [isLoginSucessful, router]);
+    }, [isLoginSucessful, router, setIsAuthenticated]);
 
     return (
         <div className="flex justify-center items-center h-screen">

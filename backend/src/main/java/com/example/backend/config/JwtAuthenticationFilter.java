@@ -10,8 +10,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,55 +20,78 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final ObjectMapper objectMapper;
 
     public JwtAuthenticationFilter(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException {
-        Cookie[] cookies = request.getCookies();
-        String token = null;
-
-        if (cookies == null) {
+        if (
+            request.getRequestURI().startsWith("/auth/login") ||
+            request.getRequestURI().startsWith("/auth/signup") ||
+            request.getRequestURI().startsWith("/auth/refresh")
+        ) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("token")) {
-                    token = cookie.getValue();
-                    break;
-                }
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            unauthorizedResponse(response, "No authentication tokens found");
+            return;
+        }
+
+        String accessToken = null;
+        String refreshToken = null;
+
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("access_token")) {
+                accessToken = cookie.getValue();
+            } else if (cookie.getName().equals("refresh_token")) {
+                refreshToken = cookie.getValue();
             }
         }
 
-        if (token == null) {
-            filterChain.doFilter(request, response);
+        if (accessToken == null || refreshToken == null) {
+            unauthorizedResponse(response, "Missing authentication tokens");
             return;
         }
 
-        if (!jwtService.verifyToken(token)) {
-            ApiResponse<Void> apiResponse = ApiResponse.failed(401, "Invalid token");
-            response.setStatus(apiResponse.getStatus());
-            response.setContentType("application/json");
-            objectMapper.writeValue(response.getOutputStream(), apiResponse);
-            filterChain.doFilter(request, response);
-            return;
+        try {
+            if (jwtService.verifyToken(accessToken)) {
+                User user = jwtService.getUserDetails(accessToken);
+                SecurityContextHolder.getContext()
+                    .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (jwtService.verifyToken(refreshToken)) {
+                User user = jwtService.getUserDetails(refreshToken);
+                String username = jwtService.getUserDetails(refreshToken).getUsername();
+
+                // Generate new access token
+                response.addCookie(jwtService.generateAccessTokenCookie(username));
+
+                SecurityContextHolder.getContext()
+                    .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            unauthorizedResponse(response, "Invalid tokens");
+        } catch (Exception e) {
+            unauthorizedResponse(response, "Authentication failed");
         }
+    }
 
-        User userDetails = jwtService.getUserDetails(token);
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-            userDetails,
-            null,
-            AuthorityUtils.NO_AUTHORITIES
-        );
-        SecurityContextHolder.getContext().setAuthentication(auth);
+    private void unauthorizedResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType("application/json");
 
-        filterChain.doFilter(request, response);
+        new ObjectMapper()
+            .writeValue(response.getOutputStream(), ApiResponse.failed(HttpStatus.UNAUTHORIZED.value(), message));
     }
 }

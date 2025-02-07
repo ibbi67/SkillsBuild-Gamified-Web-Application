@@ -22,3 +22,6 @@ export type MeResponse = {
     accountNonExpired: boolean;
     accountNonLocked: boolean;
 };
+
+export type LogoutRequest = null;
+export type LogoutResponse = null;

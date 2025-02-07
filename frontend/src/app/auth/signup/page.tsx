@@ -6,8 +6,10 @@ import { SignupRequest, SignupResponse } from "@/types/auth";
 import Logo from "@/components/Logo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function SignUpPage() {
+    const { setIsAuthenticated } = useAuth();
     const router = useRouter();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -22,12 +24,15 @@ export default function SignUpPage() {
 
     useEffect(() => {
         let timeout: NodeJS.Timeout;
-        if (isSignupSucessful) timeout = setTimeout(() => router.push("/auth/login"), 3000);
+        if (isSignupSucessful) {
+            setIsAuthenticated(true);
+            timeout = setTimeout(() => router.push("/"), 3000);
+        }
 
         return () => {
             if (timeout) clearTimeout(timeout);
         };
-    }, [isSignupSucessful, router]);
+    }, [isSignupSucessful, router, setIsAuthenticated]);
 
     return (
         <div className="flex justify-center items-center h-screen">
@@ -35,7 +40,7 @@ export default function SignUpPage() {
                 {isSignupSucessful ? (
                     <div className="flex gap-2 items-center flex-col">
                         <div>{message}</div>
-                        <div>Redirecting to Login in 3 seconds...</div>
+                        <div>Redirecting to Home Page in 3 seconds...</div>
                     </div>
                 ) : (
                     <>

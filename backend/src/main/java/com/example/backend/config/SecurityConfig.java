@@ -73,8 +73,10 @@ public class SecurityConfig {
                     .accessDeniedHandler(accessDeniedHandlerBean())
                     .authenticationEntryPoint(authenticationEntryPointBean())
             )
-            .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/me").authenticated())
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .authorizeHttpRequests(auth ->
+                auth.requestMatchers("/auth/signup", "/auth/login", "/auth/refresh").permitAll()
+            )
+            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .build();

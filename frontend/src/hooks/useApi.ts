@@ -2,6 +2,7 @@
 
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface useApiType<T> {
     isLoading: boolean;
@@ -22,11 +23,38 @@ export const useApi = <ResponseData, RequestData>(
     url: string,
     options: AxiosRequestConfig<RequestData> = {},
 ): useApiType<ResponseData> => {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isError, setIsError] = useState<boolean>(false);
     const [message, setMessage] = useState<string>("");
     const [status, setStatus] = useState<number>(200);
     const [data, setData] = useState<ResponseData | null>(null);
+
+    const api = axios.create({
+        baseURL: "http://localhost:8080/",
+        withCredentials: true,
+    });
+
+    api.interceptors.response.use(
+        (response) => response,
+        async (error) => {
+            const originalRequest = error.config;
+
+            if (error.response?.status === 401 && !originalRequest._retry) {
+                originalRequest._retry = true;
+
+                try {
+                    await api.post("auth/refresh", null, { withCredentials: true });
+                    return api(originalRequest);
+                } catch (refreshError) {
+                    localStorage.removeItem("login");
+                    router.push("/auth/login");
+                    return Promise.reject(refreshError);
+                }
+            }
+            return Promise.reject(error);
+        },
+    );
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -38,15 +66,17 @@ export const useApi = <ResponseData, RequestData>(
         let response: AxiosResponse<ServerResponse<ResponseData>> | null = null;
 
         try {
-            response = await axios<ServerResponse<ResponseData>>(`http://localhost:8080/${url}`, {
+            response = await api<ServerResponse<ResponseData>>(url, {
                 ...options,
-                withCredentials: true,
                 headers: {
                     ...axios.defaults.headers.common,
                     ...(options.headers || {}),
-                    withCredentials: true,
                 },
             });
+
+            setData(response.data.data);
+            setMessage(response.data.message);
+            setStatus(response.status);
         } catch (error) {
             if (error instanceof AxiosError) {
                 setIsError(true);
@@ -55,6 +85,11 @@ export const useApi = <ResponseData, RequestData>(
                     console.log("set message to error.response.data.message");
                     setMessage(error.response.data.message);
                     setStatus(error.response.status);
+
+                    if ((error.response.status === 401, !url.includes("login"))) {
+                        localStorage.removeItem("login");
+                        router.push("/auth/login");
+                    }
                 } else if (error.request) {
                     setMessage("No response received (hint: did you start the spring server?)");
                     setStatus(0);
@@ -70,12 +105,6 @@ export const useApi = <ResponseData, RequestData>(
             }
         } finally {
             setIsLoading(false);
-        }
-
-        if (response && !isError) {
-            console.log("Setting data to response.data.data");
-            setData(response?.data?.data);
-            setMessage(response?.data?.message);
         }
     };
 

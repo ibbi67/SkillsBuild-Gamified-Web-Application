@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import Logo from "./Logo";
-import { useRouter } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
+import { useApi } from "@/hooks/useApi";
+import { LogoutRequest, LogoutResponse } from "@/types/auth";
 
 export default function Navbar() {
-    const router = useRouter();
-    const token = localStorage.getItem("login");
+    const { isAuthenticated, setIsAuthenticated } = useAuth();
+    const { status, fetchData } = useApi<LogoutResponse, LogoutRequest>("auth/logout", {
+        method: "POST",
+    });
 
-    const logoutOnClick = () => {
-        localStorage.removeItem("login");
-        router.refresh();
+    const logoutOnClick = async () => {
+        await fetchData();
+        setIsAuthenticated(status !== 200);
     };
 
     return (
@@ -20,7 +24,7 @@ export default function Navbar() {
             </div>
             <div>{/* This is where the links to other places will go */}</div>
             <div className="flex justify-end gap-2">
-                {token ? (
+                {isAuthenticated ? (
                     <>
                         <Link className="py-2 bg-blue-500 text-white rounded px-4" href="/profile">
                             Profile
