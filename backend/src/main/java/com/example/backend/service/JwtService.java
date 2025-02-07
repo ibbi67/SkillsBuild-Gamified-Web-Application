@@ -20,8 +20,6 @@ public class JwtService {
         "ddb1d47e1089c2131d50bf2d74b43b50630228f5e642d74a1d57e84f17d2f11e13c7daac30d748ed92c447b5042487ccdb723782ca14b95a9da203fff010b321".getBytes()
     );
     private final UserService userService;
-    private final long ACCESS_TOKEN_EXPIRATION_SECOND = 60 * 15; // 15 minutes
-    private final long REFRESH_TOKEN_EXPIRATION_SECOND = 60 * 60 * 24 * 365; // 365 days
 
     @Autowired
     public JwtService(UserService userService) {
@@ -48,19 +46,15 @@ public class JwtService {
         return cookie;
     }
 
-    public String generateAccessToken(String username) {
-        return generateToken(username, ACCESS_TOKEN_EXPIRATION_SECOND * 1000);
-    }
-
-    public String generateRefreshToken(String username) {
-        return generateToken(username, REFRESH_TOKEN_EXPIRATION_SECOND * 1000);
-    }
-
     public Cookie generateAccessTokenCookie(String username) {
+        // 15 minutes
+        long ACCESS_TOKEN_EXPIRATION_SECOND = 60 * 15; // 15 minutes
         return generateCookie(username, ACCESS_TOKEN_EXPIRATION_SECOND, "access_token");
     }
 
     public Cookie generateRefreshTokenCookie(String username) {
+        // 365 days
+        long REFRESH_TOKEN_EXPIRATION_SECOND = 60 * 60 * 24 * 365; // 365 days
         return generateCookie(username, REFRESH_TOKEN_EXPIRATION_SECOND, "refresh_token");
     }
 
