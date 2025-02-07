@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        if (accessToken == null || refreshToken == null) {
+        if (refreshToken == null && !jwtService.verifyToken(accessToken)) {
             unauthorizedResponse(response, "Missing authentication tokens");
             return;
         }

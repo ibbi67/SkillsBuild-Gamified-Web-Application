@@ -91,7 +91,7 @@ public class JwtService {
      * @return true if the token is valid, false otherwise
      */
     public boolean verifyToken(String token) {
-        if (token.isBlank()) {
+        if (token == null || token.isBlank()) {
             return false;
         }
 
