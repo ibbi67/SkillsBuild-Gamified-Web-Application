@@ -40,14 +40,17 @@ export const useApi = <ResponseData, RequestData>(
         async (error) => {
             const originalRequest = error.config;
 
-            if (error.response?.status === 401 && !originalRequest._retry) {
+            if (
+                error.response?.status === 401 &&
+                !originalRequest._retry &&
+                !originalRequest.url?.includes("auth/refresh")
+            ) {
                 originalRequest._retry = true;
 
                 try {
-                    await api.post("auth/refresh", null, { withCredentials: true });
+                    await api.post("auth/refresh");
                     return api(originalRequest);
                 } catch (refreshError) {
-                    localStorage.removeItem("login");
                     router.push("/auth/login");
                     return Promise.reject(refreshError);
                 }
@@ -86,8 +89,11 @@ export const useApi = <ResponseData, RequestData>(
                     setMessage(error.response.data.message);
                     setStatus(error.response.status);
 
-                    if ((error.response.status === 401, !url.includes("login"))) {
-                        localStorage.removeItem("login");
+                    if (
+                        error.response.status === 401 &&
+                        !url.includes("login") &&
+                        !url.includes("signup")
+                    ) {
                         router.push("/auth/login");
                     }
                 } else if (error.request) {

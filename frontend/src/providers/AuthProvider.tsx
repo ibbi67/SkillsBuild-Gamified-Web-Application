@@ -20,6 +20,7 @@ const AuthContext = createContext<AuthContextProps>({
 
 export function AuthProvider({ children }: AuthProviderProps) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const { status, fetchData } = useApi<MeResponse, MeRequest>("auth/me");
 
     useEffect(() => {
@@ -30,11 +31,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
             } catch (error) {
                 console.error("Error checking authentication status: " + error);
                 setIsAuthenticated(false);
+            } finally {
+                setIsLoading(false);
             }
         };
 
         checkAuth();
     }, []);
+
+    if (isLoading) return null;
 
     return (
         <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>

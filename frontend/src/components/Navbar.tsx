@@ -5,8 +5,10 @@ import Logo from "./Logo";
 import { useAuth } from "@/providers/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { LogoutRequest, LogoutResponse } from "@/types/auth";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
+    const router = useRouter();
     const { isAuthenticated, setIsAuthenticated } = useAuth();
     const { status, fetchData } = useApi<LogoutResponse, LogoutRequest>("auth/logout", {
         method: "POST",
@@ -15,6 +17,7 @@ export default function Navbar() {
     const logoutOnClick = async () => {
         await fetchData();
         setIsAuthenticated(status !== 200);
+        router.push("/");
     };
 
     return (

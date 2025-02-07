@@ -80,7 +80,7 @@ public class JwtService {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setDomain("localhost");
-        cookie.setMaxAge(86400);
+        cookie.setMaxAge((int) expiration);
         return cookie;
     }
 
