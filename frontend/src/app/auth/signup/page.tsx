@@ -14,10 +14,10 @@ export default function SignUpPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const { isLoading, isError, message, fetchData } = useApi<SignupResponse, SignupRequest>(
-        "auth/signup",
-        { method: "POST", data: { username, password } },
-    );
+    const { isLoading, isError, message, fetchData } = useApi<
+        SignupResponse,
+        SignupRequest
+    >("auth/signup", { method: "POST", data: { username, password } });
 
     const isSignupSucessful = message === "User created successfully";
     const isUserExists = message === "User already exists";
@@ -35,22 +35,24 @@ export default function SignUpPage() {
     }, [isSignupSucessful, router, setIsAuthenticated]);
 
     return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg gap-4 grow max-w-96">
+        <div className="flex h-screen items-center justify-center">
+            <div className="flex max-w-96 grow flex-col gap-4 rounded-lg bg-white p-4 shadow-lg">
                 {isSignupSucessful ? (
-                    <div className="flex gap-2 items-center flex-col">
+                    <div className="flex flex-col items-center gap-2">
                         <div>{message}</div>
                         <div>Redirecting to Home Page in 3 seconds...</div>
                     </div>
                 ) : (
                     <>
                         <Logo />
-                        <h1 className="font-bold text-center md:text-2xl">Sign Up</h1>
+                        <h1 className="text-center font-bold md:text-2xl">
+                            Sign Up
+                        </h1>
 
                         <input
                             type="text"
                             placeholder="Username"
-                            className={`py-1 px-2 md:py-2 border border-gray-300 rounded-lg ${
+                            className={`rounded-lg border border-gray-300 px-2 py-1 md:py-2 ${
                                 isUserExists && "border-red-500"
                             }`}
                             value={username}
@@ -59,23 +61,26 @@ export default function SignUpPage() {
                         <input
                             type="password"
                             placeholder="Password"
-                            className="py-1 px-2 md:py-2 border border-gray-300 rounded-lg"
+                            className="rounded-lg border border-gray-300 px-2 py-1 md:py-2"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
                         <button
-                            className="bg-blue-500 text-white p-2 rounded-lg disabled:bg-blue-300"
+                            className="rounded-lg bg-blue-500 p-2 text-white disabled:bg-blue-300"
                             onClick={fetchData}
                             disabled={isLoading || isSignupSucessful}
                         >
                             {isLoading ? "Signing up..." : "Confirm"}
                         </button>
                         {isError && message && (
-                            <div className="text-red-500 text-sm mb-2 grow text-center">
+                            <div className="mb-2 grow text-center text-sm text-red-500">
                                 {message}
                             </div>
                         )}
-                        <Link href="/auth/login" className="text-blue-500 text-center">
+                        <Link
+                            href="/auth/login"
+                            className="text-center text-blue-500"
+                        >
                             Already have an account? Login here!
                         </Link>
                     </>

@@ -6,10 +6,10 @@ import { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 
 export default function ProfilePage() {
-    const { isLoading, isError, message, fetchData, data } = useApi<MeResponse, MeRequest>(
-        "auth/me",
-        { method: "GET" },
-    );
+    const { isLoading, isError, message, fetchData, data } = useApi<
+        MeResponse,
+        MeRequest
+    >("auth/me", { method: "GET" });
 
     const hasFetched = useRef(false);
 
@@ -25,8 +25,8 @@ export default function ProfilePage() {
             <div className="m-4 grow">
                 <Navbar />
             </div>
-            <div className="m-4 flex flex-col p-4 bg-white rounded-lg shadow-lg gap-4 grow max-w-96">
-                <h1 className="font-bold text-center md:text-2xl">Profile</h1>
+            <div className="m-4 flex max-w-96 grow flex-col gap-4 rounded-lg bg-white p-4 shadow-lg">
+                <h1 className="text-center font-bold md:text-2xl">Profile</h1>
 
                 {isLoading ? (
                     <div>Loading...</div>
@@ -39,7 +39,9 @@ export default function ProfilePage() {
                         {data?.roles && data?.roles.length > 0 && (
                             <>
                                 <div>Roles:</div>
-                                {data?.roles.map((role) => <div key={role}>{role}</div>)}
+                                {data?.roles.map((role) => (
+                                    <div key={role}>{role}</div>
+                                ))}
                             </>
                         )}
                         {data?.authorities && data?.authorities.length > 0 && (

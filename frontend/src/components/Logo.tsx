@@ -21,7 +21,7 @@ export default function Logo() {
                     />
                 </svg>
 
-                <p className="invisible md:visible font-bold text-xl text-blue-500">
+                <p className="invisible text-xl font-bold text-blue-500 md:visible">
                     SkillsBuild++
                 </p>
             </div>

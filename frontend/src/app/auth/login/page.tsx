@@ -14,13 +14,14 @@ export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const { isLoading, isError, message, fetchData } = useApi<LoginRequest, LoginRequest>(
-        "auth/login",
-        { method: "POST", data: { username, password } },
-    );
+    const { isLoading, isError, message, fetchData } = useApi<
+        LoginRequest,
+        LoginRequest
+    >("auth/login", { method: "POST", data: { username, password } });
 
     const isLoginSucessful = message === "Login successful";
-    const isInvalidCredentials = message === "Invalid credentials" || message === "User not found";
+    const isInvalidCredentials =
+        message === "Invalid credentials" || message === "User not found";
 
     useEffect(() => {
         if (isLoginSucessful) {
@@ -30,15 +31,15 @@ export default function LoginPage() {
     }, [isLoginSucessful, router, setIsAuthenticated]);
 
     return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="flex flex-col p-4 bg-white rounded-lg shadow-lg gap-4 grow max-w-96">
+        <div className="flex h-screen items-center justify-center">
+            <div className="flex max-w-96 grow flex-col gap-4 rounded-lg bg-white p-4 shadow-lg">
                 <Logo />
-                <h1 className="font-bold text-center md:text-2xl">Login</h1>
+                <h1 className="text-center font-bold md:text-2xl">Login</h1>
 
                 <input
                     type="text"
                     placeholder="Username"
-                    className={`py-1 px-2 md:py-2 border border-gray-300 rounded-lg ${
+                    className={`rounded-lg border border-gray-300 px-2 py-1 md:py-2 ${
                         isInvalidCredentials && "border-red-500"
                     }`}
                     onChange={(e) => setUsername(e.target.value)}
@@ -47,23 +48,25 @@ export default function LoginPage() {
                 <input
                     type="password"
                     placeholder="Password"
-                    className={`py-1 px-2 md:py-2 border border-gray-300 rounded-lg ${
+                    className={`rounded-lg border border-gray-300 px-2 py-1 md:py-2 ${
                         isInvalidCredentials && "border-red-500"
                     }`}
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
                 <button
-                    className="bg-blue-500 text-white p-2 rounded-lg disabled:bg-blue-300"
+                    className="rounded-lg bg-blue-500 p-2 text-white disabled:bg-blue-300"
                     onClick={fetchData}
                     disabled={isLoading}
                 >
                     {isLoading ? "Logging in..." : "Confirm"}
                 </button>
 
-                {isError && message && <div className="text-red-500 text-sm mb-2">{message}</div>}
+                {isError && message && (
+                    <div className="mb-2 text-sm text-red-500">{message}</div>
+                )}
 
-                <Link href="/auth/signup" className="text-blue-500 text-center">
+                <Link href="/auth/signup" className="text-center text-blue-500">
                     Don&apos;t have an account? Sign up here!
                 </Link>
             </div>

@@ -21,7 +21,7 @@ interface ServerResponse<T> {
 
 export const useApi = <ResponseData, RequestData>(
     url: string,
-    options: AxiosRequestConfig<RequestData> = {},
+    options: AxiosRequestConfig<RequestData> = {}
 ): useApiType<ResponseData> => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -56,7 +56,7 @@ export const useApi = <ResponseData, RequestData>(
                 }
             }
             return Promise.reject(error);
-        },
+        }
     );
 
     const fetchData = async () => {
@@ -97,7 +97,9 @@ export const useApi = <ResponseData, RequestData>(
                         router.push("/auth/login");
                     }
                 } else if (error.request) {
-                    setMessage("No response received (hint: did you start the spring server?)");
+                    setMessage(
+                        "No response received (hint: did you start the spring server?)"
+                    );
                     setStatus(0);
                 } else {
                     console.log("set message to error.message");
