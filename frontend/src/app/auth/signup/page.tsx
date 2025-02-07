@@ -22,7 +22,7 @@ export default function SignUpPage() {
 
     useEffect(() => {
         let timeout: NodeJS.Timeout;
-        if (isSignupSucessful) timeout = setTimeout(() => router.push("/auth/login"), 5000);
+        if (isSignupSucessful) timeout = setTimeout(() => router.push("/auth/login"), 3000);
 
         return () => {
             if (timeout) clearTimeout(timeout);
@@ -35,7 +35,7 @@ export default function SignUpPage() {
                 {isSignupSucessful ? (
                     <div className="flex gap-2 items-center flex-col">
                         <div>{message}</div>
-                        <div>Redirecting to Login in 5 seconds...</div>
+                        <div>Redirecting to Login in 3 seconds...</div>
                     </div>
                 ) : (
                     <>

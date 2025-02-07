@@ -12,20 +12,20 @@ export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const { isLoading, isError, message, fetchData, data } = useApi<string, LoginRequest>(
+    const { isLoading, isError, message, fetchData } = useApi<LoginRequest, LoginRequest>(
         "auth/login",
         { method: "POST", data: { username, password } },
     );
 
-    const isLoginSucessful = message === "Token generated successfully";
+    const isLoginSucessful = message === "Login successful";
     const isInvalidCredentials = message === "Invalid credentials" || message === "User not found";
 
     useEffect(() => {
         if (isLoginSucessful) {
-            localStorage.setItem("token", data!);
+            localStorage.setItem("login", "true");
             router.push("/");
         }
-    }, [isLoginSucessful, router, data]);
+    }, [isLoginSucessful, router]);
 
     return (
         <div className="flex justify-center items-center h-screen">

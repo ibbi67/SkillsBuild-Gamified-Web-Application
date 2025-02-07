@@ -5,21 +5,21 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
+import java.util.Date;
+import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
-import java.util.Date;
-
 
 /**
  * Service for JWT token generation and validation
  */
 @Component
 public class JwtService {
+
     public final SecretKey SECRET_KEY = io.jsonwebtoken.security.Keys.hmacShaKeyFor(
-            "ddb1d47e1089c2131d50bf2d74b43b50630228f5e642d74a1d57e84f17d2f11e13c7daac30d748ed92c447b5042487ccdb723782ca14b95a9da203fff010b321".getBytes());
+        "ddb1d47e1089c2131d50bf2d74b43b50630228f5e642d74a1d57e84f17d2f11e13c7daac30d748ed92c447b5042487ccdb723782ca14b95a9da203fff010b321".getBytes()
+    );
     private final UserService userService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -30,11 +30,11 @@ public class JwtService {
 
     public String generateToken(String username) {
         return Jwts.builder()
-                .subject(username)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 86400000))
-                .signWith(SECRET_KEY)
-                .compact();
+            .subject(username)
+            .issuedAt(new Date())
+            .expiration(new Date(System.currentTimeMillis() + 86400000))
+            .signWith(SECRET_KEY)
+            .compact();
     }
 
     public Cookie generateCookie(String username) {
@@ -42,6 +42,8 @@ public class JwtService {
         Cookie cookie = new Cookie("token", token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setDomain("localhost");
         cookie.setMaxAge(86400);
         return cookie;
     }

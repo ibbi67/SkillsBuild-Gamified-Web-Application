@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 
 export default function Navbar() {
     const router = useRouter();
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("login");
 
     const logoutOnClick = () => {
-        localStorage.removeItem("token");
+        localStorage.removeItem("login");
         router.refresh();
     };
 

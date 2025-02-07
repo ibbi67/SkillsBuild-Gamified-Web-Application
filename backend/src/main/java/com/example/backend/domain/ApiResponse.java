@@ -7,12 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApiResponse<T> {
+
     private static final ObjectMapper mapper = new ObjectMapper();
     private int status;
     private String message;

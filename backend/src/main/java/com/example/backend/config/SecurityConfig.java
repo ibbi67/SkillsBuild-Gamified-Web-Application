@@ -3,6 +3,7 @@ package com.example.backend.config;
 import com.example.backend.domain.ApiResponse;
 import com.example.backend.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -15,8 +16,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -48,7 +47,9 @@ public class SecurityConfig {
         var corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000"));
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        corsConfiguration.setAllowedHeaders(List.of("Content-Type", "Authorization"));
+        corsConfiguration.setAllowedHeaders(List.of("Content-Type", "Authorization", "withCredentials"));
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setExposedHeaders(List.of("Set-Cookie"));
         return corsConfiguration;
     }
 
@@ -64,14 +65,18 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(AbstractHttpConfigurer::disable)
-                .cors((cors) -> cors.configurationSource((request) -> corsConfigurationSourceBean()))
-                .exceptionHandling((exc) -> exc.accessDeniedHandler(accessDeniedHandlerBean())
-                        .authenticationEntryPoint(authenticationEntryPointBean()))
-                .authorizeHttpRequests((auth) -> auth.requestMatchers("/auth/me").authenticated())
-                .authorizeHttpRequests((auth) -> auth.anyRequest().permitAll())
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .build();
+        return http
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(request -> corsConfigurationSourceBean()))
+            .exceptionHandling(exc ->
+                exc
+                    .accessDeniedHandler(accessDeniedHandlerBean())
+                    .authenticationEntryPoint(authenticationEntryPointBean())
+            )
+            .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/me").authenticated())
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .build();
     }
 }

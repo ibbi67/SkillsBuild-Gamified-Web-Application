@@ -28,19 +28,23 @@ export const useApi = <ResponseData, RequestData>(
     const [status, setStatus] = useState<number>(200);
     const [data, setData] = useState<ResponseData | null>(null);
 
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
     const fetchData = async () => {
         setIsLoading(true);
+        setIsError(false);
+        setMessage("");
+        setStatus(200);
+        setData(null);
+
         let response: AxiosResponse<ServerResponse<ResponseData>> | null = null;
 
         try {
             response = await axios<ServerResponse<ResponseData>>(`http://localhost:8080/${url}`, {
                 ...options,
+                withCredentials: true,
                 headers: {
                     ...axios.defaults.headers.common,
                     ...(options.headers || {}),
-                    ...(token && { Authorization: `Bearer ${token}` }),
+                    withCredentials: true,
                 },
             });
         } catch (error) {
@@ -60,7 +64,6 @@ export const useApi = <ResponseData, RequestData>(
                     setStatus(500);
                 }
             } else {
-                // Handle other unexpected error types
                 setIsError(true);
                 setMessage("An unknown error occurred");
                 setStatus(500);

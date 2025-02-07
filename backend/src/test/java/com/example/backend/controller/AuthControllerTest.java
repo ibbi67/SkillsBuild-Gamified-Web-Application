@@ -1,5 +1,9 @@
 package com.example.backend.controller;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
 import com.example.backend.dao.SignupDao;
 import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.User;
@@ -7,6 +11,7 @@ import com.example.backend.repository.UserRepository;
 import com.example.backend.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,17 +23,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @WithMockUser
 public class AuthControllerTest {
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
@@ -51,15 +50,17 @@ public class AuthControllerTest {
 
     private ApiResponse<Void> signup(String username, String password) throws Exception {
         String jsonContent = objectMapper.writeValueAsString(new SignupDao(username, password));
-        MvcResult result = mockMvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON)
-                .content(jsonContent)).andReturn();
+        MvcResult result = mockMvc
+            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
+            .andReturn();
         return ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
     }
 
     private ApiResponse<String> login(String username, String password) throws Exception {
         String jsonContent = objectMapper.writeValueAsString(new SignupDao(username, password));
-        MvcResult result = mockMvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content(jsonContent)).andReturn();
+        MvcResult result = mockMvc
+            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
+            .andReturn();
         Cookie cookie = result.getResponse().getCookie("token");
 
         if (cookie != null) {
@@ -70,8 +71,16 @@ public class AuthControllerTest {
     }
 
     private ApiResponse<User> me(String token) throws Exception {
-        MvcResult result = mockMvc.perform(get("/auth/me").header("Authorization", "Bearer " + token)
-                .contentType(MediaType.APPLICATION_JSON)).andReturn();
+        Cookie cookie = new Cookie("token", token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setDomain("localhost");
+        cookie.setMaxAge(86400);
+
+        MvcResult result = mockMvc
+            .perform(get("/auth/me").contentType(MediaType.APPLICATION_JSON).cookie(cookie))
+            .andReturn();
         return ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
     }
 
@@ -145,8 +154,6 @@ public class AuthControllerTest {
         assertEquals(HttpStatus.OK.value(), response.getStatus());
 
         String tokenString = response.getData();
-
-        System.out.println("here here here:" + tokenString);
 
         // Check if response is not empty
         assertFalse(tokenString.isEmpty());
@@ -273,7 +280,8 @@ public class AuthControllerTest {
         // Arrange
         signup(testUser.getUsername(), testUser.getPassword());
         login(testUser.getUsername(), testUser.getPassword());
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNTE2MjM5MDIyfQ.3Q2jPCIyjXDkXEgJyUUkm1hsLE0vg_ipi_lJLpNt9_w";
+        String token =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNTE2MjM5MDIyfQ.3Q2jPCIyjXDkXEgJyUUkm1hsLE0vg_ipi_lJLpNt9_w";
 
         // Act
         ApiResponse<User> response = me(token);
@@ -291,7 +299,8 @@ public class AuthControllerTest {
         // Arrange
         signup(testUser.getUsername(), testUser.getPassword());
         login(testUser.getUsername(), testUser.getPassword());
-        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IjFsaTI5ZXVudWluanNrZG5jOTAxMmllamtta3ptLHggY21uIHVobzFiMjl1ZWpvbXNkO2NtayIsImlhdCI6MTUxNjIzOTAyMn0.Dw02vCy9IfzsyajfUU35g4g732gqw1CEPMf61VwH6Co";
+        String token =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IjFsaTI5ZXVudWluanNrZG5jOTAxMmllamtta3ptLHggY21uIHVobzFiMjl1ZWpvbXNkO2NtayIsImlhdCI6MTUxNjIzOTAyMn0.Dw02vCy9IfzsyajfUU35g4g732gqw1CEPMf61VwH6Co";
 
         // Act
         ApiResponse<User> response = me(token);
@@ -345,8 +354,9 @@ public class AuthControllerTest {
         login(testUser.getUsername(), testUser.getPassword());
 
         // Act
-        MvcResult result = mockMvc.perform(get("/auth/me").header("Authorization", "Bear")
-                .contentType(MediaType.APPLICATION_JSON)).andReturn();
+        MvcResult result = mockMvc
+            .perform(get("/auth/me").header("Authorization", "Bear").contentType(MediaType.APPLICATION_JSON))
+            .andReturn();
         ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
 
         // Assert
