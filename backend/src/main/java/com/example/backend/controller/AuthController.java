@@ -5,6 +5,8 @@ import com.example.backend.dao.SignupDao;
 import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.User;
 import com.example.backend.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Authentication", description = "Endpoints for user authentication")
 public class AuthController {
 
     private final AuthService authService;
@@ -23,6 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
+    @Operation(summary = "Signup a new user")
     public ResponseEntity<ApiResponse<Void>> signup(
         @Valid @RequestBody SignupDao signupDao,
         HttpServletResponse response
@@ -32,6 +36,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Login an existing user")
     public ResponseEntity<ApiResponse<Void>> login(
         @Valid @RequestBody LoginDao loginDao,
         HttpServletResponse response
@@ -41,6 +46,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
+    @Operation(summary = "Get the current user")
     public ResponseEntity<ApiResponse<User>> getMe(@AuthenticationPrincipal User user) {
         if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
             ApiResponse.failed(HttpStatus.UNAUTHORIZED.value(), "User not found")
@@ -54,6 +60,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Refresh the access token using the refresh token")
     public ResponseEntity<ApiResponse<Void>> refresh(
         @CookieValue(value = "refresh_token", required = false) String refreshToken,
         HttpServletResponse response
@@ -63,6 +70,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Logout the current user")
     public ResponseEntity<ApiResponse<Void>> logout(HttpServletResponse response) {
         ApiResponse<Void> logoutResponse = authService.logout(response);
         return ResponseEntity.status(response.getStatus()).body(logoutResponse);
