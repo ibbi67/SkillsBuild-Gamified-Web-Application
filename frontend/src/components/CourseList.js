@@ -7,4 +7,20 @@ const CourseList = () => {
       { id: 3, title: 'Mastering Node.js'},
       { id: 4, title: 'Python for Data Science'}
     ];
-}
+
+return (
+    <div>
+        <h1>Available Courses</h1>
+      <ul>
+        {courses.map((course) => (
+          <li key={course.id}>
+            <h2>{course.title}</h2>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default CourseList;
+     
