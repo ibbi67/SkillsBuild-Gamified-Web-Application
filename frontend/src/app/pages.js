@@ -1,7 +1,12 @@
-const courses = [
-    { id: 1, title: 'Getting started with ai' },
-    { id: 2, title: 'Advanced JavaScript' },
-    { id: 3, title: 'Mastering Node.js' },
-    { id: 4, title: 'Python for Data Science' },
+import React from 'react';
+import CourseList from '../components/CourseList'; // Adjust the path if needed
 
-];
+const HomePage = () => {
+  return (
+    <div>
+      <CourseList />
+    </div>
+  );
+};
+
+export default HomePage;
