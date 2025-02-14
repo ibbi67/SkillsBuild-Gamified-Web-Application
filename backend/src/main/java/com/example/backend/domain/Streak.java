@@ -8,8 +8,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Statistics {
-
+public class Streak {
     @Id
     @GeneratedValue
     private int id;
@@ -17,7 +16,7 @@ public class Statistics {
     @JoinColumn(nullable = false)
     private User user;
 
-    private double xp;
-    private int level;
-    private int coursesCompleted;
+    private int streak;
+    private java.util.Date previousLogin; //this variable will store the date when streak is incremented
+
 }
