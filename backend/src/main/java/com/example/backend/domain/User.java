@@ -29,6 +29,9 @@ public class User implements UserDetails {
     private String username;
     private String password;
 
+    @Temporal(TemporalType.DATE)
+    private java.util.Date lastLogin;
+
     @OneToMany
     private List<Role> roles;
 
