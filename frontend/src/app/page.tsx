@@ -17,15 +17,13 @@ export default function Home() {
                             <p className="text-xl font-bold">Days</p>
                         </div>    
                     </div>
-                </div>
-                <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {/* Example dashboard cards */}
                     <div className="rounded-lg border p-4 shadow">
-                        <h2 className="mb-2 font-bold">Statistics</h2>
+                        <h2 className="mb-2 font-bold">Friends Stats</h2>
                         {/* Add statistics content */}
                     </div>
                     <div className="rounded-lg border p-4 shadow">
-                        <h2 className="mb-2 font-bold">Recent Activity</h2>
+                        <h2 className="mb-2 font-bold">Statistics</h2>
                         {/* Add activity content */}
                     </div>
                     <div className="rounded-lg border p-4 shadow">
