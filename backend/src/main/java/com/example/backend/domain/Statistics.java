@@ -17,7 +17,12 @@ public class Statistics {
     @JoinColumn(nullable = false)
     private User user;
 
+    private int streak;
     private double xp;
     private int level;
     private int coursesCompleted;
+    @Temporal(TemporalType.DATE)
+    private java.util.Date lastLogin;
+
+
 }
