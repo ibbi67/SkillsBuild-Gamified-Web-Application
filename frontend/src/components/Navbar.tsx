@@ -6,7 +6,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { LogoutRequest, LogoutResponse } from "@/types/auth";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { useState } from "react";
 
 export default function Navbar() {
     const router = useRouter();
@@ -24,16 +24,40 @@ export default function Navbar() {
         router.push("/");
     };
 
+    const [query, setQuery] = useState("");
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (query.trim()) {
+            router.push(`/search?query=${encodeURIComponent(query)}`);
+        }
+    };
+
     return (
         <nav className="grid grow grid-cols-3 items-center rounded-2xl bg-white px-8 py-4 shadow-lg">
             <div className="flex items-center">
                 <Logo />
             </div>
-            <div>{/* This is where the links to other places will go */}
-                <Link href="/search">
-    			    <Search className="w-6 h-6 cursor-pointer text-gray-600 hover:text-black" />
-		        </Link>
-		    </div>
+            <div>
+                {/* This is where the links to other places will go */}
+                <div className="flex justify-center">
+                    {/* 🔹 Added Search Bar */}
+                    <form onSubmit={handleSearch} className="flex">
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search..."
+                            className="border rounded px-3 py-2"
+                        />
+                        <button type="submit" className="ml-2 rounded bg-blue-500 px-4 py-2 text-white">
+                            Search
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+            
             <div className="flex justify-end gap-2">
                 {isAuthenticated ? (
                     <>
