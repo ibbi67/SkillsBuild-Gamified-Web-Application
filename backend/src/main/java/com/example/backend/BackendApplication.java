@@ -48,7 +48,5 @@ public class BackendApplication implements CommandLineRunner {
 
         System.out.println(user.getStreak().getId());
         System.out.println(user2.getStreak().getId());
-
-
     }
 }
