@@ -6,7 +6,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { LogoutRequest, LogoutResponse } from "@/types/auth";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import SearchBar from "./Searchbar";
 
 export default function Navbar() {
     const router = useRouter();
@@ -24,15 +24,6 @@ export default function Navbar() {
         router.push("/");
     };
 
-    const [query, setQuery] = useState("");
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (query.trim()) {
-            router.push(`/search?query=${encodeURIComponent(query)}`);
-        }
-    };
-
     return (
         <nav className="grid grow grid-cols-3 items-center rounded-2xl bg-white px-8 py-4 shadow-lg">
             <div className="flex items-center">
@@ -41,21 +32,8 @@ export default function Navbar() {
             <div>
                 {/* This is where the links to other places will go */}
                 <div className="flex justify-center">
-                    {/* 🔹 Added Search Bar */}
-                    <form onSubmit={handleSearch} className="flex">
-                        <input
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search..."
-                            className="border rounded px-3 py-2"
-                        />
-                        <button type="submit" className="ml-2 rounded bg-blue-500 px-4 py-2 text-white">
-                            Search
-                        </button>
-                    </form>
+                    <SearchBar />
                 </div>
-
             </div>
             
             <div className="flex justify-end gap-2">
