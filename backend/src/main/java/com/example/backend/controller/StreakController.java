@@ -1,30 +1,33 @@
 package com.example.backend.controller;
 
-import com.example.backend.domain.Streak;
-import com.example.backend.domain.User;
 import com.example.backend.repository.StreakRepository;
 import com.example.backend.repository.UserRepository;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
-import java.util.Optional;
+import com.example.backend.service.StreaksService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/streak")
+@RequestMapping("/streak")
 public class StreakController {
-    private final StreakRepository streakRepository;
-    private final UserRepository userRepository;
+    @Autowired
+    StreakRepository streakRepository;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    StreaksService streaksService;
 
-    public StreakController(StreakRepository streakRepository, UserRepository userRepository) {
-        this.streakRepository = streakRepository;
-        this.userRepository = userRepository;
+    @GetMapping
+    public int getCurrentUserStreak(){
+        ///need to find out how to retrieve the streak of the user that is currently logged in
+        return 0;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<Streak> getStreak(@PathVariable int userId) {
-        Optional<Streak> streak = streakRepository.findByUserId(userId);
-        return streak.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    @GetMapping("/{userid}")
+    public int getCurrentStreakByUserId(@PathVariable Integer userId) {
+        return streaksService.findByUserId(userId).getStreak();
     }
 
 }
