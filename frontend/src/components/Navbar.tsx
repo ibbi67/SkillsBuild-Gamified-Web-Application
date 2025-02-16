@@ -29,13 +29,12 @@ export default function Navbar() {
             <div className="flex items-center">
                 <Logo />
             </div>
-            <div>{/* This is where the links to other places will go */}</div>
-            <div className="flex justify-end gap-4">
-		<Link href="/search">
-    			<Search className="w-6 h-6 cursor-pointer text-gray-600 hover:text-black" />
-		</Link>
-		
-
+            <div>{/* This is where the links to other places will go */}
+                <Link href="/search">
+    			    <Search className="w-6 h-6 cursor-pointer text-gray-600 hover:text-black" />
+		        </Link>
+		    </div>
+            <div className="flex justify-end gap-2">
                 {isAuthenticated ? (
                     <>
                         <Link
