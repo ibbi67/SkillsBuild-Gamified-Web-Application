@@ -6,6 +6,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { LogoutRequest, LogoutResponse } from "@/types/auth";
 import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 
 export default function Navbar() {
     const router = useRouter();
@@ -29,7 +30,12 @@ export default function Navbar() {
                 <Logo />
             </div>
             <div>{/* This is where the links to other places will go */}</div>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-4">
+		<Link href="/search">
+    			<Search className="w-6 h-6 cursor-pointer text-gray-600 hover:text-black" />
+		</Link>
+		
+
                 {isAuthenticated ? (
                     <>
                         <Link
