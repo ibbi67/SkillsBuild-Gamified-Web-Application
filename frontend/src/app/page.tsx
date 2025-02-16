@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 export default function Home() {
     return (
         <div className="flex flex-col">
-            <div className="m-4">
+            <div className="m-4 grow">
                 <Navbar />
             </div>
             <div className="mx-auto m-4 w-4/5 rounded-lg bg-white p-4 shadow-lg">
@@ -21,11 +21,11 @@ export default function Home() {
                     </div>
                     {/* Example dashboard cards */}
                     <div className="rounded-lg border p-4 shadow">
-                        <h2 className="mb-2 font-bold">Friends Stats</h2>
+                        <h2 className="mb-2 font-bold">Statistics</h2>
                         {/* Add statistics content */}
                     </div>
                     <div className="rounded-lg border p-4 shadow">
-                        <h2 className="mb-2 font-bold">Statistics</h2>
+                        <h2 className="mb-2 font-bold">Recent Activity</h2>
                         {/* Add activity content */}
                     </div>
                     <div className="rounded-lg border p-4 shadow">

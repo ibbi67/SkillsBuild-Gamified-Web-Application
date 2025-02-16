@@ -17,6 +17,10 @@ public class StreaksService {
         return streakRepository.findByUserId(userId);
     }
 
+    public void checkMaintainedStreak(){
+        ///here we need to check if the user has logged in yesterday or if the streak has been broken
+    }
+
     public Integer incrementStreak(Streak streak){
         Streak currentStreak = streak;
         currentStreak.setStreak(currentStreak.getStreak() + 1);
