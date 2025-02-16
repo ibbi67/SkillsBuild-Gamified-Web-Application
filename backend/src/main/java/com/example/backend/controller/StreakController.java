@@ -25,9 +25,9 @@ public class StreakController {
         return 0;
     }
 
-    @GetMapping("/{userid}")
-    public int getCurrentStreakByUserId(@PathVariable Integer userId) {
-        return streaksService.findByUserId(userId).getStreak();
-    }
+//    @GetMapping("/{userid}")
+//    public int getCurrentStreakByUserId(@PathVariable Integer userId) {
+//        return streaksService.findByUserId(userId).getStreak();
+//    }
 
 }

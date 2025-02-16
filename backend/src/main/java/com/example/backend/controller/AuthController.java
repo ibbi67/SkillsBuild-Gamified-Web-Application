@@ -54,7 +54,7 @@ public class AuthController {
         return ResponseEntity.ok(
             ApiResponse.success(
                 "User found",
-                new User(user.getId(), user.getUsername(), user.getPassword(), user.getRoles())
+                new User(user.getId(), user.getUsername(), user.getPassword(), user.getRoles(), user.getStreak())
             )
         );
     }

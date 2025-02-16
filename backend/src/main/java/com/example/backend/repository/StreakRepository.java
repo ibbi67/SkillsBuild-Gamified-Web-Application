@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface StreakRepository extends JpaRepository<Streak, Integer> {
-    public Streak findByUserId(Integer userId);
+//    public Streak findByUserId(Integer userId);
 }
