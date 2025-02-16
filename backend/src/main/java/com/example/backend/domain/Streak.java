@@ -12,8 +12,9 @@ public class Streak {
     @Id
     @GeneratedValue
     private int id;
+
     @OneToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(nullable = false, unique = true)
     private User user;
 
     private int streak;

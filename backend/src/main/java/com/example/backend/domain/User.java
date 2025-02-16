@@ -29,9 +29,11 @@ public class User implements UserDetails {
     private String username;
     private String password;
 
-
     @OneToMany
     private List<Role> roles;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Streak streak = new Streak();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
