@@ -54,11 +54,11 @@ public class AuthController {
         return ResponseEntity.ok(
             ApiResponse.success(
                 "User found",
-                new User(user.getId(), user.getUsername(), user.getPassword(), user.getRoles(), user.getStreak())
+                new User(user.getId(), user.getUsername(), user.getPassword(), user.getRoles())
             )
         );
     }
-/////////////////
+
     @PostMapping("/refresh")
     @Operation(summary = "Refresh the access token using the refresh token")
     public ResponseEntity<ApiResponse<Void>> refresh(
