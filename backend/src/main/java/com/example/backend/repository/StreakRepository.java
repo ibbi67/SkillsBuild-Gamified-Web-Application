@@ -5,7 +5,9 @@ import com.example.backend.domain.Streak;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface StreakRepository extends JpaRepository<Streak, Integer> {
-//    public Streak findByUserId(Integer userId);
+    public Optional<Streak> findByUserId(Integer userId);
 }
