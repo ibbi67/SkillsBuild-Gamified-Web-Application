@@ -2,6 +2,8 @@ package com.example.backend.controller;
 
 import com.example.backend.domain.Course;
 import com.example.backend.service.CourseService;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,4 +30,5 @@ public class CourseController {
     public Course getCourseById(@PathVariable int id) {
         return courseService.getCourseById(id);
     }
+
 }

@@ -12,12 +12,12 @@ interface Course {
 const FavoritesPage: React.FC = () => {
   const [favorites, setFavorites] = useState<Course[]>([]);
 
-  // Fetch favorites from localStorage
+  // Fetch favorites from backend API
   useEffect(() => {
-    const savedFavorites = localStorage.getItem("favorites");
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
+    fetch("http://localhost:8080/api/favorites") // Replace with your backend API endpoint
+      .then((res) => res.json())
+      .then((data) => setFavorites(data))
+      .catch((error) => console.error("Error fetching favorites:", error));
   }, []);
 
   return (
