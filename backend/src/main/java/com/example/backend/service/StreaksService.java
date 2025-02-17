@@ -31,4 +31,8 @@ public class StreaksService {
         streakRepository.save(currentStreak);
         return currentStreak.getStreak();
     }
+
+    public void saveStreak(Streak streak){
+        streakRepository.save(streak);
+    }
 }

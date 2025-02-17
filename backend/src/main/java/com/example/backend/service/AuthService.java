@@ -3,23 +3,29 @@ package com.example.backend.service;
 import com.example.backend.dao.LoginDao;
 import com.example.backend.dao.SignupDao;
 import com.example.backend.domain.ApiResponse;
+import com.example.backend.domain.Streak;
 import com.example.backend.domain.User;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 @Service
 public class AuthService {
 
     private final UserService userService;
+    private final StreaksService streaksService;
     private final JwtService jwtService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public AuthService(UserService userService, JwtService jwtService) {
+    public AuthService(UserService userService, StreaksService streaksService, JwtService jwtService) {
         this.userService = userService;
+        this.streaksService = streaksService;
         this.jwtService = jwtService;
     }
 
@@ -34,6 +40,8 @@ public class AuthService {
 
         response.addCookie(jwtService.generateRefreshTokenCookie(user.getUsername()));
         response.addCookie(jwtService.generateAccessTokenCookie(user.getUsername()));
+
+        checkAndUpdateStreak(user);
 
         return ApiResponse.success("User created successfully");
     }
@@ -50,9 +58,11 @@ public class AuthService {
         response.addCookie(jwtService.generateRefreshTokenCookie(user.getUsername()));
         response.addCookie(jwtService.generateAccessTokenCookie(user.getUsername()));
 
+        checkAndUpdateStreak(user);
+
         return ApiResponse.success("Login successful");
     }
-///////////////////
+
     public ApiResponse<Void> refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid refresh token");
         if (!jwtService.verifyToken(refreshToken)) return ApiResponse.failed(
@@ -65,8 +75,30 @@ public class AuthService {
         if (user == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid refresh token");
 
         response.addCookie(jwtService.generateAccessTokenCookie(username));
+        
+        checkAndUpdateStreak(user);
 
         return ApiResponse.success("Token refreshed");
+    }
+
+    private void checkAndUpdateStreak(User user) {
+        System.out.println("hello world");
+        Streak streak = user.getStreak();
+        LocalDate today = LocalDate.now();
+        LocalDate previousLoginDate = streak.getPreviousLogin() != null ?
+                streak.getPreviousLogin().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                : null;
+                
+        // Check if previous login was on a different date
+        if (previousLoginDate == null || !previousLoginDate.equals(today)) {
+            streak.setStreak(streak.getStreak() + 1);
+            streak.setPreviousLogin(Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            userService.save(user); // Save the updated user with new streak
+            streaksService.saveStreak(streak);
+
+        }
     }
 
     public ApiResponse<Void> logout(HttpServletResponse response) {
