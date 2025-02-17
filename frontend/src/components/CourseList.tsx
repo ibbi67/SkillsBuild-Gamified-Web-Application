@@ -18,16 +18,20 @@ const CourseList: React.FC = () => {
   useEffect(() => {
     fetch("http://localhost:8080/api/courses")
       .then((res) => res.json())
-      .then((data) => setCourses(data))
-      .catch((error) => console.error("Error fetching courses:", error));
+      .then((data) => {
+        setCourses(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching courses:", error);
+      });
   }, []);
 
-  // Fetch favorite courses from backend (use a different endpoint)
+  // Fetch favorite courses from local storage (or from backend if connected)
   useEffect(() => {
-    fetch("http://localhost:8080/api/favorites")  // Changed to /favorites
-      .then((res) => res.json())
-      .then((data) => setFavorites(data))
-      .catch((error) => console.error("Error fetching favorites:", error));
+    const savedFavorites = localStorage.getItem("favorites");
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
   }, []);
 
   // Toggle favorite
@@ -36,13 +40,13 @@ const CourseList: React.FC = () => {
 
     if (isFavorite) {
       // Remove from favorites
-      await fetch(`http://localhost:8080/api/favorites/${course.id}`, {
+      await fetch(`http://localhost:8080/api/courses/${course.id}`, {
         method: "DELETE",
       });
       setFavorites(favorites.filter((fav) => fav.id !== course.id));
     } else {
       // Add to favorites
-      const response = await fetch("http://localhost:8080/api/favorites", {
+      const response = await fetch("http://localhost:8080/api/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(course),
@@ -60,28 +64,36 @@ const CourseList: React.FC = () => {
 
       {/* Course List */}
       <div className="flex flex-col items-start space-y-4">
-        {courses.map((course) => (
-          <div
-            key={course.id}
-            className="w-64 h-16 bg-blue-500 text-white font-semibold rounded-lg shadow-lg flex items-center justify-between px-4 cursor-pointer hover:bg-blue-600 transition"
-          >
-            <button
-              className="flex-1 text-left"
-              onClick={() => window.open(course.link, "_blank", "noopener,noreferrer")}
+        {courses.length === 0 ? (
+          <p>No courses available at the moment.</p>
+        ) : (
+          courses.map((course) => (
+            <div
+              key={course.id}
+              className="w-64 h-16 bg-blue-500 text-white font-semibold rounded-lg shadow-lg flex items-center justify-between px-4 cursor-pointer hover:bg-blue-600 transition"
             >
-              {course.title}
-            </button>
+              <button
+                className="flex-1 text-left"
+                onClick={() =>
+                  window.open(course.link, "_blank", "noopener,noreferrer")
+                }
+              >
+                {course.title}
+              </button>
 
-            {/* Heart Icon (Favorite Toggle) */}
-            <button onClick={() => toggleFavorite(course)}>
-              <Heart
-                className={`w-5 h-5 transition ${
-                  favorites.some((fav) => fav.id === course.id) ? "fill-red-500 text-red-500" : "text-white"
-                }`}
-              />
-            </button>
-          </div>
-        ))}
+              {/* Heart Icon (Favorite Toggle) */}
+              <button onClick={() => toggleFavorite(course)}>
+                <Heart
+                  className={`w-5 h-5 transition ${
+                    favorites.some((fav) => fav.id === course.id)
+                      ? "fill-red-500 text-red-500"
+                      : "text-white"
+                  }`}
+                />
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Link to Favorites Page */}
