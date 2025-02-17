@@ -1,7 +1,6 @@
 package com.example.backend.service;
 
 import com.example.backend.domain.User;
-import com.example.backend.repository.StreakRepository;
 import com.example.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -13,12 +12,10 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-    private final StreakRepository streakRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, StreakRepository streakRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.streakRepository = streakRepository;
     }
 
     public User findByUsername(String username) {
