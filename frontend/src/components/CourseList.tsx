@@ -3,9 +3,9 @@
 import React from "react";
 
 const courses = [
-  { name: "Course 1", url: "https://example.com/course1" },
-  { name: "Course 2", url: "https://example.com/course2" },
-  { name: "Course 3", url: "https://example.com/course3" },
+  { name: "Getting Started With Artificial Intelligence", url: "https://skills.yourlearning.ibm.com/activity/PLAN-E624C2604060?_gl=1*12dnqxt*_ga*MjUxNTY2NDY5LjE3MzgyNDQyMTM.*_ga_FYECCCS21D*MTczOTgwNzM1OC40LjAuMTczOTgwNzM1OC4wLjAuMA..&ngo-id=0302" },
+  { name: "Cybersecurity Fundamentals", url: "https://skills.yourlearning.ibm.com/activity/PLAN-4FB8400F05FC?ngo-id=0302&_gl=1*1pij6h7*_ga*MjUxNTY2NDY5LjE3MzgyNDQyMTM.*_ga_FYECCCS21D*MTczOTgwNzM1OC40LjEuMTczOTgwNzQ3NS4wLjAuMA.." },
+  { name: "Data Fundamentals", url: "https://skills.yourlearning.ibm.com/activity/PLAN-BC0FAEE8E439?ngo-id=0302&_gl=1*japszq*_ga*MjUxNTY2NDY5LjE3MzgyNDQyMTM.*_ga_FYECCCS21D*MTczOTgwNzM1OC40LjEuMTczOTgwNzUxMS4wLjAuMA.." },
 ];
 
 const CourseList = () => {
