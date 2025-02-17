@@ -25,13 +25,15 @@ public class Course {
 
     private String link;
 
-    private Duration estimatedDuration;
+    private Long estimatedDurationInSeconds; // Store as seconds, so we can easily work with it
 
     public Course(String title, String description, String link, Duration estimatedDuration) {
         this.title = title;
         this.description = description;
         this.link = link;
-        this.estimatedDuration = estimatedDuration;
     }
+
+    
 }
+
 
