@@ -17,62 +17,61 @@ const courses: Course[] = [
 ];
 
 const CourseList: React.FC = () => {
-    const [favorites, setFavorites] = useState<Course[]>([]);
-  
-    // Toggle favorite courses
-    const toggleFavorite = (course: Course) => {
-      setFavorites((prevFavorites) =>
-        prevFavorites.some((fav) => fav.id === course.id)
-          ? prevFavorites.filter((fav) => fav.id !== course.id) // Remove if exists
-          : [...prevFavorites, course] // Add if not exists
-      );
-    };
-  
-    return (
-      <div className="p-6 w-full flex flex-col space-y-6">
-        {/* Course List */}
-        <div className="flex flex-col items-start space-y-4">
-          {courses.map((course) => (
-            <div
-              key={course.id}
-              className="w-64 h-12 bg-blue-500 text-white font-semibold rounded-lg shadow-lg flex items-center justify-between px-4 cursor-pointer hover:bg-blue-600 transition"
-            >
-              <button
-                className="flex-1 text-left"
-                onClick={() => window.open(course.url, "_blank", "noopener,noreferrer")}
-              >
-                {course.name}
-              </button>
-  
-              {/* Heart Icon (Favorite Toggle) */}
-              <button onClick={() => toggleFavorite(course)}>
-                <Heart
-                  className={`w-5 h-5 transition ${
-                    favorites.some((fav) => fav.id === course.id) ? "fill-red-500 text-red-500" : "text-white"
-                  }`}
-                />
-              </button>
-            </div>
-          ))}
-        </div>
-  
-        {/* Favorite Courses List */}
-        {favorites.length > 0 && (
-          <div className="mt-6">
-            <h2 className="text-lg font-bold mb-3">Favorite Courses:</h2>
-            <ul className="list-disc list-inside">
-              {favorites.map((course) => (
-                <li key={course.id} className="text-blue-600">
-                  <a href={course.url} target="_blank" rel="noopener noreferrer">
-                    {course.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    );
+  const [favorites, setFavorites] = useState<Course[]>(() => {
+    // Load saved favorites from localStorage
+    const savedFavorites = localStorage.getItem("favorites");
+    return savedFavorites ? JSON.parse(savedFavorites) : [];
+  });
+
+  // Toggle favorite courses and save them in localStorage
+  const toggleFavorite = (course: Course) => {
+    const updatedFavorites = favorites.some((fav) => fav.id === course.id)
+      ? favorites.filter((fav) => fav.id !== course.id) // Remove if exists
+      : [...favorites, course]; // Add if not exists
+
+    setFavorites(updatedFavorites);
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites)); // Save to localStorage
   };
-  
-  export default CourseList;
+
+  return (
+    <div className="p-6 w-full flex flex-col space-y-6">
+      {/* Course List */}
+      <div className="flex flex-col items-start space-y-4">
+        {courses.map((course) => (
+          <div
+            key={course.id}
+            className="w-64 h-12 bg-blue-500 text-white font-semibold rounded-lg shadow-lg flex items-center justify-between px-4 cursor-pointer hover:bg-blue-600 transition"
+          >
+            <button
+              className="flex-1 text-left"
+              onClick={() => window.open(course.url, "_blank", "noopener,noreferrer")}
+            >
+              {course.name}
+            </button>
+
+            {/* Heart Icon (Favorite Toggle) */}
+            <button onClick={() => toggleFavorite(course)}>
+              <Heart
+                className={`w-5 h-5 transition ${
+                  favorites.some((fav) => fav.id === course.id) ? "fill-red-500 text-red-500" : "text-white"
+                }`}
+              />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Link to Favorites Page */}
+      <div className="mt-6">
+        <a
+          href="/favorites"
+          className="text-blue-600 hover:text-blue-800"
+        >
+          View Favorite Courses
+        </a>
+      </div>
+    </div>
+  );
+};
+
+export default CourseList;
