@@ -34,6 +34,7 @@ public class BackendApplication implements CommandLineRunner {
         user.setUsername("admin");
         user.setPassword("admin");
         user.getStreak().setUser(user);
+        user.getStreak().setStreak(5);
         userService.save(user);
 
         System.out.println(user);

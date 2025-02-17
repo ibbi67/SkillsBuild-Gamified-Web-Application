@@ -23,5 +23,11 @@ export type MeResponse = {
     accountNonLocked: boolean;
 };
 
+export type Streak = {
+    id: number;
+    streak: number;
+    previousLogin: string | null;
+}
+
 export type LogoutRequest = null;
 export type LogoutResponse = null;
