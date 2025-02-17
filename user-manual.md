@@ -2,20 +2,22 @@
 
 ## Table of Contents
 
-1. [System Design Overview](#system-design-overview)
-    1. [System Design for Frontend](#system-design-for-frontend)
-    2. [System Design for Backend](#system-design-for-backend)
-    3. [Overriding Default Responses in Spring](#overriding-default-responses-in-spring)
-2. [Authentication System](#authentication-system)
-    1. [Authentication System for Backend](#authentication-system-for-backend)
-    2. [Authentication System for Frontend](#authentication-system-for-frontend)
-    3. [Flow of Authentication](#flow-of-authentication)
-    4. [Testing](#testing)
-    5. [Security Considerations](#security-considerations)
+1.  [System Design Overview](#system-design-overview)
+    *   [System Design for Frontend](#system-design-for-frontend)
+    *   [System Design for Backend](#system-design-for-backend)
+    *   [Overriding Default Responses in Spring](#overriding-default-responses-in-spring)
+2.  [Authentication System](#authentication-system)
+    *   [Authentication System for Backend](#authentication-system-for-backend)
+    *   [Authentication System for Frontend](#authentication-system-for-frontend)
+    *   [Flow of Authentication](#flow-of-authentication)
+    *   [Testing](#testing)
+    *   [Security Considerations](#security-considerations)
 
 ---
 
 ## System Design Overview
+**Author: Justin Fung**
+
 The system is designed to provide a seamless user experience and a robust developer experience. It leverages TypeScript for type safety and security, and employs various DAOs (Data Access Objects) and DTOs (Data Transfer Objects) to ensure data integrity.
 
 ### System Design for Frontend
@@ -73,6 +75,8 @@ To provide more consistent and informative responses, default Spring Boot error 
     - Handles authentication exceptions and provides custom error responses.
 
 ## Authentication System
+**Author: Justin Fung**
+
 The authentication system uses JWT for secure authentication and authorization, ensuring that only authorized users can access certain resources.
 
 ### Authentication System for Backend
