@@ -27,6 +27,7 @@ public class AuthService {
         User user = new User();
         user.setUsername(signupDao.getUsername());
         user.setPassword(signupDao.getPassword());
+        user.getStreak().setUser(user);
 
         user = userService.save(user);
         if (user == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "User already exists");
@@ -51,7 +52,7 @@ public class AuthService {
 
         return ApiResponse.success("Login successful");
     }
-
+///////////////////
     public ApiResponse<Void> refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid refresh token");
         if (!jwtService.verifyToken(refreshToken)) return ApiResponse.failed(

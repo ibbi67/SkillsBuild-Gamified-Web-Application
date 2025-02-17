@@ -24,5 +24,11 @@ export type MeResponse = {
     streak: Streak;
 };
 
+export type Streak = {
+    id: number;
+    streak: number;
+    previousLogin: string | null;
+}
+
 export type LogoutRequest = null;
 export type LogoutResponse = null;
