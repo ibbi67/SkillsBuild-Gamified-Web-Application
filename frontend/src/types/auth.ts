@@ -21,6 +21,7 @@ export type MeResponse = {
     credentialsNonExpired: boolean;
     accountNonExpired: boolean;
     accountNonLocked: boolean;
+    streak: Streak;
 };
 
 export type LogoutRequest = null;
