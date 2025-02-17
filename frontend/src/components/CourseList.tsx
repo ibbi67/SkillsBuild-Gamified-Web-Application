@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Heart } from "lucide-react";
 
-// Type definition for a course
+
 interface Course {
   id: number;
   name: string;
@@ -18,19 +18,18 @@ const courses: Course[] = [
 
 const CourseList: React.FC = () => {
   const [favorites, setFavorites] = useState<Course[]>(() => {
-    // Load saved favorites from localStorage
+
     const savedFavorites = localStorage.getItem("favorites");
     return savedFavorites ? JSON.parse(savedFavorites) : [];
   });
 
-  // Toggle favorite courses and save them in localStorage
   const toggleFavorite = (course: Course) => {
     const updatedFavorites = favorites.some((fav) => fav.id === course.id)
-      ? favorites.filter((fav) => fav.id !== course.id) // Remove if exists
-      : [...favorites, course]; // Add if not exists
+      ? favorites.filter((fav) => fav.id !== course.id) 
+      : [...favorites, course]; 
 
     setFavorites(updatedFavorites);
-    localStorage.setItem("favorites", JSON.stringify(updatedFavorites)); // Save to localStorage
+    localStorage.setItem("favorites", JSON.stringify(updatedFavorites)); 
   };
 
   return (
