@@ -1,34 +1,24 @@
 package com.example.backend.controller;
 
 import com.example.backend.domain.Course;
-import com.example.backend.service.CourseService;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
+import com.example.backend.repository.CourseRepository;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/courses")
 public class CourseController {
 
-    private final CourseService courseService;
+    private final CourseRepository courseRepository;
 
-    public CourseController(CourseService courseService) {
-        this.courseService = courseService;
+    public CourseController(CourseRepository courseRepository) {
+        this.courseRepository = courseRepository;
     }
 
-    @GetMapping
+    // Endpoint to fetch all courses
+    @GetMapping("/api/courses")
     public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
+        return courseRepository.findAll();
     }
-
-    @GetMapping("/{id}")
-    public Course getCourseById(@PathVariable int id) {
-        return courseService.getCourseById(id);
-    }
-
 }
