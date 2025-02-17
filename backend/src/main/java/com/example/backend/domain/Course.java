@@ -1,25 +1,37 @@
 package com.example.backend.domain;
 
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.Duration;
+
+@Data
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Course {
-    private final int id;
-    private final String name;
-    private final String description;
-    private final String category;
-    private final String level;
 
-    public Course(int id, String name, String description, String category, String level) {
-        this.id = id;
-        this.name = name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Lob
+    private String description;
+
+    private String link;
+
+    private Duration estimatedDuration;
+
+    public Course(String title, String description, String link, Duration estimatedDuration) {
+        this.title = title;
         this.description = description;
-        this.category = category;
-        this.level = level;
+        this.link = link;
+        this.estimatedDuration = estimatedDuration;
     }
-
-    public int getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public String getCategory() { return category; }
-    public String getLevel() { return level; }
 }
-
 
