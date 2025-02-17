@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function SearchBar() {
     const [query, setQuery] = useState("");
@@ -21,7 +22,7 @@ export default function SearchBar() {
         }
 
         const results = courses.filter((course: any) =>
-            course.name.toLowerCase().includes(query.toLowerCase())
+            course.title?.toLowerCase().includes(query.toLowerCase())
         );
         setFilteredCourses(results);
     }, [query, courses]);
@@ -39,9 +40,11 @@ export default function SearchBar() {
             {query && filteredCourses.length > 0 && (
                 <div className="absolute mt-2 w-64 bg-white border shadow-lg rounded">
                     {filteredCourses.map((course: any) => (
-                        <div key={course.id} className="p-2 hover:bg-gray-100">
-                            {course.name}
-                        </div>
+                        <Link key={course.id} href={`/courses/${course.id}`} passHref>
+                            <div key={course.id} className="p-2 hover:bg-gray-100 cursor-pointer">
+                                {course.title}
+                            </div>
+                        </Link> 
                     ))}
                 </div>
             )}
