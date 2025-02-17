@@ -14,7 +14,7 @@ const FavoritesPage: React.FC = () => {
 
   // Fetch favorites from backend API
   useEffect(() => {
-    fetch("http://localhost:8080/api/favorites") // Replace with your backend API endpoint
+    fetch("http://localhost:8080/api/favorites") 
       .then((res) => res.json())
       .then((data) => setFavorites(data))
       .catch((error) => console.error("Error fetching favorites:", error));

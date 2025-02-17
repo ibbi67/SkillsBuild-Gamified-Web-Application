@@ -16,9 +16,9 @@ public class CourseController {
         this.courseRepository = courseRepository;
     }
 
-    // Endpoint to fetch all courses
+    
     @GetMapping("/api/courses")
     public List<Course> getAllCourses() {
-        return courseRepository.findAll();  // Returns all courses from the DB
+        return courseRepository.findAll();  
     }
 }
