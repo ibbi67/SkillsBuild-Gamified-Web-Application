@@ -14,7 +14,7 @@ const CourseList = () => {
       {courses.map((course, index) => (
         <button
           key={index}
-          className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-blue-600 transition"
+          className="w-48 h-12 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-600 transition flex items-center justify-center"
           onClick={() => window.open(course.url, "_blank", "noopener,noreferrer")}
         >
           {course.name}
