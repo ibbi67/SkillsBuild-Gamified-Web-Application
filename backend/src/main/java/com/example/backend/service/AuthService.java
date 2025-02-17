@@ -82,7 +82,6 @@ public class AuthService {
     }
 
     private void checkAndUpdateStreak(User user) {
-        System.out.println("hello world");
         Streak streak = user.getStreak();
         LocalDate today = LocalDate.now();
         LocalDate previousLoginDate = streak.getPreviousLogin() != null ?
@@ -91,13 +90,21 @@ public class AuthService {
                         .toLocalDate()
                 : null;
                 
-        // Check if previous login was on a different date
+        // Only update if not already logged in today
         if (previousLoginDate == null || !previousLoginDate.equals(today)) {
-            streak.setStreak(streak.getStreak() + 1);
+            LocalDate yesterday = today.minusDays(1);
+            
+            if (previousLoginDate != null && previousLoginDate.equals(yesterday)) {
+                // If last login was yesterday, increment streak
+                streak.setStreak(streak.getStreak() + 1);
+            } else {
+                // If last login was not yesterday, reset streak to 1
+                streak.setStreak(1);
+            }
+            
             streak.setPreviousLogin(Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            userService.save(user); // Save the updated user with new streak
+            userService.save(user);
             streaksService.saveStreak(streak);
-
         }
     }
 
