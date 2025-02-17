@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 
+// Define the Course interface
 interface Course {
   id: number;
   title: string;
@@ -11,41 +12,46 @@ interface Course {
 }
 
 const CourseList: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [favorites, setFavorites] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);  // State for courses
+  const [favorites, setFavorites] = useState<Course[]>([]);  // State for favorites
 
-  // Fetch courses from backend
+  // Fetch courses from backend API
   useEffect(() => {
     fetch("http://localhost:8080/api/courses")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch courses");
+        }
+        return res.json();
+      })
       .then((data) => {
-        setCourses(data);
+        setCourses(data);  // Set the fetched courses into state
       })
       .catch((error) => {
-        console.error("Error fetching courses:", error);
+        console.error("Error fetching courses:", error);  // Log any errors
       });
   }, []);
 
-  // Fetch favorite courses from local storage (or from backend if connected)
+  // Fetch favorite courses from localStorage or backend (if you want to implement backend storage)
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
     if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
+      setFavorites(JSON.parse(savedFavorites));  // Get favorites from localStorage
     }
   }, []);
 
-  // Toggle favorite
+  // Handle toggle favorite logic (Add/Remove)
   const toggleFavorite = async (course: Course) => {
     const isFavorite = favorites.some((fav) => fav.id === course.id);
 
     if (isFavorite) {
-      // Remove from favorites
+      // Remove course from favorites
       await fetch(`http://localhost:8080/api/courses/${course.id}`, {
-        method: "DELETE",
+        method: "DELETE",  // Send DELETE request to backend
       });
-      setFavorites(favorites.filter((fav) => fav.id !== course.id));
+      setFavorites(favorites.filter((fav) => fav.id !== course.id));  // Remove from state
     } else {
-      // Add to favorites
+      // Add course to favorites
       const response = await fetch("http://localhost:8080/api/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,7 +59,7 @@ const CourseList: React.FC = () => {
       });
 
       if (response.ok) {
-        setFavorites([...favorites, course]);
+        setFavorites([...favorites, course]);  // Add to favorites state if POST is successful
       }
     }
   };
@@ -62,7 +68,7 @@ const CourseList: React.FC = () => {
     <div className="p-6 w-full flex flex-col space-y-6">
       <h2 className="text-2xl font-bold text-blue-600">Available Courses</h2>
 
-      {/* Course List */}
+      {/* Display courses or a message if there are no courses */}
       <div className="flex flex-col items-start space-y-4">
         {courses.length === 0 ? (
           <p>No courses available at the moment.</p>
@@ -81,7 +87,7 @@ const CourseList: React.FC = () => {
                 {course.title}
               </button>
 
-              {/* Heart Icon (Favorite Toggle) */}
+              {/* Heart Icon for toggling favorite */}
               <button onClick={() => toggleFavorite(course)}>
                 <Heart
                   className={`w-5 h-5 transition ${
@@ -96,7 +102,7 @@ const CourseList: React.FC = () => {
         )}
       </div>
 
-      {/* Link to Favorites Page */}
+      {/* Link to the Favorites Page */}
       <div className="mt-6">
         <a href="/favorites" className="text-blue-600 hover:text-blue-800">
           View Favorite Courses
