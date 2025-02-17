@@ -22,9 +22,9 @@ const CourseList: React.FC = () => {
       .catch((error) => console.error("Error fetching courses:", error));
   }, []);
 
-  // Fetch favorite courses from backend
+  // Fetch favorite courses from backend (use a different endpoint)
   useEffect(() => {
-    fetch("http://localhost:8080/api/courses")
+    fetch("http://localhost:8080/api/favorites")  // Changed to /favorites
       .then((res) => res.json())
       .then((data) => setFavorites(data))
       .catch((error) => console.error("Error fetching favorites:", error));
@@ -36,13 +36,13 @@ const CourseList: React.FC = () => {
 
     if (isFavorite) {
       // Remove from favorites
-      await fetch(`http://localhost:8080/api/courses/${course.id}`, {
+      await fetch(`http://localhost:8080/api/favorites/${course.id}`, {
         method: "DELETE",
       });
       setFavorites(favorites.filter((fav) => fav.id !== course.id));
     } else {
       // Add to favorites
-      const response = await fetch("http://localhost:8080/api/courses", {
+      const response = await fetch("http://localhost:8080/api/favorites", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(course),
