@@ -81,10 +81,10 @@ public class SecurityConfig {
                         "/auth/refresh",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
-                        "/swagger-ui.html"
+                        "/swagger-ui.html",
+                        "/courses/**"
                     )
                     .permitAll()
-                    .requestMatchers("/courses/**").permitAll()
             )
             .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
