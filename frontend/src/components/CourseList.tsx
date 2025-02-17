@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 
-// Define the Course interface
+
 interface Course {
   id: number;
   title: string;
@@ -15,7 +15,6 @@ const CourseList: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);  // State for courses
   const [favorites, setFavorites] = useState<Course[]>([]);  // State for favorites
 
-  // Fetch courses from backend API
   useEffect(() => {
     fetch("http://localhost:8080/api/courses")
       .then((res) => {
@@ -25,18 +24,17 @@ const CourseList: React.FC = () => {
         return res.json();
       })
       .then((data) => {
-        setCourses(data);  // Set the fetched courses into state
+        setCourses(data); 
       })
       .catch((error) => {
-        console.error("Error fetching courses:", error);  // Log any errors
+        console.error("Error fetching courses:", error);  
       });
   }, []);
 
-  // Fetch favorite courses from localStorage or backend (if you want to implement backend storage)
   useEffect(() => {
     const savedFavorites = localStorage.getItem("favorites");
     if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));  // Get favorites from localStorage
+      setFavorites(JSON.parse(savedFavorites));  
     }
   }, []);
 
@@ -45,11 +43,11 @@ const CourseList: React.FC = () => {
     const isFavorite = favorites.some((fav) => fav.id === course.id);
 
     if (isFavorite) {
-      // Remove course from favorites
+      
       await fetch(`http://localhost:8080/api/courses/${course.id}`, {
-        method: "DELETE",  // Send DELETE request to backend
+        method: "DELETE",  
       });
-      setFavorites(favorites.filter((fav) => fav.id !== course.id));  // Remove from state
+      setFavorites(favorites.filter((fav) => fav.id !== course.id));  
     } else {
       // Add course to favorites
       const response = await fetch("http://localhost:8080/api/courses", {
@@ -59,7 +57,7 @@ const CourseList: React.FC = () => {
       });
 
       if (response.ok) {
-        setFavorites([...favorites, course]);  // Add to favorites state if POST is successful
+        setFavorites([...favorites, course]);  
       }
     }
   };
