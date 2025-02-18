@@ -52,6 +52,16 @@ public class AuthService {
         return ApiResponse.success("Login successful");
     }
 
+    public ApiResponse<User> me(String accessToken) {
+        if (accessToken == null) return ApiResponse.failed(HttpStatus.UNAUTHORIZED.value(), "User not found");
+
+        String username = jwtService.getUserDetails(accessToken).getUsername();
+        User user = userService.findByUsername(username);
+        if (user == null) return ApiResponse.failed(HttpStatus.UNAUTHORIZED.value(), "User not found");
+
+        return ApiResponse.success("User found", user);
+    }
+
     public ApiResponse<Void> refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid refresh token");
         if (!jwtService.verifyToken(refreshToken)) return ApiResponse.failed(
