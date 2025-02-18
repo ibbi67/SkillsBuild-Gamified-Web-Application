@@ -81,7 +81,7 @@ public class AuthService {
         return ApiResponse.success("Token refreshed");
     }
 
-    private void checkAndUpdateStreak(User user) {
+    public void checkAndUpdateStreak(User user) {
         Streak streak = user.getStreak();
         LocalDate today = LocalDate.now();
         LocalDate previousLoginDate = streak.getPreviousLogin() != null ?
@@ -96,7 +96,7 @@ public class AuthService {
             
             if (previousLoginDate != null && previousLoginDate.equals(yesterday)) {
                 // If last login was yesterday, increment streak
-                streak.setStreak(streak.getStreak() + 1);
+                streaksService.incrementStreak(streak);
             } else {
                 // If last login was not yesterday, reset streak to 1
                 streak.setStreak(1);
