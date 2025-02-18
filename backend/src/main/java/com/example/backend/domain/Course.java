@@ -1,40 +1,33 @@
 package com.example.backend.domain;
 
 import jakarta.persistence.*;
+import lombok.*;
 
+import java.time.Duration;
+
+@Data
 @Entity
-@Table(name = "favorite_courses")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Course {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     private String title;
+
+    @Lob
     private String description;
     private String link;
+    private Duration estimatedDuration;
 
-    public Course() {}
-
-    public Course(String title, String description, String link) {
+    public Course(String title, String description, String link, Duration estimatedDuration) {
         this.title = title;
         this.description = description;
         this.link = link;
+        this.estimatedDuration = estimatedDuration;
     }
-
-    // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public String getLink() { return link; }
-    public void setLink(String link) { this.link = link; }
 }
-
-
-
