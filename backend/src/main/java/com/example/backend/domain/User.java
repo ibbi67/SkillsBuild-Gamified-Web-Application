@@ -19,7 +19,7 @@ import java.util.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(unique = true)
@@ -29,7 +29,7 @@ public class User implements UserDetails {
     @OneToMany
     private List<Role> roles;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Enrollment> enrollments = new HashSet<>();
 
     @Override

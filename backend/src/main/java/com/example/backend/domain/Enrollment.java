@@ -23,6 +23,6 @@ public class Enrollment {
     private User user;
 
     @ManyToOne
-    @JoinColumn
+    @JoinColumn(nullable = false)
     private Course course;
 }

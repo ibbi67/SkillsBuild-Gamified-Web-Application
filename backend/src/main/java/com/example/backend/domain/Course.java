@@ -29,7 +29,7 @@ public class Course {
     private Duration estimatedDuration;
     private String difficulty;
 
-    @OneToMany
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Enrollment> enrollments = new HashSet<>();
 
     public Course(String title, String description, String link, Duration estimatedDuration, String difficulty) {
