@@ -5,6 +5,8 @@ import com.example.backend.repository.StreakRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class StreaksService {
     private final StreakRepository streakRepository;
@@ -25,14 +27,12 @@ public class StreaksService {
         ///here we need to check if the user has logged in yesterday or if the streak has been broken
     }
 
-    public Integer incrementStreak(Streak streak){
-        Streak currentStreak = streak;
-        currentStreak.setStreak(currentStreak.getStreak() + 1);
-        streakRepository.save(currentStreak);
-        return currentStreak.getStreak();
+    public Streak saveStreak(Streak streak){
+        streakRepository.save(streak);
+        return streak;
     }
 
-    public void saveStreak(Streak streak){
-        streakRepository.save(streak);
+    public Optional<Streak> getStreakByUserId(int userId){
+        return streakRepository.findByUserId(userId);
     }
 }

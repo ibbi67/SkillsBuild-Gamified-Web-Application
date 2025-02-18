@@ -96,7 +96,7 @@ public class AuthService {
             
             if (previousLoginDate != null && previousLoginDate.equals(yesterday)) {
                 // If last login was yesterday, increment streak
-                streaksService.incrementStreak(streak);
+                streak.setStreak(streak.getStreak()+1);
             } else {
                 // If last login was not yesterday, reset streak to 1
                 streak.setStreak(1);
