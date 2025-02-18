@@ -3,5 +3,5 @@ export interface Course {
     title: string;
     description: string;
     link: string;
-    estimatedDuration: number;
+    estimatedDuration: string;
 }

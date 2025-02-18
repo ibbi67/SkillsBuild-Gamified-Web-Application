@@ -6,7 +6,7 @@ import { useApi } from "@/hooks/useApi";
 import Link from "next/link";
 
 const FavoritesPage: React.FC = () => {
-    const [favorites, setFavorites] = useState<Course[]>([]);
+    const [favourites, setFavourites] = useState<Course[]>([]);
     const hasFetched = useRef(false);
 
     const {
@@ -22,11 +22,11 @@ const FavoritesPage: React.FC = () => {
             hasFetched.current = true;
             fetchFavorites();
         }
-    }, [fetchFavorites]);
+    }, []);
 
     useEffect(() => {
         if (fetchedFavorites) {
-            setFavorites(fetchedFavorites);
+            setFavourites(fetchedFavorites);
         }
     }, [fetchedFavorites]);
 
@@ -37,13 +37,13 @@ const FavoritesPage: React.FC = () => {
                     Your Favorite Courses
                 </h2>
 
-                {favorites.length === 0 ? (
+                {favourites.length === 0 ? (
                     <p className="text-center text-gray-500">
                         No favorite courses found.
                     </p>
                 ) : (
                     <ul className="space-y-3">
-                        {favorites.map((course) => (
+                        {favourites.map((course) => (
                             <li
                                 key={course.id}
                                 className="flex items-center justify-between rounded-lg bg-blue-100 p-4 shadow-sm transition hover:bg-blue-200"
@@ -63,7 +63,7 @@ const FavoritesPage: React.FC = () => {
 
                 <div className="mt-6 text-center">
                     <Link
-                        href="/"
+                        href="/course"
                         className="inline-block rounded-lg bg-blue-500 px-6 py-3 font-medium text-white shadow-md transition hover:bg-blue-600"
                     >
                         ← Back to Courses

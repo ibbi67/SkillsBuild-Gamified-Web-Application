@@ -45,7 +45,18 @@ public class FavouriteService {
         if (user == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid access token");
 
         Course course = courseService.getCourseById(favouriteCourseDao.getCourseId());
-        user.getFavouriteCourses().add(course);
+        List<Course> courses = user.getFavouriteCourses();
+
+        if (!courses.isEmpty()) {
+            for (Course c : courses) {
+                if (c.getId().equals(course.getId())) {
+                    return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Course already added to favourite");
+                }
+            }
+        }
+
+        courses.add(course);
+        user.setFavouriteCourses(courses);
         userService.save(user);
 
         return ApiResponse.success("Favourite course added successfully");
