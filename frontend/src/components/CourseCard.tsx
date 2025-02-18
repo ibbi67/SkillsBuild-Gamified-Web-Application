@@ -3,6 +3,7 @@ import { Course } from "@/types/course";
 import { Heart } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
 import { FavouriteRequest } from "@/types/favourite";
+import toast, { Toaster } from "react-hot-toast";
 
 interface CourseCardProps {
     course: Course;
@@ -21,6 +22,7 @@ export default function CourseCard({
     const {
         isLoading: isAddingFavourite,
         isError: isAddFavouriteError,
+        message: addMessage,
         fetchData: addFavourite,
     } = useApi<void, FavouriteRequest>("favourite/add", {
         method: "POST",
@@ -29,6 +31,7 @@ export default function CourseCard({
     const {
         isLoading: isRemovingFavourite,
         isError: isRemoveFavouriteError,
+        message: removeMessage,
         fetchData: removeFavourite,
     } = useApi<void, FavouriteRequest>("favourite/remove", {
         method: "DELETE",
@@ -37,6 +40,20 @@ export default function CourseCard({
     useEffect(() => {
         setIsFavourite(favourites.some((fav) => fav.id === course.id));
     }, [favourites, course.id]);
+
+    useEffect(() => {
+        if (isAddFavouriteError) {
+            toast.error(addMessage);
+        }
+        if (isRemoveFavouriteError) {
+            toast.error(removeMessage);
+        }
+    }, [
+        isAddFavouriteError,
+        isRemoveFavouriteError,
+        addMessage,
+        removeMessage,
+    ]);
 
     const toggleFavourite = async () => {
         if (isFavourite) {
@@ -92,8 +109,9 @@ export default function CourseCard({
                 <button
                     onClick={toggleFavourite}
                     className="align-center flex items-center gap-2 rounded px-4 py-2 text-blue-500 outline outline-blue-500"
+                    disabled={isAddingFavourite || isRemovingFavourite}
                 >
-                    Add to Favorites
+                    {isFavourite ? "Remove from Favorites" : "Add to Favorites"}
                     <Heart
                         className={`h-5 w-5 transition ${
                             isFavourite
@@ -103,6 +121,7 @@ export default function CourseCard({
                     />
                 </button>
             </div>
+            <Toaster />
         </div>
     );
 }
