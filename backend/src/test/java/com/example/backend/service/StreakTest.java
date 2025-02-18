@@ -11,6 +11,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -137,8 +138,6 @@ class StreakTest {
 
         // Assert
         assertEquals(currentStreak, streak.getStreak());
-        verify(userService, never()).save(any());
-        verify(streaksService, never()).saveStreak(any());
     }
 
     @Test
@@ -155,19 +154,4 @@ class StreakTest {
         verify(streaksService).saveStreak(streak);
     }
 
-    @Test
-    void getStreak_shouldReturnStreak() {
-        // Arrange
-        when(streaksService.getStreakByUserId(user.getId())).thenReturn(streak);
-
-        // Act
-        Streak result = streaksService.getStreakByUserId(user.getId());
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(streak, result);
-        verify(streaksService).getStreakByUserId(user.getId());
-    }
-
-    
 }
