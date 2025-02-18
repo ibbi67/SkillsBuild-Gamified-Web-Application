@@ -1,11 +1,10 @@
 package com.example.backend.controller;
 
+import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.Course;
 import com.example.backend.service.CourseService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,4 +27,11 @@ public class CourseController {
     public Course getCourseById(@PathVariable int id) {
         return courseService.getCourseById(id);
     }
+
+    @GetMapping("/recommend")
+    public ResponseEntity<List<Course>> getRecommendedCourses(@CookieValue(value = "access_token", required = false) String accessToken) {
+        ApiResponse<List<Course>> getRecommendedCoursesResponse = courseService.getRecommendedCourses(accessToken);
+        return ResponseEntity.status(getRecommendedCoursesResponse.getStatus()).body(getRecommendedCoursesResponse.getData());
+    }
+
 }

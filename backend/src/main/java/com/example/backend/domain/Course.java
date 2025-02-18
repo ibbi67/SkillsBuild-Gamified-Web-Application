@@ -27,12 +27,12 @@ public class Course {
 
     private String link;
     private Duration estimatedDuration;
-    private String difficulty;
+    private Integer difficulty;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Enrollment> enrollments = new HashSet<>();
 
-    public Course(String title, String description, String link, Duration estimatedDuration, String difficulty) {
+    public Course(String title, String description, String link, Duration estimatedDuration, Integer difficulty) {
         this.title = title;
         this.description = description;
         this.link = link;
@@ -40,4 +40,3 @@ public class Course {
         this.difficulty = difficulty;
     }
 }
-

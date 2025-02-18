@@ -46,6 +46,22 @@ public class BackendApplication implements CommandLineRunner {
                         Click Start tracking progress to enroll in this learning plan and get started!""",
                 "https://students.yourlearning.ibm.com/activity/PLAN-14A47D1900AA",
                 Duration.ofHours(4),
-                "beginner"));
+                2));
+
+        courseRepository.save(new Course("AI Foundations: A Collaboration of ISTE and IBM",
+                """
+                        There's no doubt about the importance of artificial intelligence to future generations! Your job will most certainly use some type of AI. In this digital learning offering, created by ISTE and IBM especially for high school students, you'll learn the foundational concepts behind AI systems, consider the ethical implications of AI, explore applications of AI tools, and more.
+
+                        Complete five modules, including an AI Design Challenge, and pass the final assessment with a score of 80% or higher. You'll be rewarded with the AI Foundations credential.
+
+                        Click Enroll to enroll in this learning plan and get started!
+
+                        Language: English
+
+                        Teacher Tip! Be sure to check out the Facilitator's Guide and AI Design Challenge Rubric, designed especially to support this course.
+                        """,
+                "https://students.yourlearning.ibm.com/activity/PLAN-B2125F145F0E",
+                Duration.ofHours(17).plusMinutes(15),
+                3));
     }
 }
