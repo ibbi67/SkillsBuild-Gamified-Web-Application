@@ -93,7 +93,7 @@ class CourseServiceTest {
     @Test
     void getCourseById_WithValidId_ShouldReturnCourse() {
         // Arrange
-        Course course = testCourses.get(0);
+        Course course = testCourses.getFirst();
         when(courseRepository.findById(1)).thenReturn(Optional.of(course));
 
         // Act

@@ -40,12 +40,8 @@ class CourseControllerTest {
     @Mock
     private CourseService courseService;
 
-    @Mock
-    private JwtService jwtService;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
     private List<Course> testCourses;
-    private User testUser;
 
     @BeforeEach
     void setUp() {
@@ -69,7 +65,7 @@ class CourseControllerTest {
 
         testCourses = Arrays.asList(course1, course2);
 
-        testUser = new User();
+        User testUser = new User();
         testUser.setId(1);
         testUser.setUsername("testuser");
     }
@@ -105,7 +101,7 @@ class CourseControllerTest {
     @Test
     void getCourseById_WithValidId_ShouldReturnCourse() throws Exception {
         // Arrange
-        Course course = testCourses.get(0);
+        Course course = testCourses.getFirst();
         when(courseService.getCourseById(1)).thenReturn(course);
 
         // Act
@@ -162,8 +158,8 @@ class CourseControllerTest {
 
         assertEquals(testCourses.size(), returnedCourses.size());
         assertEquals(
-            testCourses.get(0).getTitle(),
-            returnedCourses.get(0).getTitle()
+            testCourses.getFirst().getTitle(),
+            returnedCourses.getFirst().getTitle()
         );
     }
 
