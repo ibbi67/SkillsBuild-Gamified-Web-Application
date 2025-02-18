@@ -2,22 +2,20 @@
 
 import React, { useEffect, useState } from "react";
 
-// Type definition for a course
 interface Course {
   id: number;
-  name: string;
-  url: string;
+  title: string;
+  link: string;
 }
 
 const FavoritesPage: React.FC = () => {
   const [favorites, setFavorites] = useState<Course[]>([]);
 
-  // Fetch favorites from backend API
   useEffect(() => {
-    fetch("http://localhost:8080/api/favorites") 
-      .then((res) => res.json())
-      .then((data) => setFavorites(data))
-      .catch((error) => console.error("Error fetching favorites:", error));
+    const savedFavorites = localStorage.getItem("favorites");
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
   }, []);
 
   return (
@@ -37,19 +35,18 @@ const FavoritesPage: React.FC = () => {
                 className="flex items-center justify-between bg-blue-100 p-4 rounded-lg shadow-sm hover:bg-blue-200 transition"
               >
                 <a
-                  href={course.url}
+                  href={course.link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-700 font-medium hover:underline"
                 >
-                  {course.name}
+                  {course.title}
                 </a>
               </li>
             ))}
           </ul>
         )}
 
-        {/* Back Button */}
         <div className="mt-6 text-center">
           <a
             href="/"
