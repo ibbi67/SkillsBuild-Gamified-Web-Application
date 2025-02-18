@@ -1,113 +1,138 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Heart } from "lucide-react";
-
-
-interface Course {
-  id: number;
-  title: string;
-  description: string;
-  link: string;
-}
+import { useApi } from "@/hooks/useApi";
+import { Course } from "@/types/course";
+import { FavouriteRequest } from "@/types/favourite";
 
 const CourseList: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);  // State for courses
-  const [favorites, setFavorites] = useState<Course[]>([]);  // State for favorites
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [favourites, setFavourites] = useState<Course[]>([]);
+    const [courseId, setCourseId] = useState<number>(-1);
+    const hasFetched = useRef(false);
 
-  useEffect(() => {
-    fetch("http://localhost:8080/api/courses")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch courses");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setCourses(data); 
-      })
-      .catch((error) => {
-        console.error("Error fetching courses:", error);  
-      });
-  }, []);
+    const {
+        isLoading: isFetchingCourses,
+        isError: isFetchCoursesError,
+        fetchData: fetchCourses,
+        data: fetchedCourses,
+    } = useApi<Course[], void>("courses", {
+        method: "GET",
+    });
 
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem("favorites");
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));  
-    }
-  }, []);
+    const {
+        isLoading: isFetchingFavourites,
+        isError: isFetchfavouritesError,
+        fetchData: fetchfavourites,
+        data: fetchedfavourites,
+    } = useApi<Course[], void>("favourite", { method: "GET" });
 
-  // Handle toggle favorite logic (Add/Remove)
-  const toggleFavorite = async (course: Course) => {
-    const isFavorite = favorites.some((fav) => fav.id === course.id);
-
-    if (isFavorite) {
-      
-      await fetch(`http://localhost:8080/api/courses/${course.id}`, {
-        method: "DELETE",  
-      });
-      setFavorites(favorites.filter((fav) => fav.id !== course.id));  
-    } else {
-      // Add course to favorites
-      const response = await fetch("http://localhost:8080/api/courses", {
+    const {
+        isLoading: isAddingFavourite,
+        isError: isAddFavouriteError,
+        fetchData: addFavourite,
+    } = useApi<void, FavouriteRequest>("favourite/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(course),
-      });
+        data: { courseId },
+    });
 
-      if (response.ok) {
-        setFavorites([...favorites, course]);  
-      }
-    }
-  };
+    const {
+        isLoading: isRemovingFavourite,
+        isError: isRemoveFavouriteError,
+        fetchData: removeFavourite,
+    } = useApi<void, FavouriteRequest>("favourite/remove", {
+        method: "DELETE",
+        data: { courseId },
+    });
 
-  return (
-    <div className="p-6 w-full flex flex-col space-y-6">
-      <h2 className="text-2xl font-bold text-blue-600">Available Courses</h2>
+    useEffect(() => {
+        if (!hasFetched.current) {
+            hasFetched.current = true;
+            fetchCourses();
+            fetchfavourites();
+        }
+    }, []);
 
-      {/* Display courses or a message if there are no courses */}
-      <div className="flex flex-col items-start space-y-4">
-        {courses.length === 0 ? (
-          <p>No courses available at the moment.</p>
-        ) : (
-          courses.map((course) => (
-            <div
-              key={course.id}
-              className="w-64 h-16 bg-blue-500 text-white font-semibold rounded-lg shadow-lg flex items-center justify-between px-4 cursor-pointer hover:bg-blue-600 transition"
-            >
-              <button
-                className="flex-1 text-left"
-                onClick={() =>
-                  window.open(course.link, "_blank", "noopener,noreferrer")
-                }
-              >
-                {course.title}
-              </button>
+    useEffect(() => {
+        if (fetchedCourses) {
+            setCourses(fetchedCourses);
+        }
+    }, [fetchedCourses]);
 
-              {/* Heart Icon for toggling favorite */}
-              <button onClick={() => toggleFavorite(course)}>
-                <Heart
-                  className={`w-5 h-5 transition ${
-                    favorites.some((fav) => fav.id === course.id)
-                      ? "fill-red-500 text-red-500"
-                      : "text-white"
-                  }`}
-                />
-              </button>
+    useEffect(() => {
+        if (fetchedfavourites) {
+            setFavourites(fetchedfavourites);
+        }
+    }, [fetchedfavourites]);
+
+    const toggleFavourite = async (course: Course) => {
+        const isFavourite = favourites.some((fav) => fav.id === course.id);
+        setCourseId(course.id);
+
+        if (isFavourite) {
+            await removeFavourite();
+            setFavourites(favourites.filter((fav) => fav.id !== course.id));
+        } else {
+            await addFavourite();
+            setFavourites([...favourites, course]);
+        }
+    };
+
+    return (
+        <div className="flex w-full flex-col space-y-6 p-6">
+            <h2 className="text-2xl font-bold text-blue-600">
+                Available Courses
+            </h2>
+
+            <div className="flex flex-col items-start space-y-4">
+                {courses.length === 0 ? (
+                    <p>No courses available at the moment.</p>
+                ) : (
+                    courses.map((course) => (
+                        <div
+                            key={course.id}
+                            className="flex h-16 w-64 cursor-pointer items-center justify-between rounded-lg bg-blue-500 px-4 font-semibold text-white shadow-lg transition hover:bg-blue-600"
+                        >
+                            <button
+                                className="flex-1 text-left"
+                                onClick={() =>
+                                    window.open(
+                                        course.link,
+                                        "_blank",
+                                        "noopener,noreferrer"
+                                    )
+                                }
+                            >
+                                {course.title}
+                            </button>
+
+                            <button onClick={() => toggleFavourite(course)}>
+                                <Heart
+                                    className={`h-5 w-5 transition ${
+                                        favourites.some(
+                                            (fav) => fav.id === course.id
+                                        )
+                                            ? "fill-red-500 text-red-500"
+                                            : "text-white"
+                                    }`}
+                                />
+                            </button>
+                        </div>
+                    ))
+                )}
             </div>
-          ))
-        )}
-      </div>
 
-      {/* Link to the Favorites Page */}
-      <div className="mt-6">
-        <a href="/favorites" className="text-blue-600 hover:text-blue-800">
-          View Favorite Courses
-        </a>
-      </div>
-    </div>
-  );
+            <div className="mt-6">
+                <a
+                    href="/favourites"
+                    className="text-blue-600 hover:text-blue-800"
+                >
+                    View Favourite Courses
+                </a>
+            </div>
+        </div>
+    );
 };
 
 export default CourseList;
