@@ -45,6 +45,7 @@ public class BackendApplication implements CommandLineRunner {
                         
                         Click Start tracking progress to enroll in this learning plan and get started!""",
                 "https://students.yourlearning.ibm.com/activity/PLAN-14A47D1900AA",
-                Duration.ofHours(4)));
+                Duration.ofHours(4),
+                "beginner"));
     }
 }

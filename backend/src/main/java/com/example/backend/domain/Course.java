@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
@@ -24,14 +26,18 @@ public class Course {
     private String description;
 
     private String link;
-
     private Duration estimatedDuration;
+    private String difficulty;
 
-    public Course(String title, String description, String link, Duration estimatedDuration) {
+    @OneToMany
+    private Set<Enrollment> enrollments = new HashSet<>();
+
+    public Course(String title, String description, String link, Duration estimatedDuration, String difficulty) {
         this.title = title;
         this.description = description;
         this.link = link;
         this.estimatedDuration = estimatedDuration;
+        this.difficulty = difficulty;
     }
 }
 
