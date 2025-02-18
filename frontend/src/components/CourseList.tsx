@@ -11,9 +11,9 @@ interface Course {
 }
 
 const mockCourses: Course[] = [
-  { id: 1, title: "React Basics", description: "Learn React from scratch", link: "https://react.dev" },
-  { id: 2, title: "Advanced JavaScript", description: "Deep dive into JS", link: "https://javascript.info" },
-  { id: 3, title: "CSS Mastery", description: "Master modern CSS techniques", link: "https://css-tricks.com" },
+  { id: 1, title: "Introduction to Large Language Models", description: "", link: "https://skills.yourlearning.ibm.com/activity/MDL-568?ngo-id=0302&_gl=1*g7dncg*_ga*MjUxNTY2NDY5LjE3MzgyNDQyMTM.*_ga_FYECCCS21D*MTczOTg4NzQzNS41LjEuMTczOTg4NzQ1NS4wLjAuMA.." },
+  { id: 2, title: "Getting Started with Cybersecurity", description: "", link: "https://skills.yourlearning.ibm.com/activity/PLAN-C7EE7CC95370?ngo-id=0302&_gl=1*h7d0bl*_ga*MjUxNTY2NDY5LjE3MzgyNDQyMTM.*_ga_FYECCCS21D*MTczOTg4NzQzNS41LjEuMTczOTg4NzQ3NS4wLjAuMA.." },
+  { id: 3, title: "Getting Started with Data", description: "", link: "https://skills.yourlearning.ibm.com/activity/PLAN-14F2691E3A32?ngo-id=0302&_gl=1*chrsqf*_ga*MjUxNTY2NDY5LjE3MzgyNDQyMTM.*_ga_FYECCCS21D*MTczOTg4NzQzNS41LjEuMTczOTg4NzUwMS4wLjAuMA.." },
 ];
 
 const CourseList: React.FC = () => {
