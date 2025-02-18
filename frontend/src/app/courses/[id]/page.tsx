@@ -4,9 +4,16 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  link?: string;
+}
+
 export default function CoursePage() {
-    const { id } = useParams(); // Retrieves the dynamic route parameter
-    const [course, setCourse] = useState(null);
+    const { id } = useParams(); 
+    const [course, setCourse] = useState<Course | null>(null); 
 
     useEffect(() => {
         if (!id) return;
