@@ -28,9 +28,9 @@ export default function Navbar() {
             <div className="flex items-center">
                 <Logo />
             </div>
-            <div>
+            <div className="flex gap-2">
                 <Link
-                    className="rounded bg-blue-500 px-4 py-2 text-white"
+                    className="flex rounded bg-blue-500 px-4 py-2 text-white"
                     href="/course"
                 >
                     Course

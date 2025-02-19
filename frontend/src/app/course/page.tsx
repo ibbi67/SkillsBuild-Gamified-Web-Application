@@ -4,13 +4,14 @@ import { useApi } from "@/hooks/useApi";
 import { Course } from "@/types/course";
 import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
-import CourseCard from "@/components/CourseCard";
+import CourseCard from "@/components/course/CourseCard";
 
 export default function CoursePage() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [favourites, setFavourites] = useState<Course[]>([]);
     const [recommendedCourses, setRecommendedCourses] = useState<Course[]>([]);
     const [activeTab, setActiveTab] = useState("all");
+    const [query, setQuery] = useState("");
     const hasFetched = useRef(false);
 
     const {
@@ -74,6 +75,10 @@ export default function CoursePage() {
         }
     }, [activeTab]);
 
+    const filteredCourses = courses.filter((course) =>
+        course.title.toLowerCase().includes(query.toLowerCase())
+    );
+
     return (
         <div className="flex flex-col">
             <div className="m-4 grow">
@@ -111,6 +116,14 @@ export default function CoursePage() {
                     >
                         Recommended Courses
                     </button>
+                    <div className="grow" />
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search courses..."
+                        className="w-64 rounded border px-3 py-2"
+                    />
                 </div>
 
                 {activeTab === "all" && (
@@ -121,11 +134,10 @@ export default function CoursePage() {
                             <p>Error fetching courses.</p>
                         ) : (
                             <div className="grid grid-cols-2 gap-2">
-                                {courses.length === 0 ? (
+                                {filteredCourses.length === 0 ? (
                                     <p>No courses available at the moment.</p>
                                 ) : (
-                                    fetchedCourses &&
-                                    fetchedCourses.map((course) => (
+                                    filteredCourses.map((course) => (
                                         <CourseCard
                                             key={course.id}
                                             course={course}
