@@ -6,10 +6,8 @@ import static org.mockito.Mockito.when;
 
 import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.Course;
-import com.example.backend.domain.Enrollment;
 import com.example.backend.domain.User;
 import com.example.backend.repository.CourseRepository;
-import com.example.backend.repository.EnrollmentRepository;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,9 +32,6 @@ class CourseServiceTest {
     @Mock
     private UserService userService;
 
-    @Mock
-    private EnrollmentRepository enrollmentRepository;
-
     @InjectMocks
     private CourseService courseService;
 
@@ -47,27 +42,27 @@ class CourseServiceTest {
     @BeforeEach
     void setUp() {
         testCourses = Arrays.asList(
-            new Course(
-                "Course 1",
-                "Description 1",
-                "link1",
-                Duration.ofHours(1),
-                1
-            ),
-            new Course(
-                "Course 2",
-                "Description 2",
-                "link2",
-                Duration.ofHours(2),
-                2
-            ),
-            new Course(
-                "Course 3",
-                "Description 3",
-                "link3",
-                Duration.ofHours(3),
-                3
-            )
+                new Course(
+                        "Course 1",
+                        "Description 1",
+                        "link1",
+                        Duration.ofHours(1),
+                        1
+                ),
+                new Course(
+                        "Course 2",
+                        "Description 2",
+                        "link2",
+                        Duration.ofHours(2),
+                        2
+                ),
+                new Course(
+                        "Course 3",
+                        "Description 3",
+                        "link3",
+                        Duration.ofHours(3),
+                        3
+                )
         );
 
         testUser = new User();
@@ -93,7 +88,7 @@ class CourseServiceTest {
     @Test
     void getCourseById_WithValidId_ShouldReturnCourse() {
         // Arrange
-        Course course = testCourses.getFirst();
+        Course course = testCourses.get(0);
         when(courseRepository.findById(1)).thenReturn(Optional.of(course));
 
         // Act
@@ -105,54 +100,45 @@ class CourseServiceTest {
     }
 
     @Test
-    void getRecommendedCourses_WithValidTokenAndEnrollments_ShouldReturnRecommendedCourses() {
+    void getRecommendedCourses_WithValidTokenAndFavoriteCourses_ShouldReturnRecommendedCourses() {
         // Arrange
         when(jwtService.verifyToken(validToken)).thenReturn(true);
         when(jwtService.getUserDetails(validToken)).thenReturn(testUser);
-        when(userService.findByUsername(testUser.getUsername())).thenReturn(
-            testUser
+        when(userService.findByUsername(testUser.getUsername())).thenReturn(testUser);
+
+        Course favoriteCourse = new Course(
+                "Favorite Course",
+                "Description",
+                "link",
+                Duration.ofHours(2),
+                2
         );
 
-        Course enrolledCourse = new Course(
-            "Enrolled Course",
-            "Description",
-            "link",
-            Duration.ofHours(2),
-            2
-        );
-        Enrollment enrollment = new Enrollment();
-        enrollment.setCourse(enrolledCourse);
-        enrollment.setUser(testUser);
-
-        when(enrollmentRepository.findByUserId(testUser.getId())).thenReturn(
-            Collections.singletonList(enrollment)
-        );
+        testUser.setFavouriteCourses(Collections.singletonList(favoriteCourse));
 
         List<Course> recommendedCourses = Arrays.asList(
-            new Course(
-                "Recommended 1",
-                "Desc 1",
-                "link1",
-                Duration.ofHours(1),
-                2
-            ),
-            new Course(
-                "Recommended 2",
-                "Desc 2",
-                "link2",
-                Duration.ofHours(2),
-                3
-            )
+                new Course(
+                        "Recommended 1",
+                        "Desc 1",
+                        "link1",
+                        Duration.ofHours(1),
+                        2
+                ),
+                new Course(
+                        "Recommended 2",
+                        "Desc 2",
+                        "link2",
+                        Duration.ofHours(2),
+                        3
+                )
         );
 
         when(
-            courseRepository.findCoursesByDifficultyRange(anyInt(), anyInt())
+                courseRepository.findCoursesByDifficultyRange(anyInt(), anyInt())
         ).thenReturn(recommendedCourses);
 
         // Act
-        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(
-            validToken
-        );
+        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(validToken);
 
         // Assert
         assertNotNull(result);
@@ -168,9 +154,7 @@ class CourseServiceTest {
         when(jwtService.verifyToken(invalidToken)).thenReturn(false);
 
         // Act
-        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(
-            invalidToken
-        );
+        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(invalidToken);
 
         // Assert
         assertNotNull(result);
@@ -180,26 +164,20 @@ class CourseServiceTest {
     }
 
     @Test
-    void getRecommendedCourses_WithNoEnrollments_ShouldReturnError() {
+    void getRecommendedCourses_WithNoFavoriteCourses_ShouldReturnError() {
         // Arrange
         when(jwtService.verifyToken(validToken)).thenReturn(true);
         when(jwtService.getUserDetails(validToken)).thenReturn(testUser);
-        when(userService.findByUsername(testUser.getUsername())).thenReturn(
-            testUser
-        );
-        when(enrollmentRepository.findByUserId(testUser.getId())).thenReturn(
-            Collections.emptyList()
-        );
+        when(userService.findByUsername(testUser.getUsername())).thenReturn(testUser);
+        testUser.setFavouriteCourses(Collections.emptyList());
 
         // Act
-        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(
-            validToken
-        );
+        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(validToken);
 
         // Assert
         assertNotNull(result);
         assertEquals(400, result.getStatus());
-        assertEquals("No enrollments found", result.getMessage());
+        assertEquals("No favorite courses found", result.getMessage());
         assertNull(result.getData());
     }
 
@@ -208,33 +186,24 @@ class CourseServiceTest {
         // Arrange
         when(jwtService.verifyToken(validToken)).thenReturn(true);
         when(jwtService.getUserDetails(validToken)).thenReturn(testUser);
-        when(userService.findByUsername(testUser.getUsername())).thenReturn(
-            testUser
+        when(userService.findByUsername(testUser.getUsername())).thenReturn(testUser);
+
+        Course favoriteCourse = new Course(
+                "Favorite Course",
+                "Description",
+                "link",
+                Duration.ofHours(2),
+                2
         );
 
-        Course enrolledCourse = new Course(
-            "Enrolled Course",
-            "Description",
-            "link",
-            Duration.ofHours(2),
-            2
-        );
-        Enrollment enrollment = new Enrollment();
-        enrollment.setCourse(enrolledCourse);
-        enrollment.setUser(testUser);
-
-        when(enrollmentRepository.findByUserId(testUser.getId())).thenReturn(
-            Collections.singletonList(enrollment)
-        );
+        testUser.setFavouriteCourses(Collections.singletonList(favoriteCourse));
 
         when(
-            courseRepository.findCoursesByDifficultyRange(anyInt(), anyInt())
+                courseRepository.findCoursesByDifficultyRange(anyInt(), anyInt())
         ).thenReturn(Collections.emptyList());
 
         // Act
-        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(
-            validToken
-        );
+        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(validToken);
 
         // Assert
         assertNotNull(result);

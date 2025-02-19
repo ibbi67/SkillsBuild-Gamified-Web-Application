@@ -16,16 +16,11 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final JwtService jwtService;
     private final UserService userService;
-    private final EnrollmentRepository enrollmentRepository;
 
-    public CourseService(CourseRepository courseRepository,
-                         JwtService jwtService,
-                         UserService userService,
-                         EnrollmentRepository enrollmentRepository) {
+    public CourseService(CourseRepository courseRepository, JwtService jwtService, UserService userService) {
         this.courseRepository = courseRepository;
         this.jwtService = jwtService;
         this.userService = userService;
-        this.enrollmentRepository = enrollmentRepository;
     }
 
     public ApiResponse<List<Course>> get() {
@@ -50,17 +45,17 @@ public class CourseService {
         User user = userService.findByUsername(username);
         if (user == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid access token");
 
-        List<Enrollment> enrollments = enrollmentRepository.findByUserId(user.getId());
-        if (enrollments.isEmpty()) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "No enrollments found");
+        List<Course> favoriteCourses = user.getFavouriteCourses();
+        if (favoriteCourses.isEmpty())
+            return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "No favorite courses found");
 
-        List<Course> userCourses = enrollments.stream().map(Enrollment::getCourse).toList();
-        int totalDifficulty = userCourses.stream().mapToInt(Course::getDifficulty).sum();
-        double averageDifficulty = (double) totalDifficulty / userCourses.size();
+        int totalDifficulty = favoriteCourses.stream().mapToInt(Course::getDifficulty).sum();
+        double averageDifficulty = (double) totalDifficulty / favoriteCourses.size();
         int minDifficulty = (int) Math.max(averageDifficulty - 1, 0);
         int maxDifficulty = (int) Math.min(averageDifficulty + 1, 5);
 
         List<Course> recommendedCourses = courseRepository.findCoursesByDifficultyRange(minDifficulty, maxDifficulty);
-        recommendedCourses.removeIf(userCourses::contains);
+        recommendedCourses.removeIf(favoriteCourses::contains);
 
         if (recommendedCourses.isEmpty()) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "No courses found");
 

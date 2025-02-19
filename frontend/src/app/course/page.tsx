@@ -64,6 +64,16 @@ export default function CoursePage() {
         }
     }, [fetchedRecommendedCourses]);
 
+    useEffect(() => {
+        if (activeTab === "all") {
+            fetchCourses();
+        } else if (activeTab === "favourites") {
+            fetchFavourites();
+        } else if (activeTab === "recommended") {
+            fetchRecommendedCourses();
+        }
+    }, [activeTab]);
+
     return (
         <div className="flex flex-col">
             <div className="m-4 grow">
@@ -163,8 +173,11 @@ export default function CoursePage() {
                             <p>Loading recommended courses...</p>
                         ) : isFetchRecommendedError ? (
                             fetchRecommendedCoursesMessage ===
-                            "No enrollments found" ? (
-                                <p>No enrollments found.</p>
+                            "No favorite courses found" ? (
+                                <p>
+                                    No favorite courses found. Please add some
+                                    favorite courses to see recommended courses.
+                                </p>
                             ) : (
                                 <p>Error fetching recommended courses.</p>
                             )
