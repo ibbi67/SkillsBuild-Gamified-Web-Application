@@ -7,7 +7,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.backend.dao.FavouriteCourseDao;
 import com.example.backend.domain.ApiResponse;
 import com.example.backend.domain.Course;
+import com.example.backend.domain.User;
 import com.example.backend.service.FavouriteService;
+import com.example.backend.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import javax.servlet.http.Cookie;
 import java.util.List;
-import java.util.Arrays;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -33,15 +35,26 @@ public class FavouriteControllerTest {
     @Autowired
     private FavouriteService favouriteService;
 
+    @Autowired
+    private JwtService jwtService;
+
+    private String validToken;
+
     @BeforeEach
     public void setup() {
+        // Mock user details
+        User mockUser = new User();
+        mockUser.setUsername("testuser");
+
+
+        validToken = jwtService.generateToken(mockUser);
     }
 
     @Test
     public void getFavourite_ShouldReturnFavouriteCourses() throws Exception {
         // Act
         MvcResult result = mockMvc.perform(get("/favourite")
-                        .cookie(new javax.servlet.http.Cookie("access_token", "dummy_token")))
+                        .cookie(new Cookie("access_token", validToken)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -59,7 +72,7 @@ public class FavouriteControllerTest {
         MvcResult result = mockMvc.perform(post("/favourite/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonContent)
-                        .cookie(new javax.servlet.http.Cookie("access_token", "dummy_token")))
+                        .cookie(new Cookie("access_token", validToken)))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -77,7 +90,7 @@ public class FavouriteControllerTest {
         MvcResult result = mockMvc.perform(delete("/favourite/remove")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonContent)
-                        .cookie(new javax.servlet.http.Cookie("access_token", "dummy_token")))
+                        .cookie(new Cookie("access_token", validToken))) // Use actual token
                 .andExpect(status().isOk())
                 .andReturn();
 
