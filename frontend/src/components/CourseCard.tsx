@@ -70,14 +70,20 @@ export default function CourseCard({
     };
 
     const renderDescription = () => {
-        const lines = course.description.split("\n");
-        if (isExpanded) {
-            return lines.map((line, index) => <p key={index}>{line}</p>);
-        } else {
-            return lines
-                .slice(0, 3)
-                .map((line, index) => <p key={index}>{line}</p>);
-        }
+        const description = isExpanded
+            ? course.description
+            : course.description.split("\n").slice(0, 3).join("\n");
+        return (
+            <div
+                dangerouslySetInnerHTML={{
+                    __html: description.replace(/\n/g, "<br />"),
+                }}
+                className={
+                    "m-4 text-sm " +
+                    (isExpanded ? "line-clamp-none" : "line-clamp-3")
+                }
+            />
+        );
     };
 
     const openCourseLink = () => {
@@ -89,7 +95,7 @@ export default function CourseCard({
             <h3 className="bg-blue-500 p-4 text-lg font-bold text-white">
                 {course.title}
             </h3>
-            <div className="p-4 text-sm">{renderDescription()}</div>
+            {renderDescription()}
 
             <button
                 onClick={toggleDescription}

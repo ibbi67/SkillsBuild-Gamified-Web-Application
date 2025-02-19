@@ -30,9 +30,9 @@ public class CourseController {
     }
 
     @GetMapping("/recommend")
-    public ResponseEntity<List<Course>> getRecommendedCourses(@CookieValue(value = "access_token", required = false) String accessToken) {
+    public ResponseEntity<ApiResponse<List<Course>>> getRecommendedCourses(@CookieValue(value = "access_token", required = false) String accessToken) {
         ApiResponse<List<Course>> getRecommendedCoursesResponse = courseService.getRecommendedCourses(accessToken);
-        return ResponseEntity.status(getRecommendedCoursesResponse.getStatus()).body(getRecommendedCoursesResponse.getData());
+        return ResponseEntity.status(getRecommendedCoursesResponse.getStatus()).body(getRecommendedCoursesResponse);
     }
 
 }
