@@ -29,6 +29,21 @@
       - [Streak Rules](#streak-rules)
       - [Time Zones](#time-zones)
     - [Implementation](#implementation)
+    - [Save to Favourite Courses](#save-to-favourite-courses)  
+  - [Save to Favourite Courses for Backend](#save-to-favourite-courses-for-backend)  
+    - [FavouriteCourse Service](#favouritecourse-service)  
+    - [FavouriteCourse Controller](#favouritecourse-controller)  
+    - [FavouriteCourse Repository](#favouritecourse-repository)  
+    - [Authentication Integration](#authentication-integration)  
+  - [Save to Favourite Courses for Frontend](#save-to-favourite-courses-for-frontend)  
+    - [Favourite Courses Dashboard](#favourite-courses-dashboard)  
+    - [User Interaction](#user-interaction)  
+  - [Flow of Save to Favourite Courses](#flow-of-save-to-favourite-courses)  
+    - [Saving a Course](#saving-a-course)  
+    - [Removing a Course](#removing-a-course)  
+  - [Testing](#testing)  
+    - [Unit Tests](#unit-tests)  
+    - [Integration Tests](#integration-tests) 
 
 ---
 
