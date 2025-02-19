@@ -36,6 +36,9 @@ export default function Navbar() {
                 <Logo />
             </div>
             <div className="flex justify-center gap-2">
+                <Link className={getLinkClass("/dashboard")} href="/dashboard">
+                    Dashboard
+                </Link>
                 <Link
                     className={getLinkClass("/leaderboard")}
                     href="/leaderboard"
