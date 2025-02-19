@@ -4,13 +4,13 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface useApiType<T> {
+interface useApiType<ResponseData, RequestData> {
     isLoading: boolean;
     isError: boolean;
     message: string;
     status: number;
-    data: T | null;
-    fetchData: () => Promise<void>;
+    data: ResponseData | null;
+    fetchData: (params?: RequestData) => Promise<void>;
 }
 
 interface ServerResponse<T> {
@@ -22,7 +22,7 @@ interface ServerResponse<T> {
 export const useApi = <ResponseData, RequestData>(
     url: string,
     options: AxiosRequestConfig<RequestData> = {}
-): useApiType<ResponseData> => {
+): useApiType<ResponseData, RequestData> => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isError, setIsError] = useState<boolean>(false);
@@ -59,7 +59,7 @@ export const useApi = <ResponseData, RequestData>(
         }
     );
 
-    const fetchData = async () => {
+    const fetchData = async (params?: RequestData) => {
         setIsLoading(true);
         setIsError(false);
         setMessage("");
@@ -71,6 +71,7 @@ export const useApi = <ResponseData, RequestData>(
         try {
             response = await api<ServerResponse<ResponseData>>(url, {
                 ...options,
+                data: params || options.data,
                 headers: {
                     ...axios.defaults.headers.common,
                     ...(options.headers || {}),
@@ -85,7 +86,6 @@ export const useApi = <ResponseData, RequestData>(
                 setIsError(true);
 
                 if (error.response) {
-                    console.log("set message to error.response.data.message");
                     setMessage(error.response.data.message);
                     setStatus(error.response.status);
 
@@ -102,7 +102,6 @@ export const useApi = <ResponseData, RequestData>(
                     );
                     setStatus(0);
                 } else {
-                    console.log("set message to error.message");
                     setMessage(error.message);
                     setStatus(500);
                 }

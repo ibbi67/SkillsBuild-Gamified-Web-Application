@@ -12,19 +12,16 @@ import java.time.Duration;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
     private String title;
 
     @Lob
     private String description;
-
     private String link;
-
     private Duration estimatedDuration;
 
     public Course(String title, String description, String link, Duration estimatedDuration) {
@@ -34,4 +31,3 @@ public class Course {
         this.estimatedDuration = estimatedDuration;
     }
 }
-

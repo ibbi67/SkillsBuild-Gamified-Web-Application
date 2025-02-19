@@ -28,7 +28,14 @@ export default function Navbar() {
             <div className="flex items-center">
                 <Logo />
             </div>
-            <div>{/* This is where the links to other places will go */}</div>
+            <div>
+                <Link
+                    className="rounded bg-blue-500 px-4 py-2 text-white"
+                    href="/course"
+                >
+                    Course
+                </Link>
+            </div>
             <div className="flex justify-end gap-2">
                 {isAuthenticated ? (
                     <>
