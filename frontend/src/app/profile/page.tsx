@@ -1,7 +1,7 @@
 "use client";
 
 import { useApi } from "@/hooks/useApi";
-import { MeRequest, MeResponse } from "@/types/auth";
+import { MeRequest, MeResponse } from "@/types/apiCall";
 import { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 
