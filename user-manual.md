@@ -168,3 +168,79 @@ The authentication system uses JWT for secure authentication and authorization, 
 4. **CORS Configuration**:
     - Allows cross-origin requests from trusted origins (e.g., `http://localhost:3000`).
     - Specifies allowed methods, headers, and credentials to ensure secure cross-origin communication.
+
+## Course Recommendation System
+**Author: Daniel Dineen**
+
+The course recommendation system analyzes student profiles and course data to suggest relevant courses based on academic history, preferences, and similarity to other students' choices, while continuously improving recommendations through user feedback.
+
+### Course Recommendation System for Backend
+
+1. **Course Service**
+    - Implements hybrid recommendation algorithm (collaborative and content-based filtering)
+    - Analyzes student profiles and history for personalized recommendations
+    - Manages recommendation weights and ranking
+
+2. **Course Controller**
+    - Handles course recommendation API endpoints and searches
+    - Processes course ratings and filtering requests
+    - Routes authenticated requests to services
+
+3. **Course Repository**
+    - Manages course data and similarity matrices in database
+    - Handles course metadata and prerequisites
+    - Implements efficient data retrieval and caching
+
+4. **Student Profile Repository**
+    - Manages student profiles and course history
+    - Updates recommendation parameters based on interactions
+    - Maintains student similarity metrics
+
+5. Authentication Integration
+    - Ensures secure access to recommendations
+    - Manages role-based feature access
+    - Integrates with JWT authentication
+
+### Course Recommendation System for Frontend
+
+1. **Recommendation Dashboard**
+    - Displays personalized course recommendations with relevance scores and details
+    - Implements dynamic filtering and sorting capabilities (difficulty, schedule, ratings)
+    - Shows course compatibility with current schedule and academic progress
+
+2. **Course Search & Interaction**
+    - Provides advanced search with real-time filtering based on student preferences
+    - Enables course enrollment, wishlist management, and review submissions
+    - Updates recommendations automatically based on user interactions
+
+3. **Student Profile Interface**
+    - Displays academic progress, course history, and recommended course path
+    - Allows preference updates for recommendation refinement
+    - Shows personalized course suggestions based on career goals and interests
+
+### Flow of Course Recommendation
+
+1. **Initial Recommendation Generation**
+    - System analyzes student profile, academic history, and preferences upon login
+    - Generates personalized course list using hybrid filtering algorithm
+    - Ranks recommendations based on relevance scores and prerequisites
+
+2. **User Interaction & Refinement**
+    - User can filter recommendations by multiple criteria (difficulty, schedule, ratings)
+    - System updates recommendations in real-time based on user interactions
+    - Course selections and ratings automatically refine future recommendations
+
+3. **Course Selection Process**
+    - User reviews detailed course information and compatibility
+    - System verifies prerequisites and schedule conflicts
+    - Updates student profile and recommendations upon enrollment
+
+### Testing
+
+1. **Unit Tests**
+    - Validates recommendation algorithm and filtering logic in CourseService
+    - Tests CourseController endpoints and response handling
+
+2. **Integration Tests**
+    - Verifies complete recommendation flow and API functionality
+    - Tests interactions between service, repository, and controller layers
