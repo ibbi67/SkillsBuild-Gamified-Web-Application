@@ -20,10 +20,8 @@ public class Streak {
     private User user;
 
     private int streak;
-    private java.util.Date previousLogin; 
     /**
      * this variable will store the date when streak is incremented
      */
-
-
+    private java.util.Date previousLogin;
 }
