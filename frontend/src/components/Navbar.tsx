@@ -6,7 +6,6 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { LogoutRequest, LogoutResponse } from "@/types/auth";
 import { useRouter } from "next/navigation";
-import SearchBar from "./Searchbar";
 
 export default function Navbar() {
     const router = useRouter();
@@ -29,16 +28,13 @@ export default function Navbar() {
             <div className="flex items-center">
                 <Logo />
             </div>
-            <div>
+            <div className="flex gap-2">
                 <Link
-                    className="rounded bg-blue-500 px-4 py-2 text-white"
+                    className="flex rounded bg-blue-500 px-4 py-2 text-white"
                     href="/course"
                 >
                     Course
                 </Link>
-                <div className="flex justify-center">
-                    <SearchBar />
-                </div>
             </div>
             <div className="flex justify-end gap-2">
                 {isAuthenticated ? (
