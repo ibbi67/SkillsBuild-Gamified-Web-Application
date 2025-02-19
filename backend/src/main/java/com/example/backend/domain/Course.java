@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
@@ -12,22 +14,28 @@ import java.time.Duration;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(nullable = false)
     private String title;
 
     @Lob
     private String description;
     private String link;
     private Duration estimatedDuration;
+    private Integer difficulty;
 
-    public Course(String title, String description, String link, Duration estimatedDuration) {
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Enrollment> enrollments = new HashSet<>();
+
+    public Course(String title, String description, String link, Duration estimatedDuration, Integer difficulty) {
         this.title = title;
         this.description = description;
         this.link = link;
         this.estimatedDuration = estimatedDuration;
+        this.difficulty = difficulty;
     }
 }
