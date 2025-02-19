@@ -9,9 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -47,16 +45,11 @@ public class AuthController {
 
     @GetMapping("/me")
     @Operation(summary = "Get the current user")
-    public ResponseEntity<ApiResponse<User>> getMe(@AuthenticationPrincipal User user) {
-        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-            ApiResponse.failed(HttpStatus.UNAUTHORIZED.value(), "User not found")
-        );
-        return ResponseEntity.ok(
-            ApiResponse.success(
-                "User found",
-                new User(user.getId(), user.getUsername(), user.getPassword(), user.getRoles(), user.getEnrollments())
-            )
-        );
+    public ResponseEntity<ApiResponse<User>> getMe(
+        @CookieValue(value = "access_token", required = false) String access_token
+    ) {
+        ApiResponse<User> meResponse = authService.me(access_token);
+        return ResponseEntity.status(meResponse.getStatus()).body(meResponse);
     }
 
     @PostMapping("/refresh")

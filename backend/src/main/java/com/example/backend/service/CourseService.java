@@ -28,6 +28,11 @@ public class CourseService {
         this.enrollmentRepository = enrollmentRepository;
     }
 
+    public ApiResponse<List<Course>> get() {
+        List<Course> courses = courseRepository.findAll();
+        return ApiResponse.success("Courses found", courses);
+    }
+
     public List<Course> getAllCourses() {
         return courseRepository.findAll();
     }

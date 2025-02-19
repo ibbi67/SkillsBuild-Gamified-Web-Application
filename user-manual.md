@@ -2,16 +2,33 @@
 
 ## Table of Contents
 
-1.  [System Design Overview](#system-design-overview)
-    *   [System Design for Frontend](#system-design-for-frontend)
-    *   [System Design for Backend](#system-design-for-backend)
-    *   [Overriding Default Responses in Spring](#overriding-default-responses-in-spring)
-2.  [Authentication System](#authentication-system)
-    *   [Authentication System for Backend](#authentication-system-for-backend)
-    *   [Authentication System for Frontend](#authentication-system-for-frontend)
-    *   [Flow of Authentication](#flow-of-authentication)
-    *   [Testing](#testing)
-    *   [Security Considerations](#security-considerations)
+- [User Manual](#user-manual)
+  - [Table of Contents](#table-of-contents)
+  - [System Design Overview](#system-design-overview)
+    - [System Design for Frontend](#system-design-for-frontend)
+      - [`useApi` Hook](#useapi-hook)
+    - [System Design for Backend](#system-design-for-backend)
+      - [`ApiResponse` Class](#apiresponse-class)
+    - [Overriding Default Responses in Spring](#overriding-default-responses-in-spring)
+  - [Authentication System](#authentication-system)
+    - [Authentication System for Backend](#authentication-system-for-backend)
+    - [Authentication System for Frontend](#authentication-system-for-frontend)
+    - [Flow of Authentication](#flow-of-authentication)
+    - [Testing](#testing)
+    - [Security Considerations](#security-considerations)
+  - [Streak System](#streak-system)
+    - [Overview](#overview)
+    - [How Streaks Work](#how-streaks-work)
+      - [Getting Started](#getting-started)
+      - [Maintaining Your Streak](#maintaining-your-streak)
+      - [Breaking a Streak](#breaking-a-streak)
+    - [Viewing Your Streak](#viewing-your-streak)
+      - [Dashboard Display](#dashboard-display)
+      - [API Access](#api-access)
+    - [Technical Details](#technical-details)
+      - [Streak Rules](#streak-rules)
+      - [Time Zones](#time-zones)
+    - [Implementation](#implementation)
 
 ---
 
@@ -168,6 +185,118 @@ The authentication system uses JWT for secure authentication and authorization, 
 4. **CORS Configuration**:
     - Allows cross-origin requests from trusted origins (e.g., `http://localhost:3000`).
     - Specifies allowed methods, headers, and credentials to ensure secure cross-origin communication.
+
+
+## Streak System
+**Author: Zain Altaf**
+
+### Overview
+
+The Streaks feature rewards users for consistent daily engagement with
+the platform by tracking consecutive daily logins.
+
+### How Streaks Work
+
+#### Getting Started
+
+- A streak counter is automatically created when you register a new
+  account
+
+- Your streak is visible on your dashboard
+
+- Initial streak starts at 1 on your first login
+
+#### Maintaining Your Streak
+
+- Log in at least once each day to maintain your streak -- note that
+  staying logged in will also allow you to maintain/increase your streak
+
+- Streak increases by 1 for each consecutive day you log in
+
+- Multiple logins in the same day count as one streak day
+
+#### Breaking a Streak
+
+- Missing a day of login will reset your streak
+
+### Viewing Your Streak
+
+#### Dashboard Display
+
+- Located on the main dashboard
+
+#### API Access
+
+To check your streak programmatically:
+
+GET /api/streak/{userId}
+
+(Remember that this data is accessed from the backend so it will show on
+backend port -- localhost:8080)
+
+### Technical Details
+
+#### Streak Rules
+
+- Only one streak update per calendar day
+
+- Streak calculations occur automatically during:
+
+  - Token refresh
+
+  - Authentication events -- Login or Signup
+
+#### Time Zones
+
+- Streaks are calculated based on your local calendar date
+
+- Days are determined using system default time zone
+
+### Implementation
+
+**Streak.java**
+
+- Each user has an associated Streak object that contains the following
+  data:
+
+  - Id -- primary key
+
+  - Streak -- the counter value
+
+  - previousLogin -- the date when the streak was last incremented
+
+- The user object and streak object are stored in separate tables in the
+  database with user where streak contains a foreign key that points to
+  the user id it is associated with.
+
+- The related streak object is linked with the user object upon
+  authentication
+
+**AuthService.java**
+
+- The related streak object is linked with the user object upon
+  authentication
+
+- Within the authserivce file is a method named checkAndUpdateStreak
+  which takes the user and increments their streak if they haven't
+  already done so today
+
+- This method is called within each of the authentication service
+  functions -- signup, login, refresh
+
+**StreaksService.Java**
+
+- In this class I have included methods to increment a streak by the
+  user that it is associated with and updating the values within the db
+
+- I have also created a linked function to just save the streak that is
+  passed through to the db
+
+
+**StreakRepository.Java**
+
+- findByUserId method allows you to find the streak associated with a
+specific user
 
 ## Course Recommendation System
 **Author: Daniel Dineen**

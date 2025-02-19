@@ -1,6 +1,7 @@
 package com.example.backend.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,7 +28,14 @@ public class User implements UserDetails {
     private String password;
 
     @OneToMany
-    private List<Role> roles;
+    private List<Role> roles = new ArrayList<>();
+
+    @OneToMany
+    private List<Course> favouriteCourses = new ArrayList<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private Streak streak = new Streak();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Enrollment> enrollments = new HashSet<>();

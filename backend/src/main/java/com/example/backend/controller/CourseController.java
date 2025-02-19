@@ -18,9 +18,10 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-    @GetMapping
-    public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
+    @GetMapping("")
+    public ResponseEntity<ApiResponse<List<Course>>> get() {
+        ApiResponse<List<Course>> getResponse = courseService.get();
+        return ResponseEntity.status(getResponse.getStatus()).body(getResponse);
     }
 
     @GetMapping("/{id}")
