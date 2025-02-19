@@ -56,7 +56,7 @@ export default function LoginPage() {
 
                 <button
                     className="rounded-lg bg-blue-500 p-2 text-white disabled:bg-blue-300"
-                    onClick={fetchData}
+                    onClick={() => fetchData()}
                     disabled={isLoading}
                 >
                     {isLoading ? "Logging in..." : "Confirm"}
