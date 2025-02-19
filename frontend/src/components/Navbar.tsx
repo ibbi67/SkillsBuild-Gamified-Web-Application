@@ -28,12 +28,18 @@ export default function Navbar() {
             <div className="flex items-center">
                 <Logo />
             </div>
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-2">
                 <Link
-                    className="rounded px-4 py-2 text-blue-500"
+                    className="rounded px-4 py-2 text-blue-500 active:bg-blue-500 active:text-white"
                     href="/leaderboard"
                 >
                     Leaderboard
+                </Link>
+                <Link
+                    className="flex rounded px-4 py-2 text-blue-500 active:bg-blue-500 active:text-white"
+                    href="/course"
+                >
+                    Course
                 </Link>
             </div>
             <div className="flex justify-end gap-2">

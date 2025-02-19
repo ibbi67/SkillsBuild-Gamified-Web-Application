@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface StreakRepository extends JpaRepository<Streak, Integer> {
-    public Optional<Streak> findByUserId(Integer userId);
+    Optional<Streak> findByUserId(Integer userId);
 }

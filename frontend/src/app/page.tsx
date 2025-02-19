@@ -5,13 +5,11 @@ import { MeRequest, MeResponse } from "@/types/auth";
 import { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 
-export default function Home() {
+export default function HomePage() {
     const { isLoading, isError, message, fetchData, data } = useApi<
         MeResponse,
         MeRequest
     >("auth/me", { method: "GET" });
-
-
 
     const hasFetched = useRef(false);
 
@@ -21,7 +19,6 @@ export default function Home() {
             fetchData();
         }
     }, [fetchData]);
-
 
     return (
         <div className="flex flex-col">
