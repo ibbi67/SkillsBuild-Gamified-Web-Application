@@ -373,3 +373,68 @@ The course recommendation system analyzes student profiles and course data to su
 2. **Integration Tests**
     - Verifies complete recommendation flow and API functionality
     - Tests interactions between service, repository, and controller layers
+
+    # Save to Favourite Courses  
+**Author:** Sonny Powell
+
+## Save to Favourite Courses for Backend  
+
+### FavouriteCourse Service  
+- Manages adding, removing, and retrieving favourite courses  
+- Stores user-course relationships in the database  
+- Ensures duplicate courses aren’t added  
+
+### FavouriteCourse Controller  
+- Handles API requests for saving and retrieving favourites  
+- Routes authenticated requests to the service  
+- Validates user permissions for modifying favourites  
+
+### FavouriteCourse Repository  
+- Manages database interactions for favourite courses  
+- Efficiently retrieves a user’s saved courses  
+- Implements caching for faster access  
+
+### Authentication Integration  
+- Ensures only logged-in users can save favourites  
+- Uses JWT authentication for secure access  
+- Restricts access to user-specific favourite lists  
+
+---
+
+## Save to Favourite Courses for Frontend  
+
+### Favourite Courses Dashboard  
+- Displays user’s saved courses in an easy-to-access list  
+- Allows quick navigation to favourite courses  
+- Supports sorting and filtering  
+
+### User Interaction  
+- Users can add/remove courses from favourites with one click  
+- Updates the backend in real time  
+- Provides visual feedback on saved courses  
+
+---
+
+## Flow of Save to Favourite Courses  
+
+### Saving a Course  
+1. User clicks the "Save to Favourites" button  
+2. API adds the course to the user’s favourites list  
+3. The UI updates to reflect the change  
+
+### Removing a Course  
+1. User selects a course to remove from favourites  
+2. API deletes the course from the favourites list  
+3. UI updates to show the course is no longer saved  
+
+---
+
+## Testing  
+
+### Unit Tests  
+- Validate favourite course addition/removal logic  
+- Ensure database queries return correct results  
+
+### Integration Tests  
+- Verify API endpoints handle requests correctly  
+- Test authentication and access control 
