@@ -1,7 +1,7 @@
 "use client";
 
 import { useApi } from "@/hooks/useApi";
-import { Course } from "@/types/course";
+import { Course } from "@/types/dbTypes";
 import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import CourseCard from "@/components/course/CourseCard";

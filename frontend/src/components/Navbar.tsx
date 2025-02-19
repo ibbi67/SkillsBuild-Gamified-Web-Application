@@ -4,10 +4,11 @@ import Link from "next/link";
 import Logo from "./Logo";
 import { useAuth } from "@/providers/AuthProvider";
 import { useApi } from "@/hooks/useApi";
-import { LogoutRequest, LogoutResponse } from "@/types/auth";
-import { useRouter } from "next/navigation";
+import { LogoutRequest, LogoutResponse } from "@/types/apiCall";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
+    const pathname = usePathname();
     const router = useRouter();
     const { isAuthenticated, setIsAuthenticated } = useAuth();
     const { status, fetchData } = useApi<LogoutResponse, LogoutRequest>(
@@ -23,6 +24,12 @@ export default function Navbar() {
         router.push("/");
     };
 
+    const getLinkClass = (path: string) => {
+        return pathname === path
+            ? "rounded px-4 py-2 text-white bg-blue-500"
+            : "rounded px-4 py-2 text-blue-500";
+    };
+
     return (
         <nav className="grid grow grid-cols-3 items-center rounded-2xl bg-white px-8 py-4 shadow-lg">
             <div className="flex items-center">
@@ -30,15 +37,12 @@ export default function Navbar() {
             </div>
             <div className="flex justify-center gap-2">
                 <Link
-                    className="rounded px-4 py-2 text-blue-500 active:bg-blue-500 active:text-white"
+                    className={getLinkClass("/leaderboard")}
                     href="/leaderboard"
                 >
                     Leaderboard
                 </Link>
-                <Link
-                    className="flex rounded px-4 py-2 text-blue-500 active:bg-blue-500 active:text-white"
-                    href="/course"
-                >
+                <Link className={getLinkClass("/course")} href="/course">
                     Course
                 </Link>
             </div>
@@ -46,7 +50,7 @@ export default function Navbar() {
                 {isAuthenticated ? (
                     <>
                         <Link
-                            className="rounded bg-blue-500 px-4 py-2 text-white"
+                            className={getLinkClass("/profile")}
                             href="/profile"
                         >
                             Profile
@@ -61,13 +65,13 @@ export default function Navbar() {
                 ) : (
                     <>
                         <Link
-                            className="rounded px-4 py-2 text-blue-500"
+                            className={getLinkClass("/auth/login")}
                             href="/auth/login"
                         >
                             Login
                         </Link>
                         <Link
-                            className="rounded bg-blue-500 px-4 py-2 text-white"
+                            className={getLinkClass("/auth/signup")}
                             href="/auth/signup"
                         >
                             Sign Up!

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useApi } from "@/hooks/useApi";
-import { MeRequest, MeResponse } from "@/types/auth";
+import { MeRequest, MeResponse } from "@/types/apiCall";
 
 interface AuthProviderProps {
     children: React.ReactNode;

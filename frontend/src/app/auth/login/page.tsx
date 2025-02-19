@@ -2,7 +2,7 @@
 
 import { useApi } from "@/hooks/useApi";
 import { useEffect, useState } from "react";
-import { LoginRequest } from "@/types/auth";
+import { LoginRequest } from "@/types/apiCall";
 import Logo from "@/components/Logo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

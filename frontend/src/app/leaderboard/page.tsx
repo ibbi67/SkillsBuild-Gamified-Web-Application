@@ -1,38 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "@/components/Navbar";
 import TopCard from "@/components/leaderboard/TopCard";
-
-type LeaderboardEntry = {
-    rank: number;
-    name: string;
-    score: number;
-};
-
-const fakeLeaderboardData: LeaderboardEntry[] = [
-    { rank: 1, name: "Justin Fung", score: 100 },
-    { rank: 2, name: "Jane Doe", score: 95 },
-    { rank: 3, name: "John Smith", score: 90 },
-    { rank: 4, name: "Alice Johnson", score: 85 },
-    { rank: 5, name: "Bob Brown", score: 80 },
-];
+import { useApi } from "@/hooks/useApi";
+import { LeaderboardEntry } from "@/types/dbTypes";
 
 export default function LeaderboardPage() {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isError, setIsError] = useState(false);
+    const { isLoading, isError, message, fetchData, data } = useApi<
+        LeaderboardEntry[],
+        void
+    >("leaderboard", { method: "GET" });
+    const hasFetched = useRef(false);
 
     useEffect(() => {
-        try {
-            setLeaderboard(fakeLeaderboardData);
-            setIsLoading(false);
-        } catch (error) {
-            console.error(error);
-            setIsError(true);
-            setIsLoading(false);
+        if (!hasFetched.current) {
+            fetchData();
+            hasFetched.current = true;
         }
     }, []);
+
+    useEffect(() => {
+        if (data) {
+            setLeaderboard(data);
+        }
+    }, [data]);
 
     return (
         <div className="flex min-h-screen flex-col bg-gray-100">
@@ -47,17 +40,17 @@ export default function LeaderboardPage() {
                     <div className="text-center">Loading...</div>
                 ) : isError ? (
                     <div className="text-center text-red-500">
-                        Error loading leaderboard
+                        Error loading leaderboard: {message}
                     </div>
                 ) : (
                     <>
                         <div className="flex justify-around gap-4">
-                            {leaderboard.slice(0, 3).map((entry) => (
+                            {leaderboard.slice(0, 3).map((entry, index) => (
                                 <TopCard
-                                    key={entry.rank}
-                                    rank={entry.rank}
-                                    name={entry.name}
-                                    score={entry.score}
+                                    key={index + 1}
+                                    rank={index + 1}
+                                    name={entry.user.username}
+                                    score={entry.points}
                                 />
                             ))}
                         </div>
@@ -76,16 +69,16 @@ export default function LeaderboardPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {leaderboard.slice(3).map((entry) => (
-                                    <tr key={entry.rank}>
+                                {leaderboard.slice(3).map((entry, index) => (
+                                    <tr key={index + 3}>
                                         <td className="border-b border-gray-200 px-4 py-2">
-                                            {entry.rank}
+                                            {index + 3}
                                         </td>
                                         <td className="border-b border-gray-200 px-4 py-2">
-                                            {entry.name}
+                                            {entry.user.username}
                                         </td>
                                         <td className="border-b border-gray-200 px-4 py-2">
-                                            {entry.score}
+                                            {entry.points}
                                         </td>
                                     </tr>
                                 ))}
