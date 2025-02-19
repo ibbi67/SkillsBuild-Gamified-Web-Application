@@ -307,8 +307,8 @@ The course recommendation system analyzes student profiles and course data to su
 
 1. **Course Service**
     - Implements hybrid recommendation algorithm (collaborative and content-based filtering)
-    - Analyzes student profiles and history for personalized recommendations
-    - Manages recommendation weights and ranking
+    - Analyzes student's favourite courses for personalized recommendations
+    - Manages recommendation by difficulty level
 
 2. **Course Controller**
     - Handles course recommendation API endpoints and searches
