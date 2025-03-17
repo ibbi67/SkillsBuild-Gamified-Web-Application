@@ -76,8 +76,8 @@ public class AuthService {
     public ApiResponse<Void> refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid refresh token");
         if (!jwtService.verifyToken(refreshToken)) return ApiResponse.failed(
-            HttpStatus.BAD_REQUEST.value(),
-            "Invalid refresh token"
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid refresh token"
         );
 
         String username = jwtService.getUserDetails(refreshToken).getUsername();
@@ -85,7 +85,7 @@ public class AuthService {
         if (user == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid refresh token");
 
         response.addCookie(jwtService.generateAccessTokenCookie(username));
-        
+
         checkAndUpdateStreak(user);
 
         return ApiResponse.success("Token refreshed");
@@ -99,26 +99,20 @@ public class AuthService {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate()
                 : null;
-                
+
         // Only update if not already logged in today
         if (previousLoginDate == null || !previousLoginDate.equals(today)) {
             LocalDate yesterday = today.minusDays(1);
-            
+
             if (previousLoginDate != null && previousLoginDate.equals(yesterday)) {
                 // If last login was yesterday, increment streak
-                streak.setStreak(streak.getStreak()+1);
-            } else if (previousLoginDate != null && previousLoginDate.isAfter(today)){
-                // If last login was after yesterday, reset streak to 1
-                System.out.println("hello world");
-                streak.setStreak(streak.getStreak());
-            }
-            else {
+                streak.setStreak(streak.getStreak() + 1);
+            } else {
                 // If last login was not yesterday, reset streak to 1
                 streak.setStreak(1);
             }
-            
+
             streak.setPreviousLogin(Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            userService.save(user);
             streaksService.saveStreak(streak);
         }
     }

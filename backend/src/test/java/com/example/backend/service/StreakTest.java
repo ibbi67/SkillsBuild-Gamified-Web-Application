@@ -49,7 +49,6 @@ class StreakTest {
 
         // Assert
         assertEquals(1, streak.getStreak());
-        verify(userService).save(user);
         verify(streaksService).saveStreak(streak);
     }
 
@@ -84,7 +83,6 @@ class StreakTest {
 
         // Assert
         assertEquals(4, streak.getStreak());
-        verify(userService).save(user);
         verify(streaksService).saveStreak(streak);
     }
 
@@ -101,7 +99,6 @@ class StreakTest {
 
         // Assert
         assertEquals(1, streak.getStreak());
-        verify(userService).save(user);
         verify(streaksService).saveStreak(streak);
     }
 
@@ -118,7 +115,6 @@ class StreakTest {
 
         // Assert
         assertEquals(1, streak.getStreak());
-        verify(userService).save(user);
         verify(streaksService).saveStreak(streak);
     }
 
@@ -131,12 +127,13 @@ class StreakTest {
         streak.setPreviousLogin(tomorrowDate);
         int currentStreak = 7;
         streak.setStreak(currentStreak);
+        int expectedStreak = 1;
 
         // Act
         authService.checkAndUpdateStreak(user);
 
         // Assert
-        assertEquals(currentStreak, streak.getStreak());
+        assertEquals(expectedStreak, streak.getStreak());
     }
 
     @Test
