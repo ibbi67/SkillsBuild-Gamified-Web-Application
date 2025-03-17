@@ -30,6 +30,9 @@ class AuthServiceTest {
     @Mock
     private HttpServletResponse response;
 
+    @Mock
+    private StreaksService streaksService;
+
     @InjectMocks
     private AuthService authService;
 

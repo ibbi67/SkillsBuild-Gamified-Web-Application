@@ -1,6 +1,7 @@
 package com.example.backend.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,7 +17,7 @@ public class Streak {
 
     @OneToOne
     @JoinColumn(nullable = false, unique = true)
-    @JsonIgnore
+    @JsonBackReference
     private User user;
 
     private int streak;
