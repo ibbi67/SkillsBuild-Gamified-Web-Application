@@ -6,7 +6,6 @@ import com.example.backend.repository.StreakRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,23 +17,6 @@ public class StreaksService {
     @Autowired
     public StreaksService(StreakRepository streakRepository) {
         this.streakRepository = streakRepository;
-    }
-
-    public Streak getStreakById(int id) {
-        return streakRepository.findById(id).orElse(null);
-    }
-
-    public void checkMaintainedStreak() {
-        ///here we need to check if the user has logged in yesterday or if the streak has been broken
-    }
-
-    public Streak saveStreak(Streak streak) {
-        streakRepository.save(streak);
-        return streak;
-    }
-
-    public Optional<Streak> getStreakByUserId(int userId) {
-        return streakRepository.findByUserId(userId);
     }
 
     public void checkAndUpdateStreak(User user) {
@@ -57,7 +39,7 @@ public class StreaksService {
             }
 
             streak.setPreviousLogin(Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            saveStreak(streak);
+            streakRepository.save(streak);
         }
     }
 }

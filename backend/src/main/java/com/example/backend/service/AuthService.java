@@ -3,7 +3,6 @@ package com.example.backend.service;
 import com.example.backend.dao.LoginDao;
 import com.example.backend.dao.SignupDao;
 import com.example.backend.domain.ApiResponse;
-import com.example.backend.domain.Streak;
 import com.example.backend.domain.User;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;

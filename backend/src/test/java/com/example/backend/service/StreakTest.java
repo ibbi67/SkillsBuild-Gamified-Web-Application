@@ -130,18 +130,4 @@ class StreakTest {
         // Assert
         assertEquals(1, streak.getStreak());
     }
-
-    @Test
-    void saveStreak_shouldSaveStreak() {
-        // Arrange
-        when(streakRepository.save(streak)).thenReturn(streak);
-
-        // Act
-        Streak savedStreak = streaksService.saveStreak(streak);
-
-        // Assert
-        assertNotNull(savedStreak);
-        assertEquals(streak, savedStreak);
-        verify(streakRepository).save(streak);
-    }
 }
