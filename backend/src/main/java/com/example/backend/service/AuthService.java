@@ -10,9 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 
 @Service
 public class AuthService {
@@ -41,7 +38,7 @@ public class AuthService {
         response.addCookie(jwtService.generateRefreshTokenCookie(user.getUsername()));
         response.addCookie(jwtService.generateAccessTokenCookie(user.getUsername()));
 
-        checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         return ApiResponse.success("User created successfully");
     }
@@ -58,7 +55,7 @@ public class AuthService {
         response.addCookie(jwtService.generateRefreshTokenCookie(user.getUsername()));
         response.addCookie(jwtService.generateAccessTokenCookie(user.getUsername()));
 
-        checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         return ApiResponse.success("Login successful");
     }
@@ -76,8 +73,8 @@ public class AuthService {
     public ApiResponse<Void> refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null) return ApiResponse.failed(HttpStatus.BAD_REQUEST.value(), "Invalid refresh token");
         if (!jwtService.verifyToken(refreshToken)) return ApiResponse.failed(
-                HttpStatus.BAD_REQUEST.value(),
-                "Invalid refresh token"
+            HttpStatus.BAD_REQUEST.value(),
+            "Invalid refresh token"
         );
 
         String username = jwtService.getUserDetails(refreshToken).getUsername();
@@ -86,35 +83,9 @@ public class AuthService {
 
         response.addCookie(jwtService.generateAccessTokenCookie(username));
 
-        checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         return ApiResponse.success("Token refreshed");
-    }
-
-    public void checkAndUpdateStreak(User user) {
-        Streak streak = user.getStreak();
-        LocalDate today = LocalDate.now();
-        LocalDate previousLoginDate = streak.getPreviousLogin() != null ?
-                streak.getPreviousLogin().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
-                : null;
-
-        // Only update if not already logged in today
-        if (previousLoginDate == null || !previousLoginDate.equals(today)) {
-            LocalDate yesterday = today.minusDays(1);
-
-            if (previousLoginDate != null && previousLoginDate.equals(yesterday)) {
-                // If last login was yesterday, increment streak
-                streak.setStreak(streak.getStreak() + 1);
-            } else {
-                // If last login was not yesterday, reset streak to 1
-                streak.setStreak(1);
-            }
-
-            streak.setPreviousLogin(Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            streaksService.saveStreak(streak);
-        }
     }
 
     public ApiResponse<Void> logout(HttpServletResponse response) {

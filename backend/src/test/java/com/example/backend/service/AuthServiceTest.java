@@ -67,6 +67,7 @@ class AuthServiceTest {
         verify(userService, times(1)).save(any(User.class));
         verify(jwtService, times(1)).generateRefreshTokenCookie(anyString());
         verify(jwtService, times(1)).generateAccessTokenCookie(anyString());
+        verify(streaksService, times(1)).checkAndUpdateStreak(any(User.class));
     }
 
     @Test
@@ -81,6 +82,7 @@ class AuthServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         assertEquals("User already exists", response.getMessage());
         verify(userService, times(1)).save(any(User.class));
+        verify(streaksService, times(0)).checkAndUpdateStreak(any(User.class));
     }
 
     @Test
@@ -99,6 +101,7 @@ class AuthServiceTest {
         verify(userService, times(1)).findByUsername(anyString());
         verify(jwtService, times(1)).generateRefreshTokenCookie(anyString());
         verify(jwtService, times(1)).generateAccessTokenCookie(anyString());
+        verify(streaksService, times(1)).checkAndUpdateStreak(any(User.class));
     }
 
     @Test
@@ -113,6 +116,7 @@ class AuthServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         assertEquals("Invalid credentials", response.getMessage());
         verify(userService, times(1)).findByUsername(anyString());
+        verify(streaksService, times(0)).checkAndUpdateStreak(any(User.class));
     }
 
     @Test
@@ -127,6 +131,7 @@ class AuthServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         assertEquals("Invalid credentials", response.getMessage());
         verify(userService, times(1)).findByUsername(anyString());
+        verify(streaksService, times(0)).checkAndUpdateStreak(any(User.class));
     }
 
     @Test
@@ -147,6 +152,7 @@ class AuthServiceTest {
         verify(jwtService, times(1)).getUserDetails(anyString());
         verify(userService, times(1)).findByUsername(anyString());
         verify(jwtService, times(1)).generateAccessTokenCookie(anyString());
+        verify(streaksService, times(1)).checkAndUpdateStreak(any(User.class));
     }
 
     @Test
@@ -161,6 +167,7 @@ class AuthServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
         assertEquals("Invalid refresh token", response.getMessage());
         verify(jwtService, times(1)).verifyToken(anyString());
+        verify(streaksService, times(0)).checkAndUpdateStreak(any(User.class));
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.domain.Streak;
 import com.example.backend.domain.User;
+import com.example.backend.repository.StreakRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -18,13 +19,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class StreakTest {
 
     @Mock
-    private UserService userService;
-
-    @Mock
-    private StreaksService streaksService;
+    private StreakRepository streakRepository;
 
     @InjectMocks
-    private AuthService authService;
+    private StreaksService streaksService;
 
     private User user;
     private Streak streak;
@@ -45,11 +43,11 @@ class StreakTest {
         streak.setStreak(0);
 
         // Act
-        authService.checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         // Assert
         assertEquals(1, streak.getStreak());
-        verify(streaksService).saveStreak(streak);
+        verify(streakRepository).save(streak);
     }
 
     @Test
@@ -62,12 +60,11 @@ class StreakTest {
         streak.setStreak(currentStreak);
 
         // Act
-        authService.checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         // Assert
         assertEquals(currentStreak, streak.getStreak());
-        verify(userService, never()).save(any());
-        verify(streaksService, never()).saveStreak(any());
+        verify(streakRepository, never()).save(any());
     }
 
     @Test
@@ -79,11 +76,11 @@ class StreakTest {
         streak.setStreak(3);
 
         // Act
-        authService.checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         // Assert
         assertEquals(4, streak.getStreak());
-        verify(streaksService).saveStreak(streak);
+        verify(streakRepository).save(streak);
     }
 
     @Test
@@ -95,11 +92,11 @@ class StreakTest {
         streak.setStreak(10);
 
         // Act
-        authService.checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         // Assert
         assertEquals(1, streak.getStreak());
-        verify(streaksService).saveStreak(streak);
+        verify(streakRepository).save(streak);
     }
 
     @Test
@@ -111,13 +108,12 @@ class StreakTest {
         streak.setStreak(15);
 
         // Act
-        authService.checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         // Assert
         assertEquals(1, streak.getStreak());
-        verify(streaksService).saveStreak(streak);
+        verify(streakRepository).save(streak);
     }
-
 
     @Test
     void checkAndUpdateStreak_withFutureDate_shouldNotUpdate() {
@@ -127,19 +123,18 @@ class StreakTest {
         streak.setPreviousLogin(tomorrowDate);
         int currentStreak = 7;
         streak.setStreak(currentStreak);
-        int expectedStreak = 1;
 
         // Act
-        authService.checkAndUpdateStreak(user);
+        streaksService.checkAndUpdateStreak(user);
 
         // Assert
-        assertEquals(expectedStreak, streak.getStreak());
+        assertEquals(1, streak.getStreak());
     }
 
     @Test
     void saveStreak_shouldSaveStreak() {
         // Arrange
-        when(streaksService.saveStreak(streak)).thenReturn(streak);
+        when(streakRepository.save(streak)).thenReturn(streak);
 
         // Act
         Streak savedStreak = streaksService.saveStreak(streak);
@@ -147,7 +142,6 @@ class StreakTest {
         // Assert
         assertNotNull(savedStreak);
         assertEquals(streak, savedStreak);
-        verify(streaksService).saveStreak(streak);
+        verify(streakRepository).save(streak);
     }
-
 }
