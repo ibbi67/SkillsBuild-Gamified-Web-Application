@@ -1,214 +1,170 @@
 package com.example.backend.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.when;
-
-import com.example.backend.domain.ApiResponse;
-import com.example.backend.domain.Course;
-import com.example.backend.domain.User;
-import com.example.backend.repository.CourseRepository;
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import com.example.backend.course.Course;
+import com.example.backend.course.csr.CourseRepository;
+import com.example.backend.course.csr.CourseService;
+import com.example.backend.course.error.CourseGetAllError;
+import com.example.backend.course.error.CourseGetByIdError;
+import com.example.backend.course.error.CourseGetRecommendError;
+import com.example.backend.person.Person;
+import com.example.backend.util.JWT;
+import com.example.backend.util.ServiceResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
-@ExtendWith(MockitoExtension.class)
-class CourseServiceTest {
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class CourseServiceTest {
 
     @Mock
     private CourseRepository courseRepository;
 
     @Mock
-    private JwtService jwtService;
-
-    @Mock
-    private UserService userService;
+    private JWT jwt;
 
     @InjectMocks
     private CourseService courseService;
 
-    private List<Course> testCourses;
-    private User testUser;
-    private String validToken;
-
     @BeforeEach
-    void setUp() {
-        testCourses = Arrays.asList(
-                new Course(
-                        "Course 1",
-                        "Description 1",
-                        "link1",
-                        Duration.ofHours(1),
-                        1
-                ),
-                new Course(
-                        "Course 2",
-                        "Description 2",
-                        "link2",
-                        Duration.ofHours(2),
-                        2
-                ),
-                new Course(
-                        "Course 3",
-                        "Description 3",
-                        "link3",
-                        Duration.ofHours(3),
-                        3
-                )
-        );
-
-        testUser = new User();
-        testUser.setId(1);
-        testUser.setUsername("testuser");
-
-        validToken = "valid.jwt.token";
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void getAllCourses_ShouldReturnAllCourses() {
-        // Arrange
-        when(courseRepository.findAll()).thenReturn(testCourses);
+    public void testGetAllCourses() {
+        Course course1 = new Course();
+        Course course2 = new Course();
+        List<Course> courses = Arrays.asList(course1, course2);
+        when(courseRepository.findAll()).thenReturn(courses);
 
-        // Act
-        List<Course> result = courseService.getAllCourses();
-
-        // Assert
-        assertEquals(testCourses.size(), result.size());
-        assertEquals(testCourses, result);
+        List<Course> result = courseService.findAll();
+        assertEquals(2, result.size());
+        verify(courseRepository, times(1)).findAll();
     }
 
     @Test
-    void getCourseById_WithValidId_ShouldReturnCourse() {
-        // Arrange
-        Course course = testCourses.get(0);
+    public void testGetCourseById() {
+        Course course = new Course();
         when(courseRepository.findById(1)).thenReturn(Optional.of(course));
 
-        // Act
-        Course result = courseService.getCourseById(1);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(course, result);
+        Optional<Course> result = courseService.findById(1);
+        assertTrue(result.isPresent());
+        verify(courseRepository, times(1)).findById(1);
     }
 
     @Test
-    void getRecommendedCourses_WithValidTokenAndFavoriteCourses_ShouldReturnRecommendedCourses() {
-        // Arrange
-        when(jwtService.verifyToken(validToken)).thenReturn(true);
-        when(jwtService.getUserDetails(validToken)).thenReturn(testUser);
-        when(userService.findByUsername(testUser.getUsername())).thenReturn(testUser);
+    public void testGetAllSuccess() {
+        Course course1 = new Course();
+        Course course2 = new Course();
+        List<Course> courses = Arrays.asList(course1, course2);
+        when(courseRepository.findAll()).thenReturn(courses);
 
-        Course favoriteCourse = new Course(
-                "Favorite Course",
-                "Description",
-                "link",
-                Duration.ofHours(2),
-                2
-        );
-
-        testUser.setFavouriteCourses(Collections.singletonList(favoriteCourse));
-
-        List<Course> recommendedCourses = Arrays.asList(
-                new Course(
-                        "Recommended 1",
-                        "Desc 1",
-                        "link1",
-                        Duration.ofHours(1),
-                        2
-                ),
-                new Course(
-                        "Recommended 2",
-                        "Desc 2",
-                        "link2",
-                        Duration.ofHours(2),
-                        3
-                )
-        );
-
-        when(
-                courseRepository.findCoursesByDifficultyRange(anyInt(), anyInt())
-        ).thenReturn(recommendedCourses);
-
-        // Act
-        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(validToken);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(200, result.getStatus());
-        assertNotNull(result.getData());
-        assertEquals(recommendedCourses.size(), result.getData().size());
+        ServiceResult<List<Course>, CourseGetAllError> result = courseService.getAll();
+        assertTrue(result.isSuccess());
+        assertEquals(2, result.getData().size());
     }
 
     @Test
-    void getRecommendedCourses_WithInvalidToken_ShouldReturnError() {
-        // Arrange
-        String invalidToken = "invalid.token";
-        when(jwtService.verifyToken(invalidToken)).thenReturn(false);
+    public void testGetAllFailure() {
+        when(courseRepository.findAll()).thenReturn(List.of());
 
-        // Act
-        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(invalidToken);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(400, result.getStatus());
-        assertEquals("Invalid access token", result.getMessage());
-        assertNull(result.getData());
+        ServiceResult<List<Course>, CourseGetAllError> result = courseService.getAll();
+        assertFalse(result.isSuccess());
+        assertEquals(CourseGetAllError.GET_ALL_COURSES_FAILED, result.getError());
     }
 
     @Test
-    void getRecommendedCourses_WithNoFavoriteCourses_ShouldReturnError() {
-        // Arrange
-        when(jwtService.verifyToken(validToken)).thenReturn(true);
-        when(jwtService.getUserDetails(validToken)).thenReturn(testUser);
-        when(userService.findByUsername(testUser.getUsername())).thenReturn(testUser);
-        testUser.setFavouriteCourses(Collections.emptyList());
+    public void testGetByIdSuccess() {
+        Course course = new Course();
+        when(courseRepository.findById(1)).thenReturn(Optional.of(course));
 
-        // Act
-        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(validToken);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(400, result.getStatus());
-        assertEquals("No favorite courses found", result.getMessage());
-        assertNull(result.getData());
+        ServiceResult<Course, CourseGetByIdError> result = courseService.getById(1);
+        assertTrue(result.isSuccess());
+        assertEquals(course, result.getData());
     }
 
     @Test
-    void getRecommendedCourses_WithNoRecommendedCourses_ShouldReturnError() {
-        // Arrange
-        when(jwtService.verifyToken(validToken)).thenReturn(true);
-        when(jwtService.getUserDetails(validToken)).thenReturn(testUser);
-        when(userService.findByUsername(testUser.getUsername())).thenReturn(testUser);
+    public void testGetByIdFailure() {
+        when(courseRepository.findById(1)).thenReturn(Optional.empty());
 
-        Course favoriteCourse = new Course(
-                "Favorite Course",
-                "Description",
-                "link",
-                Duration.ofHours(2),
-                2
-        );
+        ServiceResult<Course, CourseGetByIdError> result = courseService.getById(1);
+        assertFalse(result.isSuccess());
+        assertEquals(CourseGetByIdError.COURSE_NOT_FOUND, result.getError());
+    }
 
-        testUser.setFavouriteCourses(Collections.singletonList(favoriteCourse));
+    @Test
+    public void testGetByIdNullId() {
+        ServiceResult<Course, CourseGetByIdError> result = courseService.getById(null);
+        assertFalse(result.isSuccess());
+        assertEquals(CourseGetByIdError.GET_COURSE_BY_ID_FAILED, result.getError());
+    }
 
-        when(
-                courseRepository.findCoursesByDifficultyRange(anyInt(), anyInt())
-        ).thenReturn(Collections.emptyList());
+    @Test
+    public void testGetRecommendedCourses_invalidAccessToken() {
+        String accessToken = "invalidToken";
+        when(jwt.getPersonFromToken(accessToken)).thenReturn(Optional.empty());
 
-        // Act
-        ApiResponse<List<Course>> result = courseService.getRecommendedCourses(validToken);
+        ServiceResult<List<Course>, CourseGetRecommendError> result = courseService.getRecommendedCourses(accessToken);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(400, result.getStatus());
-        assertEquals("No courses found", result.getMessage());
-        assertNull(result.getData());
+        assertFalse(result.isSuccess());
+        assertEquals(CourseGetRecommendError.INVALID_ACCESS_TOKEN, result.getError());
+    }
+
+    @Test
+    public void testGetRecommendedCourses_noFavoriteCourses() {
+        String accessToken = "validToken";
+        Person person = new Person();
+        person.setFavoriteCourses(List.of());
+        when(jwt.getPersonFromToken(accessToken)).thenReturn(Optional.of(person));
+
+        ServiceResult<List<Course>, CourseGetRecommendError> result = courseService.getRecommendedCourses(accessToken);
+
+        assertTrue(result.isSuccess());
+        assertTrue(result.getData().isEmpty());
+    }
+
+    @Test
+    public void testGetRecommendedCourses_noRecommendedCourses() {
+        String accessToken = "validToken";
+        Person person = new Person();
+        Course favoriteCourse = new Course();
+        favoriteCourse.setDifficulty(3);
+        person.setFavoriteCourses(List.of(favoriteCourse));
+        when(jwt.getPersonFromToken(accessToken)).thenReturn(Optional.of(person));
+        when(courseRepository.findAll()).thenReturn(List.of(favoriteCourse));
+
+        ServiceResult<List<Course>, CourseGetRecommendError> result = courseService.getRecommendedCourses(accessToken);
+
+        assertTrue(result.isSuccess());
+        assertTrue(result.getData().isEmpty());
+    }
+
+    @Test
+    public void testGetRecommendedCourses_success() {
+        String accessToken = "validToken";
+        Person person = new Person();
+        Course favoriteCourse = new Course();
+        favoriteCourse.setDifficulty(3);
+        person.setFavoriteCourses(List.of(favoriteCourse));
+        Course recommendedCourse = new Course();
+        recommendedCourse.setDifficulty(3);
+        recommendedCourse.setTitle("Recommended Course");
+        when(jwt.getPersonFromToken(accessToken)).thenReturn(Optional.of(person));
+        when(courseRepository.findAll()).thenReturn(List.of(favoriteCourse, recommendedCourse));
+
+        ServiceResult<List<Course>, CourseGetRecommendError> result = courseService.getRecommendedCourses(accessToken);
+
+        assertTrue(result.isSuccess());
+        assertFalse(result.getData().isEmpty());
+        assertEquals(1, result.getData().size());
+        assertEquals(recommendedCourse, result.getData().getFirst());
     }
 }

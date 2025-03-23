@@ -1,34 +1,27 @@
-"use client";
+"use client"
 
-import { useApi } from "@/hooks/useApi";
 import { useEffect, useState } from "react";
-import { LoginRequest } from "@/types/apiCall";
-import Logo from "@/components/Logo";
+import { useLogin } from "@/queries/auth/useLogin";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/providers/AuthProvider";
+import Logo from "@/component/Logo";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { setIsAuthenticated } = useAuth();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const mutation = useLogin();
 
-    const { isLoading, isError, message, fetchData } = useApi<
-        LoginRequest,
-        LoginRequest
-    >("auth/login", { method: "POST", data: { username, password } });
-
-    const isLoginSucessful = message === "Login successful";
-    const isInvalidCredentials =
-        message === "Invalid credentials" || message === "User not found";
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        mutation.mutate({ username, password });
+    };
 
     useEffect(() => {
-        if (isLoginSucessful) {
-            setIsAuthenticated(true);
+        if (mutation.isSuccess) {
             router.push("/");
         }
-    }, [isLoginSucessful, router, setIsAuthenticated]);
+    }, [mutation.isSuccess, router]);
 
     return (
         <div className="flex h-screen items-center justify-center">
@@ -37,10 +30,10 @@ export default function LoginPage() {
                 <h1 className="text-center font-bold md:text-2xl">Login</h1>
 
                 <input
-                    type="text"
-                    placeholder="Username"
+                    type="email"
+                    placeholder="Email"
                     className={`rounded-lg border border-gray-300 px-2 py-1 md:py-2 ${
-                        isInvalidCredentials && "border-red-500"
+                        mutation.isError && "border-red-500"
                     }`}
                     onChange={(e) => setUsername(e.target.value)}
                 />
@@ -49,27 +42,27 @@ export default function LoginPage() {
                     type="password"
                     placeholder="Password"
                     className={`rounded-lg border border-gray-300 px-2 py-1 md:py-2 ${
-                        isInvalidCredentials && "border-red-500"
+                        mutation.isError && "border-red-500"
                     }`}
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
                 <button
                     className="rounded-lg bg-blue-500 p-2 text-white disabled:bg-blue-300"
-                    onClick={() => fetchData()}
-                    disabled={isLoading}
+                    onClick={handleSubmit}
+                    disabled={mutation.isPending}
                 >
-                    {isLoading ? "Logging in..." : "Confirm"}
+                    {mutation.isPending ? "Logging in..." : "Login"}
                 </button>
 
-                {isError && message && (
-                    <div className="mb-2 text-sm text-red-500">{message}</div>
+                {mutation.isError && (
+                    <div className="mb-2 text-sm text-red-500">{mutation.error.response?.data.message}</div>
                 )}
 
                 <Link href="/auth/signup" className="text-center text-blue-500">
-                    Don&apos;t have an account? Sign up here!
+                    Don't have an account? Signup here!
                 </Link>
             </div>
         </div>
     );
-}
+};

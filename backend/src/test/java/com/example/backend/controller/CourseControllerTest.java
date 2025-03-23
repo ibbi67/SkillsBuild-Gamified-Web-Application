@@ -1,206 +1,160 @@
 package com.example.backend.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.example.backend.domain.ApiResponse;
-import com.example.backend.domain.Course;
-import com.example.backend.domain.User;
-import com.example.backend.service.CourseService;
-import com.example.backend.service.JwtService;
+import com.example.backend.course.CourseDTO;
+import com.example.backend.person.PersonDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.List;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @SpringBootTest
 @AutoConfigureMockMvc
-@ExtendWith(MockitoExtension.class)
-@Import({ CourseService.class, JwtService.class })
-class CourseControllerTest {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+public class CourseControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
-    private CourseService courseService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private List<Course> testCourses;
+    private Cookie[] cookies;
 
     @BeforeEach
-    void setUp() {
-        // Create courses with IDs
-        Course course1 = new Course(
-            "Course 1",
-            "Description 1",
-            "link1",
-            Duration.ofHours(1),
-            1
-        );
-        course1.setId(1);
-        Course course2 = new Course(
-            "Course 2",
-            "Description 2",
-            "link2",
-            Duration.ofHours(2),
-            2
-        );
-        course2.setId(2);
-
-        testCourses = Arrays.asList(course1, course2);
-
-        User testUser = new User();
-        testUser.setId(1);
-        testUser.setUsername("testuser");
+    void setUp() throws Exception {
+        // Perform signup to get cookies
+        PersonDTO personDTO = new PersonDTO("testuser", "password");
+        MvcResult signupResult = mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
+                .andExpect(status().isOk())
+                .andReturn();
+        cookies = signupResult.getResponse().getCookies();
     }
 
     @Test
-    void getAllCourses_ShouldReturnAllCourses() throws Exception {
-        // Arrange
-        when(courseService.getAllCourses()).thenReturn(testCourses);
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(get("/courses").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        // Assert
-        Course[] returnedCourses = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
-            Course[].class
-        );
-
-        assertEquals(testCourses.size(), returnedCourses.length);
-        assertEquals(
-            testCourses.get(0).getTitle(),
-            returnedCourses[0].getTitle()
-        );
-        assertEquals(
-            testCourses.get(1).getTitle(),
-            returnedCourses[1].getTitle()
-        );
+    public void testCreateCourse() throws Exception {
+        CourseDTO courseDTO = new CourseDTO("Course 1", "Description 1", "http://link1.com", 10, 1);
+        mockMvc.perform(post("/courses")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.title").value("Course 1"));
     }
 
     @Test
-    void getCourseById_WithValidId_ShouldReturnCourse() throws Exception {
-        // Arrange
-        Course course = testCourses.getFirst();
-        when(courseService.getCourseById(1)).thenReturn(course);
+    public void testGetCourseById() throws Exception {
+        // Create a course first
+        CourseDTO courseDTO = new CourseDTO("Course 1", "Description 1", "http://link1.com", 10, 1);
+        MvcResult result = mockMvc.perform(post("/courses")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        int courseId = objectMapper.readTree(result.getResponse().getContentAsString()).get("data").get("id").asInt();
 
-        // Act
-        MvcResult result = mockMvc
-            .perform(get("/courses/1").contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andReturn();
-
-        // Assert
-        Course returnedCourse = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
-            Course.class
-        );
-
-        assertEquals(course.getTitle(), returnedCourse.getTitle());
-        assertEquals(course.getDescription(), returnedCourse.getDescription());
+        // Get the course by ID
+        mockMvc.perform(get("/courses/" + courseId)
+                        .cookie(cookies))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("Course 1"));
     }
 
     @Test
-    void getRecommendedCourses_WithValidToken_ShouldReturnRecommendedCourses()
-        throws Exception {
-        // Arrange
-        String validToken = "valid.jwt.token";
-        ApiResponse<List<Course>> apiResponse = ApiResponse.success(
-            "Courses found",
-            testCourses
-        );
-        when(courseService.getRecommendedCourses(validToken)).thenReturn(
-            apiResponse
-        );
+    public void testGetAllCourses() throws Exception {
+        // Create a course first
+        CourseDTO courseDTO = new CourseDTO("Course 1", "Description 1", "http://link1.com", 10, 1);
+        mockMvc.perform(post("/courses")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isCreated());
 
-        // Act
-        MvcResult result = mockMvc
-            .perform(
-                get("/courses/recommend")
-                    .cookie(
-                        new jakarta.servlet.http.Cookie(
-                            "access_token",
-                            validToken
-                        )
-                    )
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().isOk())
-            .andReturn();
+        // Get all courses
+        MvcResult result = mockMvc.perform(get("/courses")
+                        .cookie(cookies))
+                .andExpect(status().isOk())
+                .andReturn();
 
-        // Assert
-        List<Course> returnedCourses = Arrays.asList(
-            objectMapper.readValue(
-                result.getResponse().getContentAsString(),
-                Course[].class
-            )
-        );
+        String responseBody = result.getResponse().getContentAsString();
+        System.out.println("Response Body: " + responseBody);
 
-        assertEquals(testCourses.size(), returnedCourses.size());
-        assertEquals(
-            testCourses.getFirst().getTitle(),
-            returnedCourses.getFirst().getTitle()
-        );
+        mockMvc.perform(get("/courses")
+                        .cookie(cookies))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].title").value("Course 1"));
     }
 
     @Test
-    void getRecommendedCourses_WithInvalidToken_ShouldReturnError()
-        throws Exception {
-        // Arrange
-        String invalidToken = "invalid.token";
-        ApiResponse<List<Course>> apiResponse = ApiResponse.failed(
-            HttpStatus.BAD_REQUEST.value(),
-            "Invalid access token"
-        );
-        when(courseService.getRecommendedCourses(invalidToken)).thenReturn(
-            apiResponse
-        );
+    public void testGetRecommendedCourses() throws Exception {
+        // Create a course first
+        CourseDTO courseDTO = new CourseDTO("Course 1", "Description 1", "http://link1.com", 10, 1);
+        CourseDTO courseDTO2 = new CourseDTO("Course 2", "Description 2", "http://link2.com", 20, 1);
+        mockMvc.perform(post("/courses")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isCreated());
 
-        // Act
-        MvcResult result = mockMvc
-            .perform(
-                get("/courses/recommend")
-                    .cookie(
-                        new jakarta.servlet.http.Cookie(
-                            "access_token",
-                            invalidToken
-                        )
-                    )
-                    .contentType(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().isBadRequest())
-            .andReturn();
+        mockMvc.perform(post("/courses")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO2)))
+                .andExpect(status().isCreated());
 
-        // Assert
-        ApiResponse<?> returnedResponse = objectMapper.readValue(
-            result.getResponse().getContentAsString(),
-            ApiResponse.class
-        );
+        mockMvc.perform(post("/favourites/{id}", 1)
+                        .cookie(cookies))
+                .andExpect(status().isOk());
 
-        assertEquals(
-            HttpStatus.BAD_REQUEST.value(),
-            returnedResponse.getStatus()
-        );
-        assertEquals("Invalid access token", returnedResponse.getMessage());
+        // Get recommended courses
+        mockMvc.perform(get("/courses/recommend")
+                        .cookie(cookies))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].title").value("Course 2"));
+    }
+
+    @Test
+    public void testGetCourseById_NotFound() throws Exception {
+        // Simulate course not found
+        mockMvc.perform(get("/courses/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Course not found"));
+    }
+
+    @Test
+    public void testCreateCourse_Failure() throws Exception {
+        CourseDTO courseDTO = new CourseDTO("Course 1", "Description 1", "http://link1.com", 10, 1);
+        mockMvc.perform(post("/courses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/courses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Failed to create course"));
+    }
+
+    @Test
+    public void testGetRecommendedCourses_InvalidAccessToken() throws Exception {
+        mockMvc.perform(get("/courses/recommend")
+                        .cookie(new Cookie("accessToken", "invalidToken")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Invalid access token"));
     }
 }

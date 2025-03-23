@@ -1,187 +1,175 @@
 package com.example.backend.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import com.example.backend.dao.LoginDao;
-import com.example.backend.dao.SignupDao;
-import com.example.backend.domain.ApiResponse;
-import com.example.backend.domain.User;
+import com.example.backend.auth.csr.AuthService;
+import com.example.backend.auth.error.*;
+import com.example.backend.person.Person;
+import com.example.backend.person.PersonDTO;
+import com.example.backend.person.csr.PersonService;
+import com.example.backend.util.JWT;
+import com.example.backend.util.ServiceResult;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+import java.time.LocalDate;
+import java.util.Optional;
 
-    @Mock
-    private UserService userService;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-    @Mock
-    private JwtService jwtService;
+@SpringBootTest
+public class AuthServiceTest {
 
-    @Mock
+    private AuthService authService;
+    private PersonService personService;
+    private JWT jwt;
     private HttpServletResponse response;
 
-    @Mock
-    private StreaksService streaksService;
-
-    @InjectMocks
-    private AuthService authService;
-
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    private SignupDao signupDao;
-    private LoginDao loginDao;
-    private User user;
-
     @BeforeEach
-    void setUp() {
-        signupDao = new SignupDao("testuser", "testpassword");
-        loginDao = new LoginDao("testuser", "testpassword");
-        user = new User();
-        user.setUsername("testuser");
-        user.setPassword(passwordEncoder.encode("testpassword"));
+    public void setUp() {
+        personService = mock(PersonService.class);
+        jwt = mock(JWT.class);
+        response = mock(HttpServletResponse.class);
+        authService = new AuthService(personService, jwt);
     }
 
     @Test
-    void signup_WithNewUser_ShouldReturnSuccess() {
-        // Arrange
-        when(userService.save(any(User.class))).thenReturn(user);
-        when(jwtService.generateRefreshTokenCookie(anyString())).thenReturn(null);
-        when(jwtService.generateAccessTokenCookie(anyString())).thenReturn(null);
+    public void testSignup() {
+        PersonDTO personDTO = new PersonDTO("testUser", "testPass");
 
-        // Act
-        ApiResponse<Void> response = authService.signup(signupDao, this.response);
+        when(personService.findByUsername("testUser")).thenReturn(Optional.empty());
+        when(personService.saveNewPerson(personDTO)).thenReturn(Optional.of(new Person()));
 
-        // Assert
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals("User created successfully", response.getMessage());
-        verify(userService, times(1)).save(any(User.class));
-        verify(jwtService, times(1)).generateRefreshTokenCookie(anyString());
-        verify(jwtService, times(1)).generateAccessTokenCookie(anyString());
-        verify(streaksService, times(1)).checkAndUpdateStreak(any(User.class));
+        ServiceResult<Void, AuthSignupError> result = authService.signup(personDTO, response);
+        assertTrue(result.isSuccess());
     }
 
     @Test
-    void signup_WithExistingUser_ShouldReturnFailure() {
-        // Arrange
-        when(userService.save(any(User.class))).thenReturn(null);
+    public void testLogin() {
+        PersonDTO personDTO = new PersonDTO("testUser", "testPass");
 
-        // Act
-        ApiResponse<Void> response = authService.signup(signupDao, this.response);
+        Person person = new Person();
+        person.setUsername("testUser");
 
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("User already exists", response.getMessage());
-        verify(userService, times(1)).save(any(User.class));
-        verify(streaksService, times(0)).checkAndUpdateStreak(any(User.class));
+        when(personService.verifyPassword(personDTO)).thenReturn(Optional.of(person));
+
+        ServiceResult<Void, AuthLoginError> result = authService.login(personDTO, response);
+        assertTrue(result.isSuccess());
+        verify(jwt).generateRefreshTokenCookie(response, "testUser");
+        verify(jwt).generateAccessTokenCookie(response, "testUser");
     }
 
     @Test
-    void login_WithValidCredentials_ShouldReturnSuccess() {
-        // Arrange
-        when(userService.findByUsername(anyString())).thenReturn(user);
-        when(jwtService.generateRefreshTokenCookie(anyString())).thenReturn(null);
-        when(jwtService.generateAccessTokenCookie(anyString())).thenReturn(null);
+    public void testRefresh() {
+        Person person = new Person();
+        person.setUsername("testUser");
 
-        // Act
-        ApiResponse<Void> response = authService.login(loginDao, this.response);
+        when(jwt.getPersonFromToken("validToken")).thenReturn(Optional.of(person));
 
-        // Assert
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals("Login successful", response.getMessage());
-        verify(userService, times(1)).findByUsername(anyString());
-        verify(jwtService, times(1)).generateRefreshTokenCookie(anyString());
-        verify(jwtService, times(1)).generateAccessTokenCookie(anyString());
-        verify(streaksService, times(1)).checkAndUpdateStreak(any(User.class));
+        ServiceResult<Void, AuthRefreshError> result = authService.refresh("validToken", response);
+        assertTrue(result.isSuccess());
+        verify(jwt).generateAccessTokenCookie(response, "testUser");
+        verify(jwt).generateRefreshTokenCookie(response, "testUser");
     }
 
     @Test
-    void login_WithInvalidCredentials_ShouldReturnFailure() {
-        // Arrange
-        when(userService.findByUsername(anyString())).thenReturn(user);
+    public void testLogout() {
+        Person person = new Person();
+        person.setUsername("testUser");
 
-        // Act
-        ApiResponse<Void> response = authService.login(new LoginDao("testuser", "wrongpassword"), this.response);
+        when(jwt.getPersonFromToken("validToken")).thenReturn(Optional.of(person));
 
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("Invalid credentials", response.getMessage());
-        verify(userService, times(1)).findByUsername(anyString());
-        verify(streaksService, times(0)).checkAndUpdateStreak(any(User.class));
+        ServiceResult<Void, AuthLogoutError> result = authService.logout("validToken", response);
+        assertTrue(result.isSuccess());
+        verify(jwt).clearCookies(response);
     }
 
     @Test
-    void login_WithNonExistentUser_ShouldReturnFailure() {
-        // Arrange
-        when(userService.findByUsername(anyString())).thenReturn(null);
+    public void testMe() {
+        Person person = new Person();
+        person.setUsername("testUser");
 
-        // Act
-        ApiResponse<Void> response = authService.login(loginDao, this.response);
+        when(jwt.getPersonFromToken("validToken")).thenReturn(Optional.of(person));
 
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("Invalid credentials", response.getMessage());
-        verify(userService, times(1)).findByUsername(anyString());
-        verify(streaksService, times(0)).checkAndUpdateStreak(any(User.class));
+        ServiceResult<Person, AuthMeError> result = authService.me("validToken");
+        assertTrue(result.isSuccess());
+        assertEquals("testUser", result.getData().getUsername());
     }
 
     @Test
-    void refresh_WithValidToken_ShouldReturnSuccess() {
-        // Arrange
-        when(jwtService.verifyToken(anyString())).thenReturn(true);
-        when(jwtService.getUserDetails(anyString())).thenReturn(user);
-        when(userService.findByUsername(anyString())).thenReturn(user);
-        when(jwtService.generateAccessTokenCookie(anyString())).thenReturn(null);
-
-        // Act
-        ApiResponse<Void> response = authService.refresh("valid_refresh_token", this.response);
-
-        // Assert
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals("Token refreshed", response.getMessage());
-        verify(jwtService, times(1)).verifyToken(anyString());
-        verify(jwtService, times(1)).getUserDetails(anyString());
-        verify(userService, times(1)).findByUsername(anyString());
-        verify(jwtService, times(1)).generateAccessTokenCookie(anyString());
-        verify(streaksService, times(1)).checkAndUpdateStreak(any(User.class));
+    public void testUpdateStreakNewUser() {
+        Person person = new Person("newUser", "password");
+        authService.updateStreak(person);
+        assertEquals(1, person.getStreak());
+        assertEquals(LocalDate.now(), person.getLastLoginDate());
     }
 
     @Test
-    void refresh_WithInvalidToken_ShouldReturnFailure() {
-        // Arrange
-        when(jwtService.verifyToken(anyString())).thenReturn(false);
-
-        // Act
-        ApiResponse<Void> response = authService.refresh("invalid_refresh_token", this.response);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("Invalid refresh token", response.getMessage());
-        verify(jwtService, times(1)).verifyToken(anyString());
-        verify(streaksService, times(0)).checkAndUpdateStreak(any(User.class));
+    public void testUpdateStreakConsecutiveDays() {
+        Person person = new Person("consecutiveUser", "password", 2, LocalDate.now().minusDays(1));
+        authService.updateStreak(person);
+        assertEquals(3, person.getStreak());
+        assertEquals(LocalDate.now(), person.getLastLoginDate());
     }
 
     @Test
-    void logout_ShouldReturnSuccess() {
-        // Arrange
-        when(jwtService.generateLogoutAccessCookie()).thenReturn(null);
-        when(jwtService.generateLogoutRefreshCookie()).thenReturn(null);
+    public void testUpdateStreakNonConsecutiveDays() {
+        Person person = new Person("nonConsecutiveUser", "password", 2, LocalDate.now().minusDays(3));
+        authService.updateStreak(person);
+        assertEquals(1, person.getStreak());
+        assertEquals(LocalDate.now(), person.getLastLoginDate());
+    }
 
-        // Act
-        ApiResponse<Void> response = authService.logout(this.response);
+    @Test
+    public void testUpdateStreakSameDay() {
+        Person person = new Person("sameDayUser", "password", 2, LocalDate.now());
+        authService.updateStreak(person);
+        assertEquals(2, person.getStreak());
+        assertEquals(LocalDate.now(), person.getLastLoginDate());
+    }
 
-        // Assert
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals("Logout successful", response.getMessage());
-        verify(jwtService, times(1)).generateLogoutAccessCookie();
-        verify(jwtService, times(1)).generateLogoutRefreshCookie();
+    @Test
+    public void testUpdateStreakFirstLogin() {
+        Person person = new Person("firstLoginUser", "password");
+        authService.updateStreak(person);
+        assertEquals(1, person.getStreak());
+        assertEquals(LocalDate.now(), person.getLastLoginDate());
+    }
+
+    @Test
+    public void testUpdateStreakMultipleDaysMissed() {
+        Person person = new Person("missedDaysUser", "password", 3, LocalDate.now().minusDays(5));
+        authService.updateStreak(person);
+        assertEquals(1, person.getStreak());
+        assertEquals(LocalDate.now(), person.getLastLoginDate());
+    }
+
+    @Test
+    public void testUpdateStreakMultipleLoginsSameDay() {
+        Person person = new Person("sameDayUser", "password", 2, LocalDate.now());
+        authService.updateStreak(person);
+        assertEquals(2, person.getStreak());
+        assertEquals(LocalDate.now(), person.getLastLoginDate());
+    }
+
+    @Test
+    public void testUpdateStreakFailed() {
+        Person person = new Person("testUser", "password", 2, LocalDate.now().minusDays(1));
+        when(personService.save(person)).thenReturn(Optional.empty());
+
+        ServiceResult<Void, AuthUpdateStreakError> result = authService.updateStreak(person);
+        assertFalse(result.isSuccess());
+        assertEquals(AuthUpdateStreakError.STREAK_UPDATE_FAILED.getMessage(), result.getError().getMessage());
+    }
+
+    @Test
+    public void testUpdateStreakSuccess() {
+        Person person = new Person("testUser", "password", 2, LocalDate.now().minusDays(1));
+        when(personService.save(person)).thenReturn(Optional.of(person));
+
+        ServiceResult<Void, AuthUpdateStreakError> result = authService.updateStreak(person);
+        assertTrue(result.isSuccess());
+        assertNull(result.getError());
     }
 }

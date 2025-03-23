@@ -1,528 +1,279 @@
 package com.example.backend.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-import com.example.backend.dao.LoginDao;
-import com.example.backend.dao.SignupDao;
-import com.example.backend.domain.ApiResponse;
-import com.example.backend.domain.User;
-import com.example.backend.repository.UserRepository;
-import com.example.backend.service.JwtService;
+import com.example.backend.person.PersonDTO;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
-import java.time.LocalDateTime;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@SpringBootTest
 @AutoConfigureMockMvc
-@WithMockUser
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class AuthControllerTest {
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private UserRepository userRepository;
+    private ObjectMapper objectMapper;
 
-    @Autowired
-    private JwtService jwtService;
-
-    private User testUser = new User();
-
-    @BeforeEach
-    public void setup() {
-        testUser.setUsername("testuser" + LocalDateTime.now().hashCode());
-        testUser.setPassword("testpassword");
+    @Test
+    public void testSignup() throws Exception {
+        PersonDTO personDTO = new PersonDTO("testUser", "testPass");
+        String content = objectMapper.writeValueAsString(personDTO);
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Signup Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(200, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Success"));
     }
 
     @Test
-    public void Signup_WithNewUsername_ShouldPass() throws Exception {
-        // Arrange
-        String jsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
+    public void testLogin() throws Exception {
+        // Perform signup
+        PersonDTO personDTO = new PersonDTO("testUser", "testPass");
+        String signupContent = objectMapper.writeValueAsString(personDTO);
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signupContent))
+                .andReturn();
 
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
-            .andReturn();
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals("User created successfully", response.getMessage());
-
-        User user = userRepository.findByUsername(testUser.getUsername());
-        assertNotNull(user);
-        assertEquals(testUser.getUsername(), user.getUsername());
+        // Perform login
+        String loginContent = objectMapper.writeValueAsString(personDTO);
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginContent))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Login Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(200, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Success"));
     }
 
     @Test
-    public void Signup_WithDuplicateUsername_ShouldFail() throws Exception {
-        // Arrange
-        String jsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(jsonContent)).andReturn();
+    public void testRefresh() throws Exception {
+        // Perform signup
+        PersonDTO personDTO = new PersonDTO("testUser", "testPass");
+        String signupContent = objectMapper.writeValueAsString(personDTO);
+        MvcResult signupResult = mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signupContent))
+                .andReturn();
+        Cookie[] cookies = signupResult.getResponse().getCookies();
 
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
-            .andReturn();
+        // Perform refresh with signup token
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/refresh")
+                        .cookie(cookies))
+                .andReturn();
 
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("User already exists", response.getMessage());
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Refresh Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(200, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Success"));
     }
 
     @Test
-    public void Signup_WithEmptyUsername_ShouldFail() throws Exception {
-        // Arrange
-        String jsonContent = objectMapper.writeValueAsString(new SignupDao("", testUser.getPassword()));
+    public void testLogout() throws Exception {
+        // Perform signup
+        PersonDTO personDTO = new PersonDTO("testUser", "testPass");
+        String signupContent = objectMapper.writeValueAsString(personDTO);
+        MvcResult signupResult = mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signupContent))
+                .andReturn();
+        Cookie[] cookies = signupResult.getResponse().getCookies();
 
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
-            .andReturn();
+        // Perform logout with signup token
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout")
+                        .cookie(cookies))
+                .andReturn();
 
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertTrue(response.getMessage().contains("Username cannot be empty"));
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Logout Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(200, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Success"));
     }
 
     @Test
-    public void Signup_WithEmptyPassword_ShouldFail() throws Exception {
-        // Arrange
-        String jsonContent = objectMapper.writeValueAsString(new SignupDao(testUser.getUsername(), ""));
+    public void testMe() throws Exception {
+        // Perform signup
+        PersonDTO personDTO = new PersonDTO("testUser", "testPass");
+        String signupContent = objectMapper.writeValueAsString(personDTO);
+        MvcResult signupResult = mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(signupContent))
+                .andReturn();
+        Cookie[] cookies = signupResult.getResponse().getCookies();
 
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(jsonContent))
-            .andReturn();
+        // Perform me with signup token
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/auth/me")
+                        .cookie(cookies))
+                .andReturn();
 
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertTrue(response.getMessage().contains("Password cannot be empty"));
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Me Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(200, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("data").get("username").asText().contains("testUser"));
     }
 
     @Test
-    public void Login_WithCorrectCredentials_ShouldPass() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Assert
-        int httpStatus = result.getResponse().getStatus();
-        String responseBody = result.getResponse().getContentAsString();
-        ApiResponse<Void> loginResponse = ApiResponse.deserialise(responseBody, Void.class);
-
-        Cookie accessCookie = result.getResponse().getCookie("access_token");
-
-        assertEquals(HttpStatus.OK.value(), httpStatus);
-        assertEquals("Login successful", loginResponse.getMessage());
-        assertNotNull(accessCookie);
-        assertFalse(accessCookie.getValue().isEmpty());
-
-        assertTrue(jwtService.verifyToken(accessCookie.getValue()));
-
-        User extractedUser = jwtService.getUserDetails(accessCookie.getValue());
-        assertNotNull(extractedUser);
-        assertEquals(testUser.getUsername(), extractedUser.getUsername());
+    public void testSignupUsernameNullOrEmpty() throws Exception {
+        PersonDTO personDTO = new PersonDTO(null, "testPass");
+        String content = objectMapper.writeValueAsString(personDTO);
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Signup Username Null Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(400, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Username cannot be null or empty"));
     }
 
     @Test
-    public void Login_WithIncorrectPassword_ShouldFail() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), "wrongpassword")
-        );
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("Invalid credentials", response.getMessage());
+    public void testSignupPasswordNullOrEmpty() throws Exception {
+        PersonDTO personDTO = new PersonDTO("testUser", null);
+        String content = objectMapper.writeValueAsString(personDTO);
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Signup Password Null Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(400, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Password cannot be null or empty"));
     }
 
     @Test
-    public void Login_WithNonExistentUser_ShouldFail() throws Exception {
-        // Arrange
-        String loginJsonContent = objectMapper.writeValueAsString(new LoginDao("nonexistentuser", "password"));
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("Invalid credentials", response.getMessage());
+    public void testSignupUsernameAlreadyExists() throws Exception {
+        PersonDTO personDTO = new PersonDTO("testUser", "testPass");
+        String content = objectMapper.writeValueAsString(personDTO);
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn();
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Signup Username Exists Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(400, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Username already exists"));
     }
 
     @Test
-    public void Login_WithEmptyUsername_ShouldFail() throws Exception {
-        // Arrange
-        String loginJsonContent = objectMapper.writeValueAsString(new LoginDao("", testUser.getPassword()));
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertTrue(response.getMessage().contains("Username cannot be empty"));
+    public void testLoginUsernameNullOrEmpty() throws Exception {
+        PersonDTO personDTO = new PersonDTO(null, "testPass");
+        String content = objectMapper.writeValueAsString(personDTO);
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Login Username Null Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(400, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Username cannot be null or empty"));
     }
 
     @Test
-    public void Login_WithEmptyPassword_ShouldFail() throws Exception {
-        // Arrange
-        String loginJsonContent = objectMapper.writeValueAsString(new LoginDao(testUser.getUsername(), ""));
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertTrue(response.getMessage().contains("Password cannot be empty"));
+    public void testLoginPasswordNullOrEmpty() throws Exception {
+        PersonDTO personDTO = new PersonDTO("testUser", null);
+        String content = objectMapper.writeValueAsString(personDTO);
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Login Password Null Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(400, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Password cannot be null or empty"));
     }
 
     @Test
-    public void Me_WithValidToken_ShouldPass() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        MvcResult loginResult = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        Cookie accessCookie = loginResult.getResponse().getCookie("access_token");
-        assertNotNull(accessCookie);
-        assertTrue(jwtService.verifyToken(accessCookie.getValue()));
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(get("/auth/me").contentType(MediaType.APPLICATION_JSON).cookie(accessCookie))
-            .andReturn();
-
-        // Assert
-        ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertNotNull(response.getData());
-        assertEquals(testUser.getUsername(), response.getData().getUsername());
+    public void testLoginInvalidUsernameOrPassword() throws Exception {
+        PersonDTO personDTO = new PersonDTO("invalidUser", "invalidPass");
+        String content = objectMapper.writeValueAsString(personDTO);
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(content))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Login Invalid Credentials Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(401, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Invalid username or password"));
     }
 
     @Test
-    public void Me_WithInvalidToken_ShouldFail() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        MvcResult loginResult = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        Cookie accessCookie = loginResult.getResponse().getCookie("access_token");
-        assertNotNull(accessCookie);
-        String invalidToken = accessCookie.getValue() + "someInvalidSuffix";
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(
-                get("/auth/me").contentType(MediaType.APPLICATION_JSON).cookie(new Cookie("access_token", invalidToken))
-            )
-            .andReturn();
-
-        // Assert
-        ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-        assertNull(response.getData());
+    public void testRefreshInvalidToken() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/refresh")
+                        .cookie(new Cookie("refreshToken", "invalidToken")))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Refresh Invalid Token Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(401, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Invalid refresh token"));
     }
 
     @Test
-    public void Me_WithEmptyToken_ShouldFail() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(get("/auth/me").contentType(MediaType.APPLICATION_JSON).cookie(new Cookie("access_token", " ")))
-            .andReturn();
-
-        // Assert
-        ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-        assertNull(response.getData());
+    public void testLogoutInvalidToken() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout")
+                        .cookie(new Cookie("refreshToken", "invalidToken")))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Logout Invalid Token Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(401, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Invalid refresh token"));
     }
 
     @Test
-    public void Me_WithNullToken_ShouldFail() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Act
-        MvcResult result = mockMvc.perform(get("/auth/me").contentType(MediaType.APPLICATION_JSON)).andReturn();
-
-        // Assert
-        ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-        assertNull(response.getData());
+    public void testMeInvalidToken() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/auth/me")
+                        .cookie(new Cookie("accessToken", "invalidToken")))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Me Invalid Token Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(401, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Invalid access token"));
     }
 
     @Test
-    public void Me_WithEmptyStringToken_ShouldFail() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(get("/auth/me").contentType(MediaType.APPLICATION_JSON).cookie(new Cookie("access_token", "")))
-            .andReturn();
-
-        // Assert
-        ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-        assertNull(response.getData());
-    }
-
-    @Test
-    public void Me_WithNoCookie_ShouldFail() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Act
-        MvcResult result = mockMvc.perform(get("/auth/me").contentType(MediaType.APPLICATION_JSON)).andReturn();
-
-        // Assert
-        ApiResponse<User> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), User.class);
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-        assertNull(response.getData());
-    }
-
-    @Test
-    public void Refresh_WithValidRefreshToken_ShouldPass() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        MvcResult loginResult = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        Cookie refreshCookie = loginResult.getResponse().getCookie("refresh_token");
-        assertNotNull(refreshCookie);
-        assertTrue(jwtService.verifyToken(refreshCookie.getValue()));
-
-        // Act
-        MvcResult result = mockMvc.perform(post("/auth/refresh").cookie(refreshCookie)).andReturn();
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals("Token refreshed", response.getMessage());
-    }
-
-    @Test
-    public void Refresh_WithInvalidRefreshToken_ShouldFail() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        MvcResult loginResult = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        Cookie refreshCookie = loginResult.getResponse().getCookie("refresh_token");
-        assertNotNull(refreshCookie);
-        String invalidToken = refreshCookie.getValue() + "someInvalidSuffix";
-
-        // Act
-        MvcResult result = mockMvc
-            .perform(post("/auth/refresh").cookie(new Cookie("refresh_token", invalidToken)))
-            .andReturn();
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("Invalid refresh token", response.getMessage());
-    }
-
-    @Test
-    public void Refresh_WithNoRefreshToken_ShouldFail() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        // Act
-        MvcResult result = mockMvc.perform(post("/auth/refresh")).andReturn();
-
-        System.out.println("here here here" + result.getResponse().getContentAsString());
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
-        assertEquals("Invalid refresh token", response.getMessage());
-    }
-
-    @Test
-    public void Logout_ShouldPass() throws Exception {
-        // Arrange
-        String signupJsonContent = objectMapper.writeValueAsString(
-            new SignupDao(testUser.getUsername(), testUser.getPassword())
-        );
-        mockMvc
-            .perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content(signupJsonContent))
-            .andReturn();
-
-        String loginJsonContent = objectMapper.writeValueAsString(
-            new LoginDao(testUser.getUsername(), testUser.getPassword())
-        );
-        MvcResult loginResult = mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(loginJsonContent))
-            .andReturn();
-
-        Cookie accessCookie = loginResult.getResponse().getCookie("access_token");
-        Cookie refreshCookie = loginResult.getResponse().getCookie("refresh_token");
-
-        // Act
-        MvcResult result = mockMvc.perform(post("/auth/logout").cookie(accessCookie, refreshCookie)).andReturn();
-
-        // Assert
-        ApiResponse<Void> response = ApiResponse.deserialise(result.getResponse().getContentAsString(), Void.class);
-        assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals("Logout successful", response.getMessage());
+    public void testMeInvalidAccessToken() throws Exception {
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/auth/me")
+                        .cookie(new Cookie("accessToken", "invalidToken")))
+                .andReturn();
+        String responseContent = result.getResponse().getContentAsString();
+        System.out.println("Me Invalid Token Response Content: " + responseContent);
+        JsonNode jsonResponse = objectMapper.readTree(responseContent);
+        assertEquals(401, result.getResponse().getStatus());
+        assertTrue(jsonResponse.get("message").asText().contains("Invalid access token"));
     }
 }
