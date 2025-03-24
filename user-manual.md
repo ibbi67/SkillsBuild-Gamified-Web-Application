@@ -44,6 +44,12 @@
   - [Testing](#testing)  
     - [Unit Tests](#unit-tests)  
     - [Integration Tests](#integration-tests) 
+  - [Comments System](#comments-system)
+    - [Overview](#overview-2)
+    - [Comments System for Backend](#comments-system-for-backend)
+    - [Comments System for Frontend](#comments-system-for-frontend)
+    - [Flow of Comments Feature](#flow-of-comments-feature)
+    - [Testing](#testing-3)
 
 ---
 
@@ -453,3 +459,84 @@ The course recommendation system analyzes student profiles and course data to su
 ### Integration Tests  
 - Verify API endpoints handle requests correctly  
 - Test authentication and access control 
+
+## Comments System
+**Author: Eren Arslan**
+
+### Overview
+
+The Comments feature allows users to engage in discussions about courses, share insights, and ask questions. This interactive element enhances the learning experience by creating a community around each course.
+
+### Comments System for Backend
+
+1. **Comment Service**
+    - Manages creating, retrieving, and handling comments
+    - Associates comments with specific courses and users
+    - Implements error handling for various scenarios
+
+2. **Comment Controller**
+    - Provides REST API endpoints for comment operations
+    - Handles authentication for comment creation
+    - Routes requests to appropriate service methods
+
+3. **Comment Repository**
+    - Manages comment data storage and retrieval
+    - Efficiently fetches comments by course ID
+    - Implements data access patterns for comment operations
+
+4. **Authentication Integration**
+    - Ensures only authenticated users can post comments
+    - Stores user information with each comment
+    - Uses JWT authentication for secure access
+
+### Comments System for Frontend
+
+1. **Comments Section Component**
+    - Displays all comments for a specific course
+    - Shows username and timestamp for each comment
+    - Provides real-time feedback for comment submission
+
+2. **Comment Creation Interface**
+    - Offers a text area for writing new comments
+    - Validates input before submission
+    - Shows loading and error states during submission
+
+3. **Comments Display**
+    - Organizes comments chronologically
+    - Displays "No comments" message when appropriate
+    - Formats dates in a user-friendly manner
+
+### Flow of Comments Feature
+
+1. **Viewing Comments**
+    - Navigate to a course detail page
+    - Scroll to the bottom to see the comments section
+    - Comments load automatically with the course details
+
+2. **Creating a Comment**
+    - Type your comment in the text area
+    - Click "Post Comment" to submit
+    - New comment appears immediately in the list
+    - Error handling is provided if submission fails
+
+3. **Comment Validation**
+    - Empty comments cannot be submitted
+    - Button is disabled until comment is entered
+    - Feedback is displayed during submission process
+
+### Testing
+
+1. **Unit Tests**
+    - Test comment service and controller methods
+    - Validate error handling and edge cases
+    - Ensure proper validation of input data
+
+2. **Integration Tests**
+    - Verify API endpoints function correctly
+    - Test authentication integration
+    - Ensure proper data relationships between users, courses, and comments
+
+3. **Manual Tests**
+    - Comprehensive test cases for different user scenarios
+    - Validation of UI states (loading, error, empty)
+    - Cross-browser compatibility testing
