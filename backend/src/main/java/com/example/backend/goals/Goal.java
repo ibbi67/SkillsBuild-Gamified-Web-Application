@@ -18,7 +18,7 @@ public class Goal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     private LocalDate startDate; // Start date of the goal
     private LocalDate endDate; // End date of the goal

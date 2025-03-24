@@ -84,4 +84,8 @@ public class PersonService {
         person.getFavoriteCourses().remove(course);
         return save(person);
     }
+
+    public Optional<Person> getPersonById(Long personId) {
+        return personRepository.findById(personId);
+    }
 }
