@@ -98,7 +98,7 @@ public class CourseService {
     }
 
     public ServiceResult<Course, CourseCreateError> create(CourseDTO courseDTO) {
-        Course course = new Course(courseDTO.getTitle(), courseDTO.getDescription(), courseDTO.getLink(), courseDTO.getEstimatedDuration(), courseDTO.getDifficulty());
+        Course course = new Course(courseDTO.getTitle(), courseDTO.getDescription(), courseDTO.getLink(), courseDTO.getEstimatedDuration(), courseDTO.getDifficulty(), 0);
         Optional<Course> savedCourse = save(course);
         if (savedCourse.isPresent()) {
             course = savedCourse.get();

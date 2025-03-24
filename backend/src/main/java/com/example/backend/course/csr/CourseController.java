@@ -11,6 +11,8 @@ import com.example.backend.util.ServiceResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.backend.course.error.CourseGetTrendingError;
+import com.example.backend.course.error.CourseViewError;
 
 import java.util.List;
 

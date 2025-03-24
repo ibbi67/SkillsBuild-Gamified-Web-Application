@@ -23,11 +23,17 @@ public class Course {
     private Integer estimatedDuration;
     private Integer difficulty;
 
+    private Integer views = 0;
+
     public Course(String title, String description, String link, Integer estimatedDuration, Integer difficulty) {
         this.title = title;
         this.description = description;
         this.link = link;
         this.estimatedDuration = estimatedDuration;
         this.difficulty = difficulty;
+        this.views = 0;
+    }
+
+    public Course(String title, String description, String link, Integer estimatedDuration, Integer difficulty, int i) {
     }
 }
