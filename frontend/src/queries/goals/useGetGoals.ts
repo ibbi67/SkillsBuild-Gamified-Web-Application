@@ -10,7 +10,7 @@ export const useGoals = () => {
   
   return useQuery<GoalsResponse, AxiosError<GoalsResponse>>({
     queryFn: () => 
-      axiosInstance.get(`/api/goals/person/${personId}`).then(res => res.data),
+      axiosInstance.get(`/api/goals/${personId}`).then(res => res.data),
     queryKey: ["goals", personId],
     enabled: !!personId, // Only run the query if we have a personId
   });
