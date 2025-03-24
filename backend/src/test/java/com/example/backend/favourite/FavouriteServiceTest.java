@@ -1,4 +1,4 @@
-package com.example.backend.service;
+package com.example.backend.favourite;
 
 import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseService;

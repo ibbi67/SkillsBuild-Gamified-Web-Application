@@ -1,6 +1,5 @@
-package com.example.backend.service;
+package com.example.backend.course;
 
-import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseRepository;
 import com.example.backend.course.csr.CourseService;
 import com.example.backend.course.error.CourseGetAllError;

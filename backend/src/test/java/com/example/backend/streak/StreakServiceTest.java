@@ -1,4 +1,4 @@
-package com.example.backend.service;
+package com.example.backend.streak;
 
 import com.example.backend.person.Person;
 import com.example.backend.streak.csr.StreakService;

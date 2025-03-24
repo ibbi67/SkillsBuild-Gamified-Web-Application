@@ -1,4 +1,4 @@
-package com.example.backend.controller;
+package com.example.backend.enrollment;
 
 import com.example.backend.course.CourseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;

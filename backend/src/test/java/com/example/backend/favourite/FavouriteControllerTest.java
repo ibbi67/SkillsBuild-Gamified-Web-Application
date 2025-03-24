@@ -1,4 +1,4 @@
-package com.example.backend.controller;
+package com.example.backend.favourite;
 
 import com.example.backend.course.CourseDTO;
 import com.example.backend.person.PersonDTO;

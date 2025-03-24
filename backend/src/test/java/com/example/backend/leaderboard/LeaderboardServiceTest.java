@@ -1,9 +1,8 @@
-package com.example.backend.service;
+package com.example.backend.leaderboard;
 
 import com.example.backend.course.Course;
 import com.example.backend.enrollment.Enrollment;
 import com.example.backend.enrollment.csr.EnrollmentService;
-import com.example.backend.leaderboard.LeaderboardDTO;
 import com.example.backend.leaderboard.csr.LeaderboardService;
 import com.example.backend.leaderboard.error.LeaderboardGetAllError;
 import com.example.backend.person.Person;

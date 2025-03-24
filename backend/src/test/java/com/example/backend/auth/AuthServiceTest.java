@@ -1,4 +1,4 @@
-package com.example.backend.service;
+package com.example.backend.auth;
 
 import com.example.backend.auth.csr.AuthService;
 import com.example.backend.auth.error.*;

@@ -1,4 +1,4 @@
-package com.example.backend.controller;
+package com.example.backend.streak;
 
 import com.example.backend.person.PersonDTO;
 import com.example.backend.util.ApiResponse;
