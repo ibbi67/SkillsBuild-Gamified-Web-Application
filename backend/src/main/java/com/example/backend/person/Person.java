@@ -1,6 +1,7 @@
 package com.example.backend.person;
 
 import com.example.backend.course.Course;
+import com.example.backend.goals.Goal;
 import com.example.backend.badge.Badge;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -42,7 +43,9 @@ public class Person {
     )
     private List<Badge> badges = new ArrayList<>();
 
-    // Constructor for creating a new person for signup
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Goal> goals = new ArrayList<>();
+
     public Person(String username, String password) {
         this.username = username;
         this.password = password;
