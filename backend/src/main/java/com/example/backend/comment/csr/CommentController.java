@@ -8,7 +8,6 @@ import com.example.backend.util.ApiResponse;
 import com.example.backend.util.ServiceResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,21 +29,18 @@ public class CommentController {
     public ResponseEntity<ApiResponse<List<Comment>>> getCommentsByCourseId(@PathVariable Integer courseId) {
         ServiceResult<List<Comment>, CommentGetByCourseError> result = commentService.getCommentsByCourseId(courseId);
         if (result.isSuccess()) {
-            return new ResponseEntity<>(ApiResponse.success(result.getData()), HttpStatus.OK);
+            return ResponseEntity.ok(ApiResponse.success(result.getData()));
         }
 
-        CommentGetByCourseError error = result.getError();
-        return switch (error) {
-            case COURSE_NOT_FOUND -> new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.NOT_FOUND);
-            case GET_COMMENTS_FAILED -> new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-        };
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.failed("Failed to get comments"));
     }
 
     @Operation(summary = "Add a comment to a course")
     @PostMapping
     public ResponseEntity<ApiResponse<Comment>> addComment(
-            @Valid @RequestBody CommentDTO commentDTO,
-            @CookieValue("accessToken") String accessToken
+            @RequestBody CommentDTO commentDTO,
+            @CookieValue(value = "accessToken", required = false) String accessToken
     ) {
         ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, accessToken);
         if (result.isSuccess()) {
@@ -53,9 +49,17 @@ public class CommentController {
 
         CommentCreateError error = result.getError();
         return switch (error) {
-            case UNAUTHORIZED -> new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.UNAUTHORIZED);
-            case COURSE_NOT_FOUND -> new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.NOT_FOUND);
-            case COMMENT_CREATION_FAILED -> new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            case INVALID_REQUEST, EMPTY_CONTENT, INVALID_COURSE_ID,
+                 CONTENT_TOO_SHORT, CONTENT_TOO_LONG, INAPPROPRIATE_CONTENT ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.BAD_REQUEST);
+            case UNAUTHORIZED ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.UNAUTHORIZED);
+            case COURSE_NOT_FOUND ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.NOT_FOUND);
+            case RATE_LIMIT_EXCEEDED ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.TOO_MANY_REQUESTS);
+            case COMMENT_CREATION_FAILED ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         };
     }
 }

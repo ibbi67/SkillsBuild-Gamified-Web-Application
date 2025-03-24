@@ -23,7 +23,7 @@ public class Comment {
     private String content;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime reatedAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
@@ -39,6 +39,5 @@ public class Comment {
         this.content = content;
         this.person = person;
         this.course = course;
-        this.createdAt = LocalDateTime.now();
     }
 }

@@ -59,7 +59,6 @@ class CommentServiceTest {
         testComment.setContent("Test comment");
         testComment.setPerson(testPerson);
         testComment.setCourse(testCourse);
-        testComment.setCreatedAt(LocalDateTime.now());
     }
 
     @Test

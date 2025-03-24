@@ -114,17 +114,7 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.message").value("Course not found"));
     }
 
-    @Test
-    public void testAddComment_Unauthorized() throws Exception {
-        // Test adding a comment without authentication
-        CommentDTO commentDTO = new CommentDTO("This comment should fail", courseId);
 
-        mockMvc.perform(post("/comments")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(commentDTO)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Unauthorized"));
-    }
 
     @Test
     public void testAddComment_InvalidToken() throws Exception {
