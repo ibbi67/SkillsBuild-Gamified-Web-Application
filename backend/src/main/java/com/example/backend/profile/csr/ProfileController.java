@@ -9,7 +9,6 @@ import com.example.backend.profile.error.ProfileUpdateError;
 import com.example.backend.util.ApiResponse;
 import com.example.backend.util.ServiceResult;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
