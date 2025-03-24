@@ -34,4 +34,8 @@ public class Enrollment {
     public boolean isCompleted() {
         return timeSpent >= course.getEstimatedDuration();
     }
+
+    public void addTimeSpent(Integer time) {
+        this.timeSpent += time;
+    }
 }

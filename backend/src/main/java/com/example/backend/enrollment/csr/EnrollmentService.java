@@ -3,9 +3,11 @@ package com.example.backend.enrollment.csr;
 import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseService;
 import com.example.backend.enrollment.Enrollment;
+import com.example.backend.enrollment.UpdateProgressDTO;
 import com.example.backend.enrollment.error.EnrollmentCreateError;
 import com.example.backend.enrollment.error.EnrollmentGetAllError;
 import com.example.backend.enrollment.error.EnrollmentGetByIdError;
+import com.example.backend.enrollment.error.EnrollmentUpdateProgressError;
 import com.example.backend.person.Person;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
@@ -25,6 +27,18 @@ public class EnrollmentService {
         this.jwt = jwt;
         this.courseService = courseService;
         this.enrollmentRepository = enrollmentRepository;
+    }
+
+    public Optional<Enrollment> findById(Integer id) {
+        return enrollmentRepository.findById(id);
+    }
+
+    public Optional<Enrollment> save(Enrollment enrollment) {
+        return Optional.of(enrollmentRepository.save(enrollment));
+    }
+
+    public List<Enrollment> findByPersonId(Long personId) {
+        return enrollmentRepository.findByPersonId(personId);
     }
 
     public ServiceResult<List<Enrollment>, EnrollmentGetAllError> getAll(String refreshToken) {
@@ -83,15 +97,26 @@ public class EnrollmentService {
         return ServiceResult.error(EnrollmentCreateError.ENROLLMENT_CREATION_FAILED);
     }
 
-    public Optional<Enrollment> findById(Integer id) {
-        return enrollmentRepository.findById(id);
-    }
+    public ServiceResult<Enrollment, EnrollmentUpdateProgressError> updateProgress(Integer enrollmentId, UpdateProgressDTO updateProgressDTO) {
+        if (enrollmentId == null || enrollmentId <= 0) {
+            return ServiceResult.error(EnrollmentUpdateProgressError.INVALID_ENROLLMENT_ID);
+        }
+        if (updateProgressDTO.getTimeSpent() == null || updateProgressDTO.getTimeSpent() <= 0) {
+            return ServiceResult.error(EnrollmentUpdateProgressError.INVALID_TIME_SPENT);
+        }
+        Optional<Enrollment> enrollmentOptional = findById(enrollmentId);
+        if (enrollmentOptional.isEmpty()) {
+            return ServiceResult.error(EnrollmentUpdateProgressError.ENROLLMENT_NOT_FOUND);
+        }
 
-    public Optional<Enrollment> save(Enrollment enrollment) {
-        return Optional.of(enrollmentRepository.save(enrollment));
-    }
+        Enrollment enrollment = enrollmentOptional.get();
+        enrollment.addTimeSpent(updateProgressDTO.getTimeSpent());
 
-    public List<Enrollment> findByPersonId(Long personId) {
-        return enrollmentRepository.findByPersonId(personId);
+        Optional<Enrollment> updatedEnrollmentOptional = save(enrollment);
+        if (updatedEnrollmentOptional.isPresent()) {
+            return ServiceResult.success(updatedEnrollmentOptional.get());
+        }
+
+        return ServiceResult.error(EnrollmentUpdateProgressError.ENROLLMENT_UPDATE_FAILED);
     }
 }
