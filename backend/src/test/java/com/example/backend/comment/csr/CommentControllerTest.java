@@ -1,164 +1,176 @@
 package com.example.backend.comment.csr;
 
-import com.example.backend.comment.Comment;
 import com.example.backend.comment.CommentDTO;
-import com.example.backend.comment.error.CommentCreateError;
-import com.example.backend.comment.error.CommentGetByCourseError;
-import com.example.backend.person.Person;
-import com.example.backend.util.ApiResponse;
-import com.example.backend.util.ServiceResult;
+import com.example.backend.course.CourseDTO;
+import com.example.backend.person.PersonDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
+@SpringBootTest
+@AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+public class CommentControllerTest {
 
-class CommentControllerTest {
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Mock
-    private CommentService commentService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @InjectMocks
-    private CommentController commentController;
-
-    private Comment testComment;
-    private CommentDTO testCommentDTO;
-    private final Integer courseId = 1;
-    private final String accessToken = "valid-token";
+    private Cookie[] cookies;
+    private Integer courseId;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    void setUp() throws Exception {
+        // Perform signup to get cookies
+        PersonDTO personDTO = new PersonDTO("testuser", "password");
+        MvcResult signupResult = mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
+                .andExpect(status().isOk())
+                .andReturn();
+        cookies = signupResult.getResponse().getCookies();
 
-        // Use a constructor without ID for Person
-        Person testPerson = new Person();
-        testPerson.setUsername("testuser");
+        // Create a test course
+        CourseDTO courseDTO = new CourseDTO("Test Course", "This is a test course for comments", "http://example.com/course", 10, 3);
+        MvcResult courseResult = mockMvc.perform(post("/courses")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isCreated())
+                .andReturn();
 
-        testComment = new Comment();
-        testComment.setContent("Test comment");
-        testComment.setContent("Test comment");
-        testComment.setPerson(testPerson);
-        testComment.setCreatedAt(LocalDateTime.now());
-
-        testCommentDTO = new CommentDTO("Test comment", courseId);
+        // Extract the course ID from the response
+        String responseContent = courseResult.getResponse().getContentAsString();
+        courseId = objectMapper.readTree(responseContent).get("data").get("id").asInt();
     }
 
     @Test
-    void getCommentsByCourseId_whenSuccess_returnsOkWithComments() {
-        // Arrange
-        List<Comment> comments = new ArrayList<>();
-        comments.add(testComment);
-
-        when(commentService.getCommentsByCourseId(courseId)).thenReturn(
-                ServiceResult.success(comments)
-        );
-
-        // Act
-        ResponseEntity<ApiResponse<List<Comment>>> response = commentController.getCommentsByCourseId(courseId);
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(comments, response.getBody().getData());
+    public void testGetCommentsByCourseId_EmptyComments() throws Exception {
+        // Test getting comments when none exist
+        mockMvc.perform(get("/comments/course/" + courseId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data").isEmpty());
     }
 
     @Test
-    void getCommentsByCourseId_whenCourseNotFound_returnsNotFound() {
-        // Arrange
-        when(commentService.getCommentsByCourseId(courseId)).thenReturn(
-                ServiceResult.error(CommentGetByCourseError.COURSE_NOT_FOUND)
-        );
+    public void testAddComment_ValidRequest() throws Exception {
+        // Test adding a comment
+        CommentDTO commentDTO = new CommentDTO("This is a test comment", courseId);
 
-        // Act
-        ResponseEntity<ApiResponse<List<Comment>>> response = commentController.getCommentsByCourseId(courseId);
-
-        // Assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals(CommentGetByCourseError.COURSE_NOT_FOUND.getMessage(), response.getBody().getMessage());
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data.content").value("This is a test comment"));
     }
 
     @Test
-    void getCommentsByCourseId_whenGetCommentsFailed_returnsInternalServerError() {
-        // Arrange
-        when(commentService.getCommentsByCourseId(courseId)).thenReturn(
-                ServiceResult.error(CommentGetByCourseError.GET_COMMENTS_FAILED)
-        );
+    public void testGetCommentsByCourseId_WithComments() throws Exception {
+        // Add a comment first
+        CommentDTO commentDTO = new CommentDTO("This is a test comment", courseId);
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isCreated());
 
-        // Act
-        ResponseEntity<ApiResponse<List<Comment>>> response = commentController.getCommentsByCourseId(courseId);
-
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals(CommentGetByCourseError.GET_COMMENTS_FAILED.getMessage(), response.getBody().getMessage());
+        // Now get comments for the course
+        mockMvc.perform(get("/comments/course/" + courseId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].content").value("This is a test comment"))
+                .andExpect(jsonPath("$.data[0].person.username").value("testuser"));
     }
 
     @Test
-    void addComment_whenSuccess_returnsCreatedWithComment() {
-        // Arrange
-        when(commentService.addComment(eq(testCommentDTO), eq(accessToken))).thenReturn(
-                ServiceResult.success(testComment)
-        );
+    public void testAddComment_CourseNotFound() throws Exception {
+        // Test adding a comment to a non-existent course
+        CommentDTO commentDTO = new CommentDTO("This comment should fail", 999);
 
-        // Act
-        ResponseEntity<ApiResponse<Comment>> response = commentController.addComment(testCommentDTO, accessToken);
-
-        // Assert
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(testComment, response.getBody().getData());
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Course not found"));
     }
 
     @Test
-    void addComment_whenUnauthorized_returnsUnauthorized() {
-        // Arrange
-        when(commentService.addComment(any(), eq(accessToken))).thenReturn(
-                ServiceResult.error(CommentCreateError.UNAUTHORIZED)
-        );
+    public void testAddComment_Unauthorized() throws Exception {
+        // Test adding a comment without authentication
+        CommentDTO commentDTO = new CommentDTO("This comment should fail", courseId);
 
-        // Act
-        ResponseEntity<ApiResponse<Comment>> response = commentController.addComment(testCommentDTO, accessToken);
-
-        // Assert
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals(CommentCreateError.UNAUTHORIZED.getMessage(), response.getBody().getMessage());
+        mockMvc.perform(post("/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Unauthorized"));
     }
 
     @Test
-    void addComment_whenCourseNotFound_returnsNotFound() {
-        // Arrange
-        when(commentService.addComment(any(), eq(accessToken))).thenReturn(
-                ServiceResult.error(CommentCreateError.COURSE_NOT_FOUND)
-        );
+    public void testAddComment_InvalidToken() throws Exception {
+        // Test adding a comment with an invalid token
+        CommentDTO commentDTO = new CommentDTO("This comment should fail", courseId);
 
-        // Act
-        ResponseEntity<ApiResponse<Comment>> response = commentController.addComment(testCommentDTO, accessToken);
-
-        // Assert
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals(CommentCreateError.COURSE_NOT_FOUND.getMessage(), response.getBody().getMessage());
+        mockMvc.perform(post("/comments")
+                        .cookie(new Cookie("accessToken", "invalidToken"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Unauthorized"));
     }
 
     @Test
-    void addComment_whenCreationFailed_returnsInternalServerError() {
-        // Arrange
-        when(commentService.addComment(any(), eq(accessToken))).thenReturn(
-                ServiceResult.error(CommentCreateError.COMMENT_CREATION_FAILED)
-        );
+    public void testGetCommentsByCourseId_CourseNotFound() throws Exception {
+        // Test getting comments for a non-existent course
+        mockMvc.perform(get("/comments/course/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Course not found"));
+    }
 
-        // Act
-        ResponseEntity<ApiResponse<Comment>> response = commentController.addComment(testCommentDTO, accessToken);
+    @Test
+    public void testAddMultipleComments() throws Exception {
+        // Add first comment
+        CommentDTO comment1 = new CommentDTO("First test comment", courseId);
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(comment1)))
+                .andExpect(status().isCreated());
 
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals(CommentCreateError.COMMENT_CREATION_FAILED.getMessage(), response.getBody().getMessage());
+        // Add second comment
+        CommentDTO comment2 = new CommentDTO("Second test comment", courseId);
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(comment2)))
+                .andExpect(status().isCreated());
+
+        // Verify both comments are returned
+        mockMvc.perform(get("/comments/course/" + courseId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].content").exists())
+                .andExpect(jsonPath("$.data[1].content").exists());
     }
 }
