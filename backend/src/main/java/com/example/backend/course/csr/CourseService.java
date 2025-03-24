@@ -10,6 +10,8 @@ import com.example.backend.util.ServiceResult;
 import com.example.backend.util.JWT;
 import com.example.backend.person.Person;
 import org.springframework.stereotype.Service;
+import com.example.backend.course.error.CourseGetTrendingError;
+import com.example.backend.course.error.CourseViewError;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,6 +66,35 @@ public class CourseService {
         }
 
         return ServiceResult.error(CourseGetByIdError.COURSE_NOT_FOUND);
+    }
+
+    public ServiceResult<List<Course>, CourseGetTrendingError> getTrendingCourses() {
+        try {
+            List<Course> trendingCourses = courseRepository.findTop10ByOrderByViewsDesc();
+            return ServiceResult.success(trendingCourses);
+        } catch (Exception e) {
+            return ServiceResult.error(CourseGetTrendingError.GET_TRENDING_COURSES_FAILED);
+        }
+    }
+
+    public ServiceResult<Void, CourseViewError> incrementCourseViews(Integer id) {
+        if (id == null || id <= 0) {
+            return ServiceResult.error(CourseViewError.COURSE_NOT_FOUND);
+        }
+
+        Optional<Course> courseOptional = findById(id);
+        if (courseOptional.isEmpty()) {
+            return ServiceResult.error(CourseViewError.COURSE_NOT_FOUND);
+        }
+
+        try {
+            Course course = courseOptional.get();
+            course.setViews(course.getViews() + 1);
+            save(course);
+            return ServiceResult.success(null);
+        } catch (Exception e) {
+            return ServiceResult.error(CourseViewError.VIEW_INCREMENT_FAILED);
+        }
     }
 
     public ServiceResult<Course, CourseCreateError> create(CourseDTO courseDTO) {

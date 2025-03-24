@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AllCoursesTab } from "@/component/course/AllCoursesTab";
 import { FavouriteCoursesTab } from "@/component/course/FavouriteCoursesTab";
 import { RecommendedCoursesTab } from "@/component/course/RecommendedCoursesTab";
+import { TrendingCoursesTab } from "@/component/course/TrendingCoursesTab";
 import CoursePageButton from "@/component/course/CoursePageButton";
 import { useMe } from "@/queries";
 
@@ -20,6 +21,7 @@ export default function CoursePage() {
                 {me && <>
                     <CoursePageButton setActiveTab={() => setActiveTab("favourites")} isActive={activeTab === "favourites"} text="Favourite Courses" />
                     <CoursePageButton setActiveTab={() => setActiveTab("recommended")} isActive={activeTab === "recommended"} text="Recommended Courses" />
+                    <CoursePageButton setActiveTab={() => setActiveTab("trending")} isActive={activeTab === "trending"} text="Trending Courses" />
                 </>}
                 <div className="grow" />
                 <input
@@ -34,6 +36,7 @@ export default function CoursePage() {
             {activeTab === "all" && <AllCoursesTab query={query} />}
             {activeTab === "favourites" && <FavouriteCoursesTab />}
             {activeTab === "recommended" && <RecommendedCoursesTab />}
+            {activeTab === "trending" && <TrendingCoursesTab />}
         </div>
     );
 }
