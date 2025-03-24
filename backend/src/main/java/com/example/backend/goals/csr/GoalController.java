@@ -9,13 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/goals")
+@RequestMapping("/goals")
 public class GoalController {
 
     @Autowired
@@ -102,22 +101,12 @@ public class GoalController {
 
     // Get all goals with their progress for dashboard
     @GetMapping("/dashboard/{personId}")
-    public ResponseEntity<?> getGoalsForDashboard(@PathVariable Long personId) {
+    public ResponseEntity<List<GoalProgressDTO>> getGoalsForDashboard(@PathVariable Long personId) {
         Optional<Person> personOptional = personService.getPersonById(personId);
         if (personOptional.isPresent()) {
             List<GoalProgressDTO> goalsWithProgress = goalService.getAllGoalsWithProgress(personOptional.get());
-
-            // Create response object matching frontend expectations
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Goals retrieved successfully");
-            response.put("data", goalsWithProgress);
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(goalsWithProgress);
         }
-
-        // If person not found, return 404 with error message
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("message", "Person not found with ID: " + personId);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }
