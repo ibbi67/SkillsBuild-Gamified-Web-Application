@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 @Service
 public class GoalService {
@@ -95,6 +96,10 @@ public class GoalService {
     // Get all goals with their progress
     public List<GoalProgressDTO> getAllGoalsWithProgress(Person person) {
         List<Goal> goals = goalRepository.findByPerson(person);
+
+        if (goals.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         return goals.stream()
                 .map(goal -> {

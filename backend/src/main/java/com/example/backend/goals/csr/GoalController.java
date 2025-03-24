@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/goals")
+@RequestMapping("/api/goals")
 public class GoalController {
 
     @Autowired
@@ -24,7 +24,7 @@ public class GoalController {
     private PersonService personService;
 
     // Create a new goal
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<Goal> createGoal(@RequestBody Goal goal, @RequestParam Long personId) {
         Optional<Person> personOptional = personService.getPersonById(personId);
         if (personOptional.isPresent()) {
