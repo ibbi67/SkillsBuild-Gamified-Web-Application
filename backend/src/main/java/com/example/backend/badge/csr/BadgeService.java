@@ -37,6 +37,14 @@ public class BadgeService {
                 "/badges/favorite-2.png", "FAVORITE", 2));
             createBadge(new BadgeDTO("Favorites Enthusiast", "Added 5 courses to favorites",
                 "/badges/favorite-5.png", "FAVORITE", 5));
+            createBadge(new BadgeDTO("Streak Starter", "Maintained a 3-day streak",
+                "/badges/streak-3.png", "STREAK", 3));
+            createBadge(new BadgeDTO("Streak Master", "Maintained a 7-day streak",
+                "/badges/streak-7.png", "STREAK", 7));
+            createBadge(new BadgeDTO("Course Explorer", "Enrolled in your first course",
+                "/badges/enroll-1.png", "ENROLL", 1));
+            createBadge(new BadgeDTO("Learning Champion", "Enrolled in 5 courses",
+                "/badges/enroll-5.png", "ENROLL", 5));
         }
     }
 
