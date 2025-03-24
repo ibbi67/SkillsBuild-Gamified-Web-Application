@@ -1,7 +1,6 @@
-package com.example.backend.streak;
+package com.example.backend.streak.csr;
 
 import com.example.backend.person.Person;
-import com.example.backend.streak.csr.StreakService;
 import com.example.backend.streak.error.StreakGetError;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;

@@ -1,6 +1,5 @@
-package com.example.backend.auth;
+package com.example.backend.auth.csr;
 
-import com.example.backend.auth.csr.AuthService;
 import com.example.backend.auth.error.*;
 import com.example.backend.person.Person;
 import com.example.backend.person.PersonDTO;

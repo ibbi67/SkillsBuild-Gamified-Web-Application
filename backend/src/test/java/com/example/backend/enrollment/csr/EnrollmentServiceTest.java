@@ -1,9 +1,8 @@
-package com.example.backend.enrollment;
+package com.example.backend.enrollment.csr;
 
 import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseService;
-import com.example.backend.enrollment.csr.EnrollmentRepository;
-import com.example.backend.enrollment.csr.EnrollmentService;
+import com.example.backend.enrollment.Enrollment;
 import com.example.backend.enrollment.error.EnrollmentCreateError;
 import com.example.backend.enrollment.error.EnrollmentGetAllError;
 import com.example.backend.enrollment.error.EnrollmentGetByIdError;

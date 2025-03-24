@@ -1,5 +1,6 @@
-package com.example.backend.course;
+package com.example.backend.course.csr;
 
+import com.example.backend.course.CourseDTO;
 import com.example.backend.person.PersonDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;

@@ -1,4 +1,4 @@
-package com.example.backend.leaderboard;
+package com.example.backend.leaderboard.csr;
 
 import com.example.backend.course.CourseDTO;
 import com.example.backend.person.PersonDTO;

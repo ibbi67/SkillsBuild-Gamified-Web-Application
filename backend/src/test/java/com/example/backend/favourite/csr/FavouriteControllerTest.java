@@ -1,4 +1,4 @@
-package com.example.backend.favourite;
+package com.example.backend.favourite.csr;
 
 import com.example.backend.course.CourseDTO;
 import com.example.backend.person.PersonDTO;

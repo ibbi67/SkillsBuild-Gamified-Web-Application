@@ -1,8 +1,7 @@
-package com.example.backend.favourite;
+package com.example.backend.favourite.csr;
 
 import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseService;
-import com.example.backend.favourite.csr.FavouriteService;
 import com.example.backend.favourite.error.FavouriteCreateError;
 import com.example.backend.favourite.error.FavouriteGetAllError;
 import com.example.backend.favourite.error.FavouriteRemoveError;

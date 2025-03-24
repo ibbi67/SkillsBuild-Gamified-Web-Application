@@ -1,4 +1,4 @@
-package com.example.backend.auth;
+package com.example.backend.auth.csr;
 
 import com.example.backend.person.PersonDTO;
 import com.fasterxml.jackson.databind.JsonNode;

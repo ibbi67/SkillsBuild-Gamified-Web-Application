@@ -1,4 +1,4 @@
-package com.example.backend.streak;
+package com.example.backend.streak.csr;
 
 import com.example.backend.person.PersonDTO;
 import com.example.backend.util.ApiResponse;
