@@ -4,7 +4,7 @@ import { CourseDescription } from "./CourseDescription";
 import { CourseActions } from "./CourseActions";
 
 interface CourseCardProps {
-    course: Course;
+    course: Course & { views?: number };
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
