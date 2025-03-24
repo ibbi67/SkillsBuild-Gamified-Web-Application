@@ -1,6 +1,7 @@
 package com.example.backend.goals;
 
 import com.example.backend.person.Person;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,6 +36,7 @@ public class Goal {
 
     @ManyToOne
     @JoinColumn(name = "person_id")
+    @JsonBackReference  // This prevents infinite recursion
     private Person person;
 
     public Goal(LocalDate startDate, LocalDate endDate, String description, String reward, boolean achieved) {
