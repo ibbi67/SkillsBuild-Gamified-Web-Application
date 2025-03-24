@@ -41,6 +41,7 @@ export default function Navbar({ user, logoutOnClick }: NavbarProps) {
                         <button className="rounded px-4 py-2 text-red-500" onClick={logoutOnClick}>
                             Logout
                         </button>
+                        {user.avatarLink && <img src={user.avatarLink} alt="User Avatar" className="w-8 h-8 rounded-full" />}
                     </>
                 ) : (
                     <>

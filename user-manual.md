@@ -50,6 +50,11 @@
     - [Comments System for Frontend](#comments-system-for-frontend)
     - [Flow of Comments Feature](#flow-of-comments-feature)
     - [Testing](#testing-3)
+  - [Profile Customization](#profile-customization)
+    - [Overview](#overview-1)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+    - [Error Handling](#error-handling)
 
 ---
 
@@ -458,6 +463,43 @@ The course recommendation system analyzes student profiles and course data to su
 
 ### Integration Tests  
 - Verify API endpoints handle requests correctly  
+- Test authentication and access control
+
+## Profile Customization
+**Author: Justin Fung**
+
+### Overview
+As a student, you can customize your profile to update your personal details and choose an avatar that represents you. This feature is accessible through the `/profile` endpoint in the backend and the dashboard in the frontend.
+
+### Backend
+The backend provides an endpoint to update the profile details. The endpoint is `/profile` and it supports the `PUT` method. The request should include a JSON body with the following fields:
+- `username`: Your username
+- `password`: Your password
+- `firstName`: Your first name
+- `lastName`: Your last name
+- `email`: Your email address
+- `avatarLink`: A link to your avatar image
+
+Example request:
+```json
+{
+  "username": "student123",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "avatarLink": "http://example.com/avatar.jpg"
+}
+```
+
+### Frontend
+The frontend provides a dashboard where you can update your profile details. The profile update form includes fields for your username, password, first name, last name, email, and avatar link. After filling out the form, click the "Update Profile" button to save your changes.
+
+### Error Handling
+If the profile update fails, an error message will be displayed. Possible error messages include:
+- "Invalid access token": The access token is invalid.
+- "Nothing changed": No changes were made to the profile.
+- "Profile update failed": The profile update failed due to an internal error.
 - Test authentication and access control 
 
 ## Comments System

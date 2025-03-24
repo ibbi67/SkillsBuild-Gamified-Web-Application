@@ -13,6 +13,10 @@ export interface Person {
     streak: number;
     lastLoginDate: string;
     favoriteCourses: Course[];
+    firstName: string;
+    lastName: string;
+    email: string;
+    avatarLink: string;
 }
 
 export interface Enrollment {
