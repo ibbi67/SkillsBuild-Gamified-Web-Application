@@ -2,6 +2,7 @@ import { Course, Person } from "@/types/databaseTypes";
 import { Timer } from "./Timer";
 import { EnrollButton } from "./EnrollButton";
 import { FavoriteButton } from "./FavoriteButton";
+import DetailsButton from "./DetailsButton";
 
 interface CourseActionsProps {
     courseId: number;
@@ -17,15 +18,9 @@ export function CourseActions({ user, courseId, enrollmentId, isEnrolled, isLoad
     return (
         <div className="flex gap-4 p-4 bg-gray-50">
             <div className="flex justify-between items-center gap-4">
-                <EnrollButton 
-                    courseId={courseId}
-                    isEnrolled={isEnrolled}
-                    disabled={!user}
-                />
-                <FavoriteButton 
-                    courseId={courseId}
-                    disabled={!user}
-                />
+                <EnrollButton courseId={courseId} isEnrolled={isEnrolled} disabled={!user} />
+                <DetailsButton courseId={courseId} />
+                <FavoriteButton courseId={courseId} disabled={!user} />
             </div>
             {isEnrolled && <Timer enrollmentId={enrollmentId} />}
         </div>
