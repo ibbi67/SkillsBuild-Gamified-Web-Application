@@ -4,6 +4,8 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.example.backend.course.Course;
 import com.example.backend.person.Person;
 import com.example.backend.person.PersonDTO;
+import com.example.backend.profile.ProfileDTO;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,6 +33,28 @@ public class PersonService {
 
     public Optional<Person> saveNewPerson(PersonDTO personDTO) {
         Person person = new Person(personDTO.getUsername(), BCrypt.withDefaults().hashToString(12, personDTO.getPassword().toCharArray()));
+        return save(person);
+    }
+
+    public Optional<Person> updatePerson(Person person, ProfileDTO profileDTO) {
+        if (profileDTO.getUsername() != null && !profileDTO.getUsername().isEmpty()) {
+            person.setUsername(profileDTO.getUsername());
+        }
+        if (profileDTO.getPassword() != null && !profileDTO.getPassword().isEmpty()) {
+            person.setPassword(BCrypt.withDefaults().hashToString(12, profileDTO.getPassword().toCharArray()));
+        }
+        if (profileDTO.getFirstName() != null && !profileDTO.getFirstName().isEmpty()) {
+            person.setFirstName(profileDTO.getFirstName());
+        }
+        if (profileDTO.getLastName() != null && !profileDTO.getLastName().isEmpty()) {
+            person.setLastName(profileDTO.getLastName());
+        }
+        if (profileDTO.getEmail() != null && !profileDTO.getEmail().isEmpty()) {
+            person.setEmail(profileDTO.getEmail());
+        }
+        if (profileDTO.getAvatarLink() != null && !profileDTO.getAvatarLink().isEmpty()) {
+            person.setAvatarLink(profileDTO.getAvatarLink());
+        }
         return save(person);
     }
 
