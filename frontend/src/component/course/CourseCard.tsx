@@ -47,7 +47,7 @@ export default function CourseCard({ course, trendingRank }: CourseCardProps) {
 
             {trendingRank && trendingRank <= 10 && (
                 <div
-                    className="absolute right-0 top-0 m-2 flex items-center rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white z-10">
+                    className="absolute right-0 top-0 m-2 flex items-center rounded-full bg-red-500 px-5 py-3 text-sm font-bold text-white z-10">
                     {getTrendingEmoji(trendingRank)} #{trendingRank} Trending
                 </div>
             )}
