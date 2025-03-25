@@ -158,3 +158,4 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.message").value("Invalid access token"));
     }
 }
+
