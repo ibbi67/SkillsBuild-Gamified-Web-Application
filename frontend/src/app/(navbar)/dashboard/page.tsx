@@ -7,6 +7,7 @@ import { useStreak } from "@/queries/streak/useStreak";
 import { useFavourites } from "@/queries/favourites/useFavourites";
 import toast from "react-hot-toast";
 import ProfileUpdateForm from "@/component/profile/ProfileUpdateForm";
+import { EnrolledCoursesSection } from "@/component/dashboard/EnrolledCoursesSection";
 
 export default function DashboardPage() {
     const { data: user, isLoading: isLoadingUser, isError: isErrorUser, error: errorUser } = useMe();
@@ -65,6 +66,7 @@ export default function DashboardPage() {
                         )}
                     </div>
                 </div>
+                <EnrolledCoursesSection />
             </div>
         </div>
     );

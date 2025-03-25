@@ -80,7 +80,7 @@ public class EnrollmentController {
         };
     }
 
-    @Operation(summary = "Update enrollment progress")
+    @Operation(summary = "Update time spent on course")
     @PutMapping("/{enrollmentId}/progress")
     public ResponseEntity<ApiResponse<Enrollment>> updateProgress(@PathVariable Integer enrollmentId, @RequestBody UpdateProgressDTO updateProgressDTO) {
         ServiceResult<Enrollment, EnrollmentUpdateProgressError> result = enrollmentService.updateProgress(enrollmentId, updateProgressDTO);

@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 
 interface UpdateProgressDTO {
+    enrollmentId: number;
     timeSpent: number;
 }
 
@@ -12,7 +13,7 @@ interface UpdateProgressResponse {
 
 export const useUpdateProgress = () => {
     return useMutation<UpdateProgressResponse, AxiosError<UpdateProgressResponse>, UpdateProgressDTO>({
-        mutationFn: ({ timeSpent }) => axios.put(`/enrollments/${timeSpent}/progress`, { timeSpent }),
+        mutationFn: ({ enrollmentId, timeSpent }) => axios.put(`/enrollments/${enrollmentId}/progress`, { timeSpent }),
         mutationKey: ['updateProgress'],
     });
 };
