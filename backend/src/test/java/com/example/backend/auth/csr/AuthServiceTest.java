@@ -4,6 +4,7 @@ import com.example.backend.auth.error.*;
 import com.example.backend.person.Person;
 import com.example.backend.person.PersonDTO;
 import com.example.backend.person.csr.PersonService;
+import com.example.backend.badge.csr.BadgeService;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
 import jakarta.servlet.http.HttpServletResponse;
@@ -23,14 +24,16 @@ public class AuthServiceTest {
     private AuthService authService;
     private PersonService personService;
     private JWT jwt;
+    private BadgeService badgeService;
     private HttpServletResponse response;
 
     @BeforeEach
     public void setUp() {
         personService = mock(PersonService.class);
         jwt = mock(JWT.class);
+        badgeService = mock(BadgeService.class);
         response = mock(HttpServletResponse.class);
-        authService = new AuthService(personService, jwt);
+        authService = new AuthService(personService, jwt, badgeService);
     }
 
     @Test
