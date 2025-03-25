@@ -54,7 +54,7 @@ public class CommentService {
         }
 
         // Validate content
-        if (!StringUtils.hasText(commentDTO.getContent())) {
+        if (commentDTO.getContent() == null || !StringUtils.hasText(commentDTO.getContent())) {
             return ServiceResult.error(CommentCreateError.EMPTY_CONTENT);
         }
 
