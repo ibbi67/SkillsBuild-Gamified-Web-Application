@@ -98,6 +98,32 @@ class CommentServiceTest {
     }
 
     @Test
+    void getCommentsByCourseId_whenInvalidCourseId_returnsError() {
+        // Act
+        ServiceResult<List<Comment>, CommentGetByCourseError> result = commentService.getCommentsByCourseId(null);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentGetByCourseError.INVALID_COURSE_ID, result.getError());
+
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).findByCourseId(any());
+    }
+
+    @Test
+    void getCommentsByCourseId_whenNegativeCourseId_returnsError() {
+        // Act
+        ServiceResult<List<Comment>, CommentGetByCourseError> result = commentService.getCommentsByCourseId(-1);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentGetByCourseError.INVALID_COURSE_ID, result.getError());
+
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).findByCourseId(any());
+    }
+
+    @Test
     void getCommentsByCourseId_whenExceptionOccurs_returnsError() {
         // Arrange
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(testCourse));
@@ -155,6 +181,40 @@ class CommentServiceTest {
     }
 
     @Test
+    void addComment_whenNullToken_returnsUnauthorizedError() {
+        // Arrange
+        CommentDTO commentDTO = new CommentDTO("Test comment", courseId);
+
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, null);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.UNAUTHORIZED, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    void addComment_whenEmptyToken_returnsUnauthorizedError() {
+        // Arrange
+        CommentDTO commentDTO = new CommentDTO("Test comment", courseId);
+
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, "");
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.UNAUTHORIZED, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
     void addComment_whenCourseDoesNotExist_returnsCourseNotFoundError() {
         // Arrange
         CommentDTO commentDTO = new CommentDTO("Test comment", courseId);
@@ -193,5 +253,126 @@ class CommentServiceTest {
         verify(jwt).getPersonFromToken(accessToken);
         verify(courseRepository).findById(courseId);
         verify(commentRepository).save(any(Comment.class));
+    }
+
+    @Test
+    void addComment_whenNullDTO_returnsInvalidRequestError() {
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(null, accessToken);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.INVALID_REQUEST, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    void addComment_whenEmptyContent_returnsEmptyContentError() {
+        // Arrange
+        CommentDTO commentDTO = new CommentDTO("", courseId);
+
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, accessToken);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.EMPTY_CONTENT, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    void addComment_whenNullContent_returnsEmptyContentError() {
+        // Arrange
+        CommentDTO commentDTO = new CommentDTO(null, courseId);
+
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, accessToken);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.EMPTY_CONTENT, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    void addComment_whenInvalidCourseId_returnsInvalidCourseIdError() {
+        // Arrange
+        CommentDTO commentDTO = new CommentDTO("Test comment", null);
+
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, accessToken);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.INVALID_COURSE_ID, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    void addComment_whenNegativeCourseId_returnsInvalidCourseIdError() {
+        // Arrange
+        CommentDTO commentDTO = new CommentDTO("Test comment", -1);
+
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, accessToken);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.INVALID_COURSE_ID, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    void addComment_whenContentTooShort_returnsContentTooShortError() {
+        // Arrange
+        CommentDTO commentDTO = new CommentDTO("A", courseId);  // Just one character
+
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, accessToken);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.CONTENT_TOO_SHORT, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
+    }
+
+    @Test
+    void addComment_whenContentTooLong_returnsContentTooLongError() {
+        // Arrange
+        // Create a string with more than 1000 characters
+        StringBuilder longContent = new StringBuilder();
+        for (int i = 0; i < 1001; i++) {
+            longContent.append("a");
+        }
+        CommentDTO commentDTO = new CommentDTO(longContent.toString(), courseId);
+
+        // Act
+        ServiceResult<Comment, CommentCreateError> result = commentService.addComment(commentDTO, accessToken);
+
+        // Assert
+        assertFalse(result.isSuccess());
+        assertEquals(CommentCreateError.CONTENT_TOO_LONG, result.getError());
+
+        verify(jwt, never()).getPersonFromToken(any());
+        verify(courseRepository, never()).findById(any());
+        verify(commentRepository, never()).save(any());
     }
 }

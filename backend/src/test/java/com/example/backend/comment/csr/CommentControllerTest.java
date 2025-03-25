@@ -114,8 +114,6 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.message").value("Course not found"));
     }
 
-
-
     @Test
     public void testAddComment_InvalidToken() throws Exception {
         // Test adding a comment with an invalid token
@@ -130,11 +128,100 @@ public class CommentControllerTest {
     }
 
     @Test
+    public void testAddComment_NoToken() throws Exception {
+        // Test adding a comment with no token
+        CommentDTO commentDTO = new CommentDTO("This comment should fail", courseId);
+
+        mockMvc.perform(post("/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Unauthorized"));
+    }
+
+    @Test
+    public void testAddComment_EmptyContent() throws Exception {
+        // Test adding a comment with empty content
+        CommentDTO commentDTO = new CommentDTO("", courseId);
+
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Comment content cannot be empty"));
+    }
+
+    @Test
+    public void testAddComment_ContentTooShort() throws Exception {
+        // Test adding a comment with content that's too short
+        CommentDTO commentDTO = new CommentDTO("a", courseId);
+
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Comment is too short (minimum 2 characters)"));
+    }
+
+    @Test
+    public void testAddComment_ContentTooLong() throws Exception {
+        // Create a long comment (more than 1000 characters)
+        StringBuilder longContent = new StringBuilder();
+        for (int i = 0; i < 1001; i++) {
+            longContent.append("a");
+        }
+        CommentDTO commentDTO = new CommentDTO(longContent.toString(), courseId);
+
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Comment is too long (maximum 1000 characters)"));
+    }
+
+    @Test
+    public void testAddComment_InvalidCourseId() throws Exception {
+        // Test adding a comment with invalid course ID
+        CommentDTO commentDTO = new CommentDTO("This comment should fail", -1);
+
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid course ID"));
+    }
+
+    @Test
+    public void testAddComment_NullCourseId() throws Exception {
+        // Test adding a comment with null course ID
+        String jsonWithNullCourseId = "{\"content\":\"Test comment\",\"courseId\":null}";
+
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonWithNullCourseId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid course ID"));
+    }
+
+    @Test
     public void testGetCommentsByCourseId_CourseNotFound() throws Exception {
         // Test getting comments for a non-existent course
         mockMvc.perform(get("/comments/course/999"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value("Failed to get comments"));
+    }
+
+    @Test
+    public void testGetCommentsByCourseId_InvalidCourseId() throws Exception {
+        // Test getting comments with invalid course ID
+        mockMvc.perform(get("/comments/course/-1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid course ID"));
     }
 
     @Test
@@ -162,5 +249,24 @@ public class CommentControllerTest {
                 .andExpect(jsonPath("$.data.length()").value(2))
                 .andExpect(jsonPath("$.data[0].content").exists())
                 .andExpect(jsonPath("$.data[1].content").exists());
+    }
+
+    @Test
+    public void testAddComment_InvalidRequestFormat() throws Exception {
+        // Test with malformed JSON
+        String invalidJson = "{\"content\":\"Test comment\", \"courseId\":";  // Incomplete JSON
+
+        mockMvc.perform(post("/comments")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testGetCommentsByCourseId_NonNumericId() throws Exception {
+        // Test getting comments with a non-numeric ID
+        mockMvc.perform(get("/comments/course/abc"))
+                .andExpect(status().isBadRequest());
     }
 }

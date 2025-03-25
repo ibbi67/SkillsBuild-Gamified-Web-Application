@@ -54,8 +54,17 @@ public class CommentService {
         }
 
         // Validate content
-        if (!StringUtils.hasText(commentDTO.getContent())) {
+        if (commentDTO.getContent() == null || !StringUtils.hasText(commentDTO.getContent())) {
             return ServiceResult.error(CommentCreateError.EMPTY_CONTENT);
+        }
+
+        // Validate content length
+        if (commentDTO.getContent().trim().length() < 2) {
+            return ServiceResult.error(CommentCreateError.CONTENT_TOO_SHORT);
+        }
+
+        if (commentDTO.getContent().length() > 1000) {
+            return ServiceResult.error(CommentCreateError.CONTENT_TOO_LONG);
         }
 
         // Validate course ID

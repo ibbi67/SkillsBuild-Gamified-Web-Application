@@ -32,8 +32,17 @@ public class CommentController {
             return ResponseEntity.ok(ApiResponse.success(result.getData()));
         }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.failed("Failed to get comments"));
+        CommentGetByCourseError error = result.getError();
+        return switch (error) {
+            case INVALID_COURSE_ID ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.BAD_REQUEST);
+            case COURSE_NOT_FOUND ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.NOT_FOUND);
+            case GET_COMMENTS_FAILED ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            default ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        };
     }
 
     @Operation(summary = "Add a comment to a course")
@@ -49,7 +58,8 @@ public class CommentController {
 
         CommentCreateError error = result.getError();
         return switch (error) {
-            case INVALID_REQUEST, EMPTY_CONTENT, INVALID_COURSE_ID ->
+            case INVALID_REQUEST, EMPTY_CONTENT, INVALID_COURSE_ID, CONTENT_TOO_SHORT, CONTENT_TOO_LONG,
+                 INAPPROPRIATE_CONTENT, RATE_LIMIT_EXCEEDED ->
                     new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.BAD_REQUEST);
             case UNAUTHORIZED ->
                     new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.UNAUTHORIZED);
