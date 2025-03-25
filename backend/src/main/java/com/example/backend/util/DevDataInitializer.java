@@ -4,9 +4,15 @@ import com.example.backend.badge.Badge;
 import com.example.backend.badge.csr.BadgeRepository;
 import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseRepository;
+import com.example.backend.person.Person;
+import com.example.backend.person.csr.PersonRepository;
+import com.example.backend.person.csr.PersonService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.util.Random;
 
 @Component
 @Profile("dev")
@@ -14,16 +20,19 @@ public class DevDataInitializer {
 
     private final CourseRepository courseRepository;
     private final BadgeRepository badgeRepository;
+    private final PersonRepository personRepository;
 
-    public DevDataInitializer(CourseRepository courseRepository, BadgeRepository badgeRepository) {
+    public DevDataInitializer(CourseRepository courseRepository, BadgeRepository badgeRepository, PersonRepository personRepository) {
         this.courseRepository = courseRepository;
         this.badgeRepository = badgeRepository;
+        this.personRepository = personRepository;
     }
 
     @PostConstruct
     public void init() {
         initCourseData();
         initBadgeData();
+        initPersonData();
     }
 
     public void initCourseData() {
@@ -222,6 +231,108 @@ public class DevDataInitializer {
         badgeRepository.save(new Badge("Favorites Addict", "Added 10 courses to favorites","/badges/favorite-10.png", "FAVORITE", 10));
         badgeRepository.save(new Badge("Streak Starter", "Maintained a 3-day streak",   "/badges/streak-3.png", "STREAK", 3));
         badgeRepository.save(new Badge("Streak Master", "Maintained a 7-day streak","/badges/streak-7.png", "STREAK", 7));
+    }
+
+    public void initPersonData() {
+        personRepository.save(new Person(
+                "sarah_dev",
+                "$2a$12$8qx5ZWZoNW8iAH1q4CTJIe.rLkUj3y9vVnXK9VCHqCS4eYRFgfLtG",
+                8,
+                "Sarah",
+                "Chen",
+                "sarah.chen@email.com",
+                "https://randomuser.me/api/portraits/women/1.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "alex_coder",
+                "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKXcQQhJD0n/14q",
+                6,
+                "Alex",
+                "Rodriguez",
+                "alex.rodriguez@email.com",
+                "https://randomuser.me/api/portraits/men/2.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "emma_tech",
+                "$2a$12$QmKxM7xqzxMBGpVtFBp2SO5Pf/F6FAqUw8GaO3PGYVKcNAeA7wzYe",
+                9,
+                "Emma",
+                "Wilson",
+                "emma.wilson@email.com",
+                "https://randomuser.me/api/portraits/women/3.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "marcus_js",
+                "$2a$12$rTtPfMRF9DDgQCOrYT3EyebF0X0JW3XMCDj6J3w8TgJnQvK0NH2da",
+                2,
+                "Marcus",
+                "Johnson",
+                "marcus.johnson@email.com",
+                "https://randomuser.me/api/portraits/men/4.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "priya_code",
+                "$2a$12$9ZxF1g/e.0kRfZP6zvQXR.TUHBGHDXVZEvrCwgZ8r.U8D9zGqF3TG",
+                3,
+                "Priya",
+                "Patel",
+                "priya.patel@email.com",
+                "https://randomuser.me/api/portraits/women/5.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "david_py",
+                "$2a$12$tX4S7wM3CK7jC2oqW1BTE.x3pJ9F0h7uQyq0tK9Jh8NIZKjJ0r1.q",
+                12,
+                "David",
+                "Smith",
+                "david.smith@email.com",
+                "https://randomuser.me/api/portraits/men/6.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "lisa_ux",
+                "$2a$12$KG6H8J2u8qHRqm.6i2rIKuwkUhC.v8QJh/wC.kHWNXNqpkD2NZlt2",
+                6,
+                "Lisa",
+                "Brown",
+                "lisa.brown@email.com",
+                "https://randomuser.me/api/portraits/women/7.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "james_ai",
+                "$2a$12$1VqdrKP7YqS.ZRH90oI9zOIUFtqX9vhRzZ6oKx.0jJ0fvK1l3eJlq",
+                9,
+                "James",
+                "Williams",
+                "james.williams@email.com",
+                "https://randomuser.me/api/portraits/men/8.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "sofia_data",
+                "$2a$12$mKZ8P0ZyQ3X9Y8YqR.zVv.3z8x9.U8q9tfbQZ9K6kH0TvKJ.4GXEC",
+                2,
+                "Sofia",
+                "Garcia",
+                "sofia.garcia@email.com",
+                "https://randomuser.me/api/portraits/women/9.jpg"
+        ));
+
+        personRepository.save(new Person(
+                "ryan_dev",
+                "$2a$12$QK0JE/KlM0e.Z2VKvEeC8e4WgHpL7ObJ0QoRywU.JYFoX8hKX2p.2",
+                5,
+                "Ryan",
+                "Taylor",
+                "ryan.taylor@email.com",
+                "https://randomuser.me/api/portraits/men/10.jpg"
+        ));
     }
 
 }

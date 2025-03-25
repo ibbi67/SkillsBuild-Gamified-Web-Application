@@ -67,4 +67,14 @@ public class Person {
         this.email = email;
         this.avatarLink = avatarLink;
     }
+
+    public Person(String username, String password, Integer streak, String firstName, String lastName, String email, String avatarLink) {
+        this.username = username;
+        this.password = password;
+        this.streak = streak;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.avatarLink = avatarLink;
+    }
 }
