@@ -1,9 +1,7 @@
 package com.example.backend.course.csr;
 
 import com.example.backend.course.Course;
-import com.example.backend.course.error.CourseGetAllError;
-import com.example.backend.course.error.CourseGetByIdError;
-import com.example.backend.course.error.CourseGetRecommendError;
+import com.example.backend.course.error.*;
 import com.example.backend.person.Person;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
@@ -165,4 +163,94 @@ public class CourseServiceTest {
         assertEquals(1, result.getData().size());
         assertEquals(recommendedCourse, result.getData().getFirst());
     }
+
+    @Test
+    public void testGetTrendingCourses_success() {
+        Course course1 = new Course();
+        course1.setTitle("Course 1");
+        course1.setViews(10);
+
+        Course course2 = new Course();
+        course2.setTitle("Course 2");
+        course2.setViews(20);
+
+        List<Course> trendingCourses = Arrays.asList(course2, course1); // Ordered by views desc
+        when(courseRepository.findTop10ByOrderByViewsDesc()).thenReturn(trendingCourses);
+
+        ServiceResult<List<Course>, CourseGetTrendingError> result = courseService.getTrendingCourses();
+
+        assertTrue(result.isSuccess());
+        assertEquals(2, result.getData().size());
+        assertEquals("Course 2", result.getData().get(0).getTitle()); // Course with most views first
+        assertEquals("Course 1", result.getData().get(1).getTitle());
+    }
+
+    @Test
+    public void testGetTrendingCourses_emptyList() {
+        when(courseRepository.findTop10ByOrderByViewsDesc()).thenReturn(List.of());
+
+        ServiceResult<List<Course>, CourseGetTrendingError> result = courseService.getTrendingCourses();
+
+        assertTrue(result.isSuccess());
+        assertTrue(result.getData().isEmpty());
+    }
+
+    @Test
+    public void testGetTrendingCourses_exception() {
+        when(courseRepository.findTop10ByOrderByViewsDesc()).thenThrow(new RuntimeException("Database error"));
+
+        ServiceResult<List<Course>, CourseGetTrendingError> result = courseService.getTrendingCourses();
+
+        assertFalse(result.isSuccess());
+        assertEquals(CourseGetTrendingError.GET_TRENDING_COURSES_FAILED, result.getError());
+    }
+
+    @Test
+    public void testIncrementCourseViews_success() {
+        Course course = new Course();
+        course.setId(1);
+        course.setViews(5);
+
+        when(courseRepository.findById(1)).thenReturn(Optional.of(course));
+        when(courseRepository.save(any(Course.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ServiceResult<Void, CourseViewError> result = courseService.incrementCourseViews(1);
+
+        assertTrue(result.isSuccess());
+        assertEquals(6, course.getViews()); // View count should be incremented
+        verify(courseRepository).save(course);
+    }
+
+    @Test
+    public void testIncrementCourseViews_nullId() {
+        ServiceResult<Void, CourseViewError> result = courseService.incrementCourseViews(null);
+
+        assertFalse(result.isSuccess());
+        assertEquals(CourseViewError.INVALID_ID, result.getError());
+        verify(courseRepository, never()).findById(any());
+        verify(courseRepository, never()).save(any());
+    }
+
+    @Test
+    public void testIncrementCourseViews_invalidId() {
+        ServiceResult<Void, CourseViewError> result = courseService.incrementCourseViews(-1);
+
+        assertFalse(result.isSuccess());
+        assertEquals(CourseViewError.INVALID_ID, result.getError());
+        verify(courseRepository, never()).findById(any());
+        verify(courseRepository, never()).save(any());
+    }
+
+    @Test
+    public void testIncrementCourseViews_courseNotFound() {
+        when(courseRepository.findById(999)).thenReturn(Optional.empty());
+
+        ServiceResult<Void, CourseViewError> result = courseService.incrementCourseViews(999);
+
+        assertFalse(result.isSuccess());
+        assertEquals(CourseViewError.COURSE_NOT_FOUND, result.getError());
+        verify(courseRepository, never()).save(any());
+    }
+
+
 }

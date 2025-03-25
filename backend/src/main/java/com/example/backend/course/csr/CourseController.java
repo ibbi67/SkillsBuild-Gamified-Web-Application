@@ -74,6 +74,7 @@ public class CourseController {
                     new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.NOT_FOUND);
             case VIEW_INCREMENT_FAILED ->
                     new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            case INVALID_ID -> null;
         };
     }
 

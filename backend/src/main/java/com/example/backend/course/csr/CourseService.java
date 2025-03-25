@@ -79,6 +79,10 @@ public class CourseService {
 
     public ServiceResult<Void, CourseViewError> incrementCourseViews(Integer id) {
         if (id == null || id <= 0) {
+            return ServiceResult.error(CourseViewError.INVALID_ID);
+        }
+
+        if (id == null || id <= 0) {
             return ServiceResult.error(CourseViewError.COURSE_NOT_FOUND);
         }
 
