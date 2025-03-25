@@ -29,7 +29,12 @@ public class Goal {
     private String description;
     private String reward;
 
-    @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL)
+    @ManyToMany
+    @JoinTable(
+        name = "goal_enrollment",
+        joinColumns = @JoinColumn(name = "goal_id"),
+        inverseJoinColumns = @JoinColumn(name = "enrollment_id")
+    )
     List<Enrollment> enrollments = new ArrayList<>();
 
     @ManyToOne
@@ -41,7 +46,7 @@ public class Goal {
         this.endDate = endDate;
         this.description = description;
         this.reward = reward;
-//        this.person = person;
+        this.person = person;
     }
 
     public void addEnrollment(Enrollment enrollment) {
