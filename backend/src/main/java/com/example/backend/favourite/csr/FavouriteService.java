@@ -10,7 +10,6 @@ import com.example.backend.person.csr.PersonService;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +40,6 @@ public class FavouriteService {
         return ServiceResult.success(favoriteCourses);
     }
 
-    @Transactional
     public ServiceResult<Void, FavouriteCreateError> create(String refreshToken, Integer courseId) {
         Optional<Person> personOptional = jwt.getPersonFromToken(refreshToken);
         if (personOptional.isEmpty()) {
@@ -56,7 +54,6 @@ public class FavouriteService {
         if (personService.addFavouriteCourse(person, course).isEmpty()) {
             return ServiceResult.error(FavouriteCreateError.COURSE_ALREADY_FAVORITE);
         }
-
         return ServiceResult.success(null);
     }
 
