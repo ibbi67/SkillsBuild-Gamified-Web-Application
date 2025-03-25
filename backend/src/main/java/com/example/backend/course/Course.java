@@ -22,7 +22,6 @@ public class Course {
     private String link;
     private Integer estimatedDuration;
     private Integer difficulty;
-
     private Integer views = 0;
 
     public Course(String title, String description, String link, Integer estimatedDuration, Integer difficulty) {
@@ -31,9 +30,6 @@ public class Course {
         this.link = link;
         this.estimatedDuration = estimatedDuration;
         this.difficulty = difficulty;
-        this.views = 0;
     }
 
-    public Course(String title, String description, String link, Integer estimatedDuration, Integer difficulty, int i) {
-    }
 }

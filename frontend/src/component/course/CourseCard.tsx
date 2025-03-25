@@ -4,7 +4,7 @@ import { CourseDescription } from "./CourseDescription";
 import { CourseActions } from "./CourseActions";
 
 interface CourseCardProps {
-    course: Course & { views?: number };
+    course: Course ;
     trendingRank?: number;
 }
 
