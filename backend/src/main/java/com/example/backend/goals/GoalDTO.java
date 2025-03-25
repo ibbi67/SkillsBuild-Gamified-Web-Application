@@ -12,5 +12,4 @@ public class GoalDTO {
     private LocalDate endDate;
     private String description;
     private String reward;
-    private boolean achieved;
 }

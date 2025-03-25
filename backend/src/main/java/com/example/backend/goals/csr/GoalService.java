@@ -10,7 +10,6 @@ import com.example.backend.person.Person;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Optional;

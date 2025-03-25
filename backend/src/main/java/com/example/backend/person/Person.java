@@ -1,8 +1,6 @@
 package com.example.backend.person;
 
 import com.example.backend.course.Course;
-import com.example.backend.goals.Goal;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.example.backend.badge.Badge;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -43,9 +41,6 @@ public class Person {
             inverseJoinColumns = @JoinColumn(name = "badge_id")
     )
     private List<Badge> badges = new ArrayList<>();
-
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
-    private List<Goal> goals;
 
     public Person(String username, String password) {
         this.username = username;

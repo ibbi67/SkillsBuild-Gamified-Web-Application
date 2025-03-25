@@ -2,9 +2,6 @@ package com.example.backend.goals;
 
 import com.example.backend.enrollment.Enrollment;
 import com.example.backend.person.Person;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.example.backend.course.Course;
-import com.example.backend.person.Person;
 import jakarta.persistence.*;
 import lombok.*;
 
