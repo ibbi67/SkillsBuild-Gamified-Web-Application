@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class CommentServiceTest {
@@ -75,7 +74,7 @@ class CommentServiceTest {
         // Assert
         assertTrue(result.isSuccess());
         assertEquals(1, result.getData().size());
-        assertEquals("Test comment", result.getData().get(0).getContent());
+        assertEquals("Test comment", result.getData().getFirst().getContent());
 
         verify(courseRepository).findById(courseId);
         verify(commentRepository).findByCourseId(courseId);
