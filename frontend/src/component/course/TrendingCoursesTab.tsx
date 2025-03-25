@@ -14,7 +14,7 @@ export function TrendingCoursesTab() {
                 <CourseCard
                     key={course.id}
                     course={course}
-                    trendingRank={index + 1}
+                    trendingRank={index + 1} // Pass the trending rank
                 />
             ))}
         </div>
