@@ -28,8 +28,8 @@ public class BadgeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Badge>> getBadgeById(@PathVariable Integer id) {
-        ServiceResult<Badge, BadgeGetByIdError> result = badgeService.getBadgeById(id);
+    public ResponseEntity<ApiResponse<Badge>> getBadgeById(@CookieValue("accessToken") String accessToken, @PathVariable Integer id) {
+        ServiceResult<Badge, BadgeGetByIdError> result = badgeService.getBadgeById(accessToken, id);
         if (result.isSuccess()) {
             return new ResponseEntity<>(ApiResponse.success(result.getData()), HttpStatus.OK);
         }

@@ -4,6 +4,7 @@ import com.example.backend.badge.Badge;
 import com.example.backend.badge.error.BadgeGetByIdError;
 import com.example.backend.badge.error.BadgeGetByUserError;
 import com.example.backend.person.Person;
+import com.example.backend.person.csr.PersonService;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,48 @@ import java.util.Optional;
 public class BadgeService {
 
     private final JWT jwt;
+    private final PersonService personService;
     private final BadgeRepository badgeRepository;
 
     @Autowired
-    public BadgeService(JWT jwt, BadgeRepository badgeRepository) {
+    public BadgeService(JWT jwt, PersonService personService, BadgeRepository badgeRepository) {
         this.jwt = jwt;
+        this.personService = personService;
         this.badgeRepository = badgeRepository;
+    }
+
+    public List<Badge> getBadgesByCriteriaType(String criteriaType) {
+        return badgeRepository.findByCriteriaType(criteriaType);
+    }
+
+    private void checkAndAwardStreakBadges(Person person) {
+        List<Badge> streakBadges = getBadgesByCriteriaType("STREAK");
+        for (Badge badge : streakBadges) {
+            if (person.getStreak() >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
+                person.getBadges().add(badge);
+                badge.addPerson(person);
+            }
+        }
+        personService.save(person);
+    }
+
+    private void checkAndAwardFavoriteBadges(Person person) {
+        List<Badge> favoriteBadges = getBadgesByCriteriaType("FAVORITE");
+        int favoriteCount = person.getFavoriteCourses().size();
+        for (Badge badge : favoriteBadges) {
+            if (favoriteCount >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
+                person.getBadges().add(badge);
+                badge.addPerson(person);
+            }
+        }
+        personService.save(person);
+    }
+
+    // The accessToken must be valid
+    private void updateBadges(String accessToken) {
+        Person person = jwt.getPersonFromToken(accessToken).get();
+        checkAndAwardStreakBadges(person);
+        checkAndAwardFavoriteBadges(person);
     }
 
     public ServiceResult<List<Badge>, Void> getAllBadges() {
@@ -29,10 +66,11 @@ public class BadgeService {
         return ServiceResult.success(badges);
     }
 
-    public ServiceResult<Badge, BadgeGetByIdError> getBadgeById(Integer id) {
+    public ServiceResult<Badge, BadgeGetByIdError> getBadgeById(String accessToken, Integer id) {
         if (id == null || id <= 0) {
             return ServiceResult.error(BadgeGetByIdError.INVALID_ID);
         }
+        updateBadges(accessToken);
         Optional<Badge> badge = badgeRepository.findById(id);
         if (badge.isEmpty()) {
             return ServiceResult.error(BadgeGetByIdError.BADGE_NOT_FOUND);
@@ -45,6 +83,7 @@ public class BadgeService {
         if (persionOptional.isEmpty()) {
             return ServiceResult.error(BadgeGetByUserError.INVALID_ACCESS_TOKEN);
         }
+        updateBadges(accessToken);
         Person person = persionOptional.get();
         return ServiceResult.success(person.getBadges());
     }

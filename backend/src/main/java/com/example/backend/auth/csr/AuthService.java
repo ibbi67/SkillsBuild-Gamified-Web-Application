@@ -4,7 +4,6 @@ import com.example.backend.auth.error.*;
 import com.example.backend.person.Person;
 import com.example.backend.person.PersonDTO;
 import com.example.backend.person.csr.PersonService;
-import com.example.backend.badge.csr.BadgeService;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,12 +18,10 @@ public class AuthService {
 
     private final PersonService personService;
     private final JWT jwt;
-    private final BadgeService badgeService;
 
-    public AuthService(PersonService personService, JWT jwt, BadgeService badgeService) {
+    public AuthService(PersonService personService, JWT jwt) {
         this.personService = personService;
         this.jwt = jwt;
-        this.badgeService = badgeService;
     }
 
     public ServiceResult<Void, AuthUpdateStreakError> updateStreak(Person person) {
@@ -45,8 +42,6 @@ public class AuthService {
         person.setLastLoginDate(today);
         Optional<Person> personOptional = personService.save(person);
         if (personOptional.isPresent()) {
-            // Check for streak badges after updating streak
-            badgeService.checkAndAwardStreakBadges(personOptional.get());
             return ServiceResult.success(null);
         }
         return ServiceResult.error(AuthUpdateStreakError.STREAK_UPDATE_FAILED);
@@ -145,5 +140,4 @@ public class AuthService {
         Person person = personOptional.get();
         return ServiceResult.success(person);
     }
-
 }

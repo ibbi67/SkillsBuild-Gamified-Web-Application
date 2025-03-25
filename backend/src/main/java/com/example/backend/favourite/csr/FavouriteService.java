@@ -7,7 +7,6 @@ import com.example.backend.favourite.error.FavouriteGetAllError;
 import com.example.backend.favourite.error.FavouriteRemoveError;
 import com.example.backend.person.Person;
 import com.example.backend.person.csr.PersonService;
-import com.example.backend.badge.csr.BadgeService;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
 import org.springframework.stereotype.Service;
@@ -22,13 +21,11 @@ public class FavouriteService {
     private final JWT jwt;
     private final PersonService personService;
     private final CourseService courseService;
-    private final BadgeService badgeService;
 
-    public FavouriteService(JWT jwt, PersonService personService, CourseService courseService, BadgeService badgeService) {
+    public FavouriteService(JWT jwt, PersonService personService, CourseService courseService) {
         this.jwt = jwt;
         this.personService = personService;
         this.courseService = courseService;
-        this.badgeService = badgeService;
     }
 
     public ServiceResult<List<Course>, FavouriteGetAllError> getAll(String refreshToken) {
@@ -59,9 +56,6 @@ public class FavouriteService {
         if (personService.addFavouriteCourse(person, course).isEmpty()) {
             return ServiceResult.error(FavouriteCreateError.COURSE_ALREADY_FAVORITE);
         }
-
-        // Check and award favorite badges
-        badgeService.checkAndAwardFavoriteBadges(person);
 
         return ServiceResult.success(null);
     }

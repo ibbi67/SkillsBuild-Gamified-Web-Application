@@ -9,7 +9,6 @@ import com.example.backend.person.Person;
 import com.example.backend.person.csr.PersonService;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
-import com.example.backend.badge.csr.BadgeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -33,9 +32,6 @@ public class FavouriteServiceTest {
 
     @Mock
     private CourseService courseService;
-    
-    @Mock
-    private BadgeService badgeService;
 
     @InjectMocks
     private FavouriteService favouriteService;
@@ -65,14 +61,10 @@ public class FavouriteServiceTest {
         when(jwt.getPersonFromToken("validToken")).thenReturn(Optional.of(person));
         when(courseService.findById(1)).thenReturn(Optional.of(course));
         when(personService.addFavouriteCourse(any(Person.class), any(Course.class))).thenReturn(Optional.of(person));
-        doNothing().when(badgeService).checkAndAwardFavoriteBadges(any(Person.class));
 
         // Test
         ServiceResult<Void, FavouriteCreateError> result = favouriteService.create("validToken", 1);
         assertTrue(result.isSuccess());
-        
-        // Verify that badge service was called
-        verify(badgeService).checkAndAwardFavoriteBadges(person);
     }
 
     @Test
