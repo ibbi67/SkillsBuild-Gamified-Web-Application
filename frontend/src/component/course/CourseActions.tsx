@@ -12,14 +12,7 @@ interface CourseActionsProps {
 }
 
 export function CourseActions({ user, courseId, enrollmentId, isEnrolled, isLoading }: CourseActionsProps) {
-    if (isLoading) {
-        return (
-            <div className="flex justify-between items-center gap-4 p-4 bg-gray-50">
-                <div className="h-10 w-24 animate-pulse bg-gray-200 rounded"></div>
-                <div className="h-10 w-24 animate-pulse bg-gray-200 rounded"></div>
-            </div>
-        );
-    }
+    if (!user) return null;
 
     return (
         <div className="flex gap-4 p-4 bg-gray-50">
