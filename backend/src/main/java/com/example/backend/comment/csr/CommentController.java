@@ -29,11 +29,18 @@ public class CommentController {
     public ResponseEntity<ApiResponse<List<Comment>>> getCommentsByCourseId(@PathVariable Integer courseId) {
         ServiceResult<List<Comment>, CommentGetByCourseError> result = commentService.getCommentsByCourseId(courseId);
         if (result.isSuccess()) {
-            return ResponseEntity.ok(ApiResponse.success(result.getData()));
+            return new ResponseEntity<>(ApiResponse.success(result.getData()), HttpStatus.OK);
         }
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.failed("Failed to get comments"));
+        CommentGetByCourseError error = result.getError();
+        return switch (error) {
+            case INVALID_COURSE_ID ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.BAD_REQUEST);
+            case COURSE_NOT_FOUND ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.NOT_FOUND);
+            case GET_COMMENTS_FAILED ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        };
     }
 
     @Operation(summary = "Add a comment to a course")
