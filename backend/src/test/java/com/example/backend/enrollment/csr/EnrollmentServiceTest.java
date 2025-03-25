@@ -3,9 +3,11 @@ package com.example.backend.enrollment.csr;
 import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseService;
 import com.example.backend.enrollment.Enrollment;
+import com.example.backend.enrollment.UpdateProgressDTO;
 import com.example.backend.enrollment.error.EnrollmentCreateError;
 import com.example.backend.enrollment.error.EnrollmentGetAllError;
 import com.example.backend.enrollment.error.EnrollmentGetByIdError;
+import com.example.backend.enrollment.error.EnrollmentUpdateProgressError;
 import com.example.backend.person.Person;
 import com.example.backend.util.JWT;
 import com.example.backend.util.ServiceResult;
@@ -175,5 +177,47 @@ public class EnrollmentServiceTest {
 
         assertFalse(result.isSuccess());
         assertEquals(EnrollmentCreateError.COURSE_NOT_FOUND, result.getError());
+    }
+
+    @Test
+    void testUpdateProgress() {
+        Integer enrollmentId = 1;
+        UpdateProgressDTO updateProgressDTO = new UpdateProgressDTO(10);
+        Enrollment enrollment = new Enrollment();
+        when(enrollmentRepository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
+        when(enrollmentRepository.save(any(Enrollment.class))).thenReturn(enrollment);
+        ServiceResult<Enrollment, EnrollmentUpdateProgressError> result = enrollmentService.updateProgress(enrollmentId, updateProgressDTO);
+        assertTrue(result.isSuccess());
+        assertEquals(enrollment, result.getData());
+    }
+
+    @Test
+    void testUpdateProgress_InvalidEnrollmentId() {
+        Integer invalidEnrollmentId = -1;
+        UpdateProgressDTO updateProgressDTO = new UpdateProgressDTO(10);
+        ServiceResult<Enrollment, EnrollmentUpdateProgressError> result = enrollmentService.updateProgress(invalidEnrollmentId, updateProgressDTO);
+        assertFalse(result.isSuccess());
+        assertEquals(EnrollmentUpdateProgressError.INVALID_ENROLLMENT_ID, result.getError());
+    }
+
+    @Test
+    void testUpdateProgress_InvalidTimeSpent() {
+        Integer enrollmentId = 1;
+        UpdateProgressDTO updateProgressDTO = new UpdateProgressDTO(-1);
+        Enrollment enrollment = new Enrollment();
+        when(enrollmentRepository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
+        ServiceResult<Enrollment, EnrollmentUpdateProgressError> result = enrollmentService.updateProgress(enrollmentId, updateProgressDTO);
+        assertFalse(result.isSuccess());
+        assertEquals(EnrollmentUpdateProgressError.INVALID_TIME_SPENT, result.getError());
+    }
+
+    @Test
+    void testUpdateProgress_EnrollmentNotFound() {
+        Integer enrollmentId = 1;
+        UpdateProgressDTO updateProgressDTO = new UpdateProgressDTO(10);
+        when(enrollmentRepository.findById(enrollmentId)).thenReturn(Optional.empty());
+        ServiceResult<Enrollment, EnrollmentUpdateProgressError> result = enrollmentService.updateProgress(enrollmentId, updateProgressDTO);
+        assertFalse(result.isSuccess());
+        assertEquals(EnrollmentUpdateProgressError.ENROLLMENT_NOT_FOUND, result.getError());
     }
 }

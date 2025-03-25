@@ -1,9 +1,11 @@
 package com.example.backend.enrollment.csr;
 
 import com.example.backend.enrollment.Enrollment;
+import com.example.backend.enrollment.UpdateProgressDTO;
 import com.example.backend.enrollment.error.EnrollmentCreateError;
 import com.example.backend.enrollment.error.EnrollmentGetAllError;
 import com.example.backend.enrollment.error.EnrollmentGetByIdError;
+import com.example.backend.enrollment.error.EnrollmentUpdateProgressError;
 import com.example.backend.util.ApiResponse;
 import com.example.backend.util.ServiceResult;
 import org.springframework.http.HttpStatus;
@@ -74,6 +76,24 @@ public class EnrollmentController {
             case COURSE_NOT_FOUND ->
                     new ResponseEntity<>(ApiResponse.failed(result.getError().getMessage()), HttpStatus.NOT_FOUND);
             case ENROLLMENT_CREATION_FAILED ->
+                    new ResponseEntity<>(ApiResponse.failed(result.getError().getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        };
+    }
+
+    @Operation(summary = "Update time spent on course")
+    @PutMapping("/{enrollmentId}/progress")
+    public ResponseEntity<ApiResponse<Enrollment>> updateProgress(@PathVariable Integer enrollmentId, @RequestBody UpdateProgressDTO updateProgressDTO) {
+        ServiceResult<Enrollment, EnrollmentUpdateProgressError> result = enrollmentService.updateProgress(enrollmentId, updateProgressDTO);
+        if (result.isSuccess()) {
+            return new ResponseEntity<>(ApiResponse.success(result.getData()), HttpStatus.OK);
+        }
+        EnrollmentUpdateProgressError error = result.getError();
+        return switch (error) {
+            case INVALID_ENROLLMENT_ID, INVALID_TIME_SPENT ->
+                    new ResponseEntity<>(ApiResponse.failed(result.getError().getMessage()), HttpStatus.BAD_REQUEST);
+            case ENROLLMENT_NOT_FOUND ->
+                    new ResponseEntity<>(ApiResponse.failed(result.getError().getMessage()), HttpStatus.NOT_FOUND);
+            case ENROLLMENT_UPDATE_FAILED ->
                     new ResponseEntity<>(ApiResponse.failed(result.getError().getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         };
     }

@@ -1,6 +1,7 @@
 package com.example.backend.enrollment.csr;
 
 import com.example.backend.course.CourseDTO;
+import com.example.backend.enrollment.UpdateProgressDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -182,5 +184,65 @@ public class EnrollmentControllerTest {
                         .cookie(cookies))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Enrollment not found"));
+    }
+
+    @Test
+    void testUpdateProgress() throws Exception {
+        cookies = performSignupAndGetCookies();
+        addTestCourses();
+        addTestEnrollments();
+        Integer enrollmentId = 1;
+        UpdateProgressDTO updateProgressDTO = new UpdateProgressDTO(5);
+        mockMvc.perform(put("/enrollments/{enrollmentId}/progress", enrollmentId)
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateProgressDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").exists());
+    }
+
+    @Test
+    void testUpdateProgress_InvalidEnrollmentId() throws Exception {
+        cookies = performSignupAndGetCookies();
+        addTestCourses();
+        addTestEnrollments();
+        Integer invalidEnrollmentId = -1;
+        UpdateProgressDTO updateProgressDTO = new UpdateProgressDTO(5);
+        mockMvc.perform(put("/enrollments/{enrollmentId}/progress", invalidEnrollmentId)
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateProgressDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid enrollment ID"));
+    }
+
+    @Test
+    void testUpdateProgress_EnrollmentNotFound() throws Exception {
+        cookies = performSignupAndGetCookies();
+        addTestCourses();
+        addTestEnrollments();
+        Integer nonExistentEnrollmentId = 999;
+        UpdateProgressDTO updateProgressDTO = new UpdateProgressDTO(5);
+        mockMvc.perform(put("/enrollments/{enrollmentId}/progress", nonExistentEnrollmentId)
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateProgressDTO)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Enrollment not found"));
+    }
+
+    @Test
+    void testUpdateProgress_InvalidTimeSpent() throws Exception {
+        cookies = performSignupAndGetCookies();
+        addTestCourses();
+        addTestEnrollments();
+        Integer enrollmentId = 1;
+        UpdateProgressDTO updateProgressDTO = new UpdateProgressDTO(-5);
+        mockMvc.perform(put("/enrollments/{enrollmentId}/progress", enrollmentId)
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateProgressDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid time spent"));
     }
 }

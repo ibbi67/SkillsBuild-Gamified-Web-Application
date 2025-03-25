@@ -25,9 +25,9 @@ export default function Navbar({ user, logoutOnClick }: NavbarProps) {
                 <Logo />
             </div>
             <div className="flex justify-center gap-2">
-                <Link className={getLinkClass("/leaderboard")} href="/leaderboard">
+                {user && <Link className={getLinkClass("/leaderboard")} href="/leaderboard">
                     Leaderboard
-                </Link>
+                </Link>}
                 <Link className={getLinkClass("/course")} href="/course">
                     Course
                 </Link>
