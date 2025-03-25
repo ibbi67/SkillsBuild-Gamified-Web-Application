@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Data
@@ -42,7 +40,7 @@ public class Person {
             joinColumns = @JoinColumn(name = "person_id"),
             inverseJoinColumns = @JoinColumn(name = "badge_id")
     )
-    private Set<Badge> badges = new HashSet<>();
+    private List<Badge> badges = new ArrayList<>();
 
     // Constructor for creating a new person for signup
     public Person(String username, String password) {
@@ -50,7 +48,6 @@ public class Person {
         this.password = password;
         this.streak = 1;
         this.lastLoginDate = LocalDate.now();
-        this.badges = new HashSet<>();
     }
 
     // Constructor for creating a new person mostly for testing
@@ -59,7 +56,6 @@ public class Person {
         this.password = password;
         this.streak = streak;
         this.lastLoginDate = lastLoginDate;
-        this.badges = new HashSet<>();
     }
 
     // Constructor for creating a new person due to update profile
@@ -70,6 +66,5 @@ public class Person {
         this.lastName = lastName;
         this.email = email;
         this.avatarLink = avatarLink;
-        this.badges = new HashSet<>();
     }
 }

@@ -1,10 +1,6 @@
 package com.example.backend.badge.csr;
 
-import com.example.backend.badge.Badge;
 import com.example.backend.badge.BadgeDTO;
-import com.example.backend.badge.error.BadgeAwardError;
-import com.example.backend.badge.error.BadgeCreateError;
-import com.example.backend.badge.error.BadgeGetError;
 import com.example.backend.person.PersonDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

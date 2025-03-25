@@ -2,9 +2,6 @@ package com.example.backend.badge.csr;
 
 import com.example.backend.badge.Badge;
 import com.example.backend.badge.BadgeDTO;
-import com.example.backend.badge.error.BadgeAwardError;
-import com.example.backend.badge.error.BadgeCreateError;
-import com.example.backend.badge.error.BadgeGetError;
 import com.example.backend.course.Course;
 import com.example.backend.person.Person;
 import com.example.backend.person.csr.PersonRepository;

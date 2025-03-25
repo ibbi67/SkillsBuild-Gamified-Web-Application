@@ -1,5 +1,8 @@
 package com.example.backend.util;
 
+import com.example.backend.badge.Badge;
+import com.example.backend.badge.BadgeDTO;
+import com.example.backend.badge.csr.BadgeRepository;
 import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseRepository;
 import jakarta.annotation.PostConstruct;
@@ -11,9 +14,11 @@ import org.springframework.stereotype.Component;
 public class DevDataInitializer {
 
     private final CourseRepository courseRepository;
+    private final BadgeRepository badgeRepository;
 
-    public DevDataInitializer(CourseRepository courseRepository) {
+    public DevDataInitializer(CourseRepository courseRepository, BadgeRepository badgeRepository) {
         this.courseRepository = courseRepository;
+        this.badgeRepository = badgeRepository;
     }
 
     @PostConstruct
@@ -59,6 +64,15 @@ public class DevDataInitializer {
                 "https://students.yourlearning.ibm.com/activity/PLAN-B2125F145F0E",
                 1170,
                 3));
+    }
+
+    public void initBadgeData() {
+        badgeRepository.save(new Badge("First Favorite", "Added your first course to favorites", "/badges/favorite-1.png", "FAVORITE", 1));
+        badgeRepository.save(new Badge("Favorites Collector", "Added 2 courses to favorites","/badges/favorite-2.png", "FAVORITE", 2));
+        badgeRepository.save(new Badge("Favorites Enthusiast", "Added 5 courses to favorites","/badges/favorite-5.png", "FAVORITE", 5));
+        badgeRepository.save(new Badge("Favorites Addict", "Added 10 courses to favorites","/badges/favorite-10.png", "FAVORITE", 10));
+        badgeRepository.save(new Badge("Streak Starter", "Maintained a 3-day streak",   "/badges/streak-3.png", "STREAK", 3));
+        badgeRepository.save(new Badge("Streak Master", "Maintained a 7-day streak","/badges/streak-7.png", "STREAK", 7));
     }
 
 }
