@@ -5,6 +5,7 @@ import { CourseActions } from "./CourseActions";
 
 interface CourseCardProps {
     course: Course & { views?: number };
+    trendingRank?: number;
 }
 
 export default function CourseCard({ course }: CourseCardProps) {

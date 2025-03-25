@@ -10,7 +10,13 @@ export function TrendingCoursesTab() {
 
     return (
         <div className="grid grid-cols-2 gap-2">
-            {trendingCourses?.data.map((course) => <CourseCard key={course.id} course={course} />)}
+            {trendingCourses?.data.map((course, index) => (
+                <CourseCard
+                    key={course.id}
+                    course={course}
+                    trendingRank={index + 1}
+                />
+            ))}
         </div>
     );
 }
