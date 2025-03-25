@@ -93,6 +93,7 @@
       - [Backend API Endpoints](#backend-api-endpoints)
       - [Frontend Queries](#frontend-queries)
     - [Error Handling](#error-handling-1)
+>>>>>>> 7e48b2d (feat: updated user manual)
 
 ---
 
