@@ -73,6 +73,20 @@
     - [EnrollButton](#enrollbutton)
     - [FavoriteButton](#favoritebutton)
     - [Timer](#timer)
+  - [Badges System](#badges-system)
+    - [Overview](#overview-3)
+    - [Badges System for Backend](#badges-system-for-backend)
+      - [Badge Service](#badge-service)
+      - [Badge Controller](#badge-controller)
+      - [Badge Repository](#badge-repository)
+      - [Authentication Integration](#authentication-integration-1)
+    - [Badges System for Frontend](#badges-system-for-frontend)
+      - [Badge Display Components](#badge-display-components)
+      - [User Interface Features](#user-interface-features)
+      - [Badge Types and Criteria](#badge-types-and-criteria)
+      - [Flow of Badge System](#flow-of-badge-system)
+      - [Technical Implementation](#technical-implementation)
+      - [Error Handling](#error-handling-1)
 
 ---
 
@@ -273,7 +287,7 @@ the platform by tracking consecutive daily logins.
 
 To check your streak programmatically:
 
-GET /api/streak/{userId}
+GET /api/streak/{userId}
 
 (Remember that this data is accessed from the backend so it will show on
 backend port -- localhost:8080)
@@ -426,7 +440,7 @@ The course recommendation system analyzes student profiles and course data to su
 ### FavouriteCourse Service  
 - Manages adding, removing, and retrieving favourite courses  
 - Stores user-course relationships in the database  
-- Ensures duplicate courses aren’t added  
+- Ensures duplicate courses aren't added  
 
 ### FavouriteCourse Controller  
 - Handles API requests for saving and retrieving favourites  
@@ -435,7 +449,7 @@ The course recommendation system analyzes student profiles and course data to su
 
 ### FavouriteCourse Repository  
 - Manages database interactions for favourite courses  
-- Efficiently retrieves a user’s saved courses  
+- Efficiently retrieves a user's saved courses  
 - Implements caching for faster access  
 
 ### Authentication Integration  
@@ -448,7 +462,7 @@ The course recommendation system analyzes student profiles and course data to su
 ## Save to Favourite Courses for Frontend  
 
 ### Favourite Courses Dashboard  
-- Displays user’s saved courses in an easy-to-access list  
+- Displays user's saved courses in an easy-to-access list  
 - Allows quick navigation to favourite courses  
 - Supports sorting and filtering  
 
@@ -463,7 +477,7 @@ The course recommendation system analyzes student profiles and course data to su
 
 ### Saving a Course  
 1. User clicks the "Save to Favourites" button  
-2. API adds the course to the user’s favourites list  
+2. API adds the course to the user's favourites list  
 3. The UI updates to reflect the change  
 
 ### Removing a Course  
@@ -665,3 +679,135 @@ The `FavoriteButton` component allows the user to add or remove a course from th
 
 ##### Timer
 The `Timer` component tracks the time spent on a course. It uses the `useTimer` hook to manage the timer state and update the progress.
+
+## Badges System
+**Author: Ibrahim Shahid**
+
+### Overview
+The Badges System is a gamification feature that rewards users for their engagement and achievements on the platform. Users can earn badges by maintaining streaks and adding courses to their favorites.
+
+### Badges System for Backend
+
+#### Badge Service
+- Manages badge-related operations and business logic
+- Handles badge awarding based on user achievements
+- Supports different badge criteria types (STREAK, FAVORITE)
+- Automatically checks and awards badges when user actions trigger criteria
+- Updates user badges in real-time
+
+#### Badge Controller
+- Handles API endpoints for badge-related operations
+- Provides routes for:
+  - Getting all available badges
+  - Getting specific badge by ID
+  - Retrieving user's earned badges
+- Implements proper error handling and status codes
+- Uses JWT authentication for secure access
+
+#### Badge Repository
+- Manages database interactions for badges
+- Provides methods for:
+  - Finding badges by criteria type
+  - Retrieving all badges
+  - Getting specific badges by ID
+- Implements efficient database queries
+
+#### Authentication Integration
+- Secures badge-related endpoints
+- Uses JWT authentication
+- Ensures users can only access their own badge data
+- Validates user permissions for badge operations
+
+### Badges System for Frontend
+
+#### Badge Display Components
+- `BadgeCard`: Individual badge display component
+  - Shows badge image, name, and description
+  - Handles image loading errors gracefully
+  - Displays progress for unearned badges
+  - Visual feedback for earned/unearned status
+
+- `BadgeGrid`: Grid layout for multiple badges
+  - Responsive grid layout (1-4 columns based on screen size)
+  - Displays all available badges
+  - Shows earned status for each badge
+  - Supports progress tracking
+
+- `BadgeSection`: Dashboard component
+  - Shows user's recently earned badges
+  - Limited to 4 most recent badges
+  - Quick access to full badge collection
+  - "View All" link to complete badge page
+
+#### User Interface Features
+- Visual distinction between earned and unearned badges
+- Progress bars for badges in progress
+- Responsive design for all screen sizes
+- Error handling for failed image loads
+- Loading states for data fetching
+
+### Badge Types and Criteria
+
+#### Streak Badges
+- "Streak Starter": 3-day streak
+- "Streak Master": 7-day streak
+- Automatically awarded when streak criteria met
+
+#### Favorite Course Badges
+- "First Favorite": 1 favorite course
+- "Favorites Collector": 2 favorite courses
+- "Favorites Enthusiast": 5 favorite courses
+- "Favorites Addict": 10 favorite courses
+- Automatically awarded when favorite count criteria met
+
+### Flow of Badge System
+
+#### Badge Awarding Process
+1. User performs an action (maintains streak, adds favorites)
+2. System checks relevant badge criteria
+3. If criteria met, badge is automatically awarded
+4. UI updates to reflect new badge
+5. User receives visual feedback
+
+#### Badge Display Process
+1. User visits dashboard or badges page
+2. System fetches all available badges
+3. System fetches user's earned badges
+4. UI displays badges with appropriate status
+5. Progress bars show advancement for unearned badges
+
+#### Badge Progress Tracking
+1. System monitors user actions
+2. Updates progress for relevant badges
+3. Shows current progress vs required criteria
+4. Automatically awards badges when criteria met
+
+### Technical Implementation
+
+#### Backend API Endpoints
+- `GET /badges`: Get all available badges
+- `GET /badges/{id}`: Get specific badge details
+- `GET /badges/user/{userId}`: Get user's earned badges
+
+#### Frontend Queries
+- `useGetAllBadges`: Fetches all available badges
+- `useGetBadgeById`: Fetches specific badge details
+- `useGetUserBadges`: Fetches user's earned badges
+
+#### Data Models
+```typescript
+interface Badge {
+    id: number;
+    name: string;
+    description: string;
+    imageUrl: string;
+    criteriaType: string;
+    criteriaValue: number;
+}
+```
+
+### Error Handling
+- Graceful handling of image loading failures
+- Loading states for data fetching
+- Error messages for failed API calls
+- Fallback UI for missing data
