@@ -114,7 +114,8 @@ public class EnrollmentService {
 
         Optional<Enrollment> updatedEnrollmentOptional = save(enrollment);
         if (updatedEnrollmentOptional.isPresent()) {
-            return ServiceResult.success(updatedEnrollmentOptional.get());
+            Enrollment updatedEnrollment = updatedEnrollmentOptional.get();
+            return ServiceResult.success(updatedEnrollment);
         }
 
         return ServiceResult.error(EnrollmentUpdateProgressError.ENROLLMENT_UPDATE_FAILED);

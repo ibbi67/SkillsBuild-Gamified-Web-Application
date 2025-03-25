@@ -1,7 +1,6 @@
 package com.example.backend.util;
 
 import com.example.backend.badge.Badge;
-import com.example.backend.badge.BadgeDTO;
 import com.example.backend.badge.csr.BadgeRepository;
 import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseRepository;

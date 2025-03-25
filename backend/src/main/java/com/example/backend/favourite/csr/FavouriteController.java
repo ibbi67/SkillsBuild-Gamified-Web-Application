@@ -46,7 +46,6 @@ public class FavouriteController {
         if (result.isSuccess()) {
             return ResponseEntity.ok(ApiResponse.success(null));
         }
-
         return switch (result.getError()) {
             case INVALID_ACCESS_TOKEN ->
                     new ResponseEntity<>(ApiResponse.failed(result.getError().getMessage()), HttpStatus.UNAUTHORIZED);
@@ -63,7 +62,6 @@ public class FavouriteController {
         if (result.isSuccess()) {
             return ResponseEntity.ok(ApiResponse.success(null));
         }
-
         return switch (result.getError()) {
             case INVALID_ACCESS_TOKEN ->
                     new ResponseEntity<>(ApiResponse.failed(result.getError().getMessage()), HttpStatus.UNAUTHORIZED);

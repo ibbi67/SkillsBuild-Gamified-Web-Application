@@ -40,7 +40,7 @@ public class BadgeServiceTest {
     private Person testPerson;
     private Badge streakBadge;
     private Badge favoriteBadge;
-    private String validToken = "validToken";
+    private final String validToken = "validToken";
 
     @BeforeEach
     void setUp() {

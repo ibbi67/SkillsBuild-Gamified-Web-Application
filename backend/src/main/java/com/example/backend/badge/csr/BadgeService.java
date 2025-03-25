@@ -69,11 +69,12 @@ public class BadgeService {
         if (id == null || id <= 0) {
             return ServiceResult.error(BadgeGetByIdError.INVALID_ID);
         }
-        Optional<Badge> badge = badgeRepository.findById(id);
-        if (badge.isEmpty()) {
-            return ServiceResult.error(BadgeGetByIdError.BADGE_NOT_FOUND);
+        Optional<Badge> badgeOptional = badgeRepository.findById(id);
+        if (badgeOptional.isPresent()) {
+            Badge badge = badgeOptional.get();
+            return ServiceResult.success(badge);
         }
-        return ServiceResult.success(badge.get());
+        return ServiceResult.error(BadgeGetByIdError.BADGE_NOT_FOUND);
     }
 
     public ServiceResult<List<Badge>, BadgeGetByUserError> getUserBadges(String accessToken) {
