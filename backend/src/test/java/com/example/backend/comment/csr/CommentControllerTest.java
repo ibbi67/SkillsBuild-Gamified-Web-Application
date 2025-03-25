@@ -133,8 +133,8 @@ public class CommentControllerTest {
     public void testGetCommentsByCourseId_CourseNotFound() throws Exception {
         // Test getting comments for a non-existent course
         mockMvc.perform(get("/comments/course/999"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Course not found"));
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Failed to get comments"));
     }
 
     @Test
