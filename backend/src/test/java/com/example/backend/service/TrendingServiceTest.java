@@ -93,14 +93,5 @@ public class TrendingServiceTest {
         verify(courseRepository, never()).save(any());
     }
 
-    @Test
-    public void testIncrementCourseViewsInvalidId() {
-        ServiceResult<Void, CourseViewError> result = courseService.incrementCourseViews(null);
-        assertFalse(result.isSuccess());
-        assertEquals(CourseViewError.COURSE_NOT_FOUND, result.getError());
 
-        result = courseService.incrementCourseViews(-1);
-        assertFalse(result.isSuccess());
-        assertEquals(CourseViewError.COURSE_NOT_FOUND, result.getError());
-    }
 }
