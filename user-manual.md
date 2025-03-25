@@ -287,7 +287,7 @@ the platform by tracking consecutive daily logins.
 
 To check your streak programmatically:
 
-GET /api/streak/{userId}
+GET /api/streak/{userId}
 
 (Remember that this data is accessed from the backend so it will show on
 backend port -- localhost:8080)
@@ -440,7 +440,7 @@ The course recommendation system analyzes student profiles and course data to su
 ### FavouriteCourse Service  
 - Manages adding, removing, and retrieving favourite courses  
 - Stores user-course relationships in the database  
-- Ensures duplicate courses aren't added  
+- Ensures duplicate courses aren’t added  
 
 ### FavouriteCourse Controller  
 - Handles API requests for saving and retrieving favourites  
@@ -449,7 +449,7 @@ The course recommendation system analyzes student profiles and course data to su
 
 ### FavouriteCourse Repository  
 - Manages database interactions for favourite courses  
-- Efficiently retrieves a user's saved courses  
+- Efficiently retrieves a user’s saved courses  
 - Implements caching for faster access  
 
 ### Authentication Integration  
@@ -462,7 +462,7 @@ The course recommendation system analyzes student profiles and course data to su
 ## Save to Favourite Courses for Frontend  
 
 ### Favourite Courses Dashboard  
-- Displays user's saved courses in an easy-to-access list  
+- Displays user’s saved courses in an easy-to-access list  
 - Allows quick navigation to favourite courses  
 - Supports sorting and filtering  
 
@@ -477,7 +477,7 @@ The course recommendation system analyzes student profiles and course data to su
 
 ### Saving a Course  
 1. User clicks the "Save to Favourites" button  
-2. API adds the course to the user's favourites list  
+2. API adds the course to the user’s favourites list  
 3. The UI updates to reflect the change  
 
 ### Removing a Course  
@@ -724,14 +724,12 @@ The Badges System is a gamification feature that rewards users for their engagem
 - `BadgeCard`: Individual badge display component
   - Shows badge image, name, and description
   - Handles image loading errors gracefully
-  - Displays progress for unearned badges
   - Visual feedback for earned/unearned status
 
 - `BadgeGrid`: Grid layout for multiple badges
   - Responsive grid layout (1-4 columns based on screen size)
   - Displays all available badges
   - Shows earned status for each badge
-  - Supports progress tracking
 
 - `BadgeSection`: Dashboard component
   - Shows user's recently earned badges
@@ -741,7 +739,6 @@ The Badges System is a gamification feature that rewards users for their engagem
 
 #### User Interface Features
 - Visual distinction between earned and unearned badges
-- Progress bars for badges in progress
 - Responsive design for all screen sizes
 - Error handling for failed image loads
 - Loading states for data fetching
@@ -774,7 +771,6 @@ The Badges System is a gamification feature that rewards users for their engagem
 2. System fetches all available badges
 3. System fetches user's earned badges
 4. UI displays badges with appropriate status
-5. Progress bars show advancement for unearned badges
 
 #### Badge Progress Tracking
 1. System monitors user actions
@@ -793,18 +789,6 @@ The Badges System is a gamification feature that rewards users for their engagem
 - `useGetAllBadges`: Fetches all available badges
 - `useGetBadgeById`: Fetches specific badge details
 - `useGetUserBadges`: Fetches user's earned badges
-
-#### Data Models
-```typescript
-interface Badge {
-    id: number;
-    name: string;
-    description: string;
-    imageUrl: string;
-    criteriaType: string;
-    criteriaValue: number;
-}
-```
 
 ### Error Handling
 - Graceful handling of image loading failures
