@@ -9,88 +9,217 @@ interface GoalDashboardCardProps {
   goal: GoalProgressDTO;
 }
 
-export default function GoalDashboardCard({ goal }: GoalDashboardCardProps) {
-  const { data: coursesData } = useCourses();
-  const { mutate: updateCourseStatus, isPending, isError, error } = useUpdateCourseStatus();
-  const [courseMap, setCourseMap] = useState<Record<number, Course>>({});
+interface CourseInfo {
+  id: number;
+  name?: string;
+  title?: string;
+  completed: boolean;
+}
+
+const GoalDashboardCard: React.FC<GoalDashboardCardProps> = ({ goal }) => {
+  const [showCourses, setShowCourses] = useState(false);
+  const [courseDetails, setCourseDetails] = useState<CourseInfo[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [updatingCourseId, setUpdatingCourseId] = useState<number | null>(null);
   
-  // Format dates for display
-  const startDate = new Date(goal.startDate).toLocaleDateString();
-  const endDate = new Date(goal.endDate).toLocaleDateString();
-  const daysLeft = Math.ceil((new Date(goal.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  const updateCourseStatus = useUpdateCourseStatus();
+  const queryClient = useQueryClient();
   
   useEffect(() => {
-    // Create a map of course IDs to Course objects for easier lookup
-    if (coursesData?.data) {
-      const map: Record<number, Course> = {};
-      coursesData.data.forEach(course => {
-        map[course.id] = course;
+    // Only fetch course details when the user expands the course list
+    if (showCourses && goal.courses && Object.keys(goal.courses).length > 0 && courseDetails.length === 0) {
+      const fetchCourseDetails = async () => {
+        setLoading(true);
+        try {
+          // Create an array of course IDs from the goal's courses
+          const courseIds = Object.keys(goal.courses || {});
+          
+          // Fetch course details one by one (as there's no bulk endpoint)
+          const fetchPromises = courseIds.map(async (courseId) => {
+            try {
+              const response = await axiosInstance.get(`/courses/${courseId}`);
+              // Based on your API structure, the course data should be in response.data.data
+              return {
+                id: parseInt(courseId),
+                name: response.data.data.name,
+                title: response.data.data.title,
+                completed: goal.courses?.[parseInt(courseId)] || false
+              };
+            } catch (error) {
+              console.error(`Error fetching course ${courseId}:`, error);
+              return {
+                id: parseInt(courseId),
+                name: `Course ${courseId}`,
+                completed: goal.courses?.[parseInt(courseId)] || false
+              };
+            }
+          });
+          
+          const results = await Promise.all(fetchPromises);
+          setCourseDetails(results);
+        } catch (error) {
+          console.error('Error fetching course details:', error);
+          
+          // If API calls fail, create fallback entries with just IDs
+          const fallbackCourses = Object.entries(goal.courses || {}).map(([id, completed]) => ({
+            id: parseInt(id),
+            name: `Course ${id}`,
+            completed: !!completed
+          }));
+          
+          setCourseDetails(fallbackCourses);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchCourseDetails();
+    }
+  }, [showCourses, goal.courses, courseDetails.length]);
+  
+  // Update course details when courses in goal prop changes
+  useEffect(() => {
+    if (courseDetails.length > 0 && goal.courses) {
+      const updatedCourseDetails = courseDetails.map(course => ({
+        ...course,
+        completed: goal.courses?.[course.id] || false
+      }));
+      setCourseDetails(updatedCourseDetails);
+    }
+  }, [goal.courses]);
+  
+  const handleToggleCourseStatus = async (courseId: number, currentStatus: boolean) => {
+    // Set the course as updating
+    setUpdatingCourseId(courseId);
+    
+    try {
+      // Call the API to update the course status
+      await updateCourseStatus.mutateAsync({
+        goalId: goal.id,
+        courseId: courseId,
+        completed: !currentStatus // Toggle the current status
       });
-      setCourseMap(map);
+      
+      // Update the local state for immediate feedback
+      setCourseDetails(courses => 
+        courses.map(course => 
+          course.id === courseId ? { ...course, completed: !currentStatus } : course
+        )
+      );
+      
+      // Show success notification
+      toast.success(`Course ${!currentStatus ? 'completed' : 'marked as incomplete'}`);
+      
+      // Refresh the dashboard data
+      queryClient.invalidateQueries(['dashboard']);
+    } catch (error) {
+      toast.error('Failed to update course status');
+      console.error('Error updating course status:', error);
+    } finally {
+      setUpdatingCourseId(null);
     }
-  }, [coursesData]);
-
-  useEffect(() => {
-    if (isError && error) {
-      toast.error(`Error updating course status: ${error.message}`);
-    }
-  }, [isError, error]);
-
-  const handleCourseStatusChange = (courseId: number, completed: boolean) => {
-    updateCourseStatus({
-      goalId: goal.id,
-      courseId,
-      completed
-    });
   };
-
+  
+  if (!goal) {
+    return null;
+  }
+  
+  const coursesCount = goal.courses ? Object.keys(goal.courses).length : 0;
+  const completedCount = goal.courses ? 
+    Object.values(goal.courses).filter(status => status === true).length : 0;
+  
   return (
-    <div className="flex flex-col rounded-lg border border-blue-500 shadow-lg overflow-hidden">
-      <div className="bg-blue-500 p-4">
-        <h3 className="text-lg font-bold text-white">{goal.description}</h3>
-        <div className="mt-2 text-sm text-white">
-          <p>Target date: {startDate} - {endDate}</p>
-          <p>{daysLeft > 0 ? `${daysLeft} days left` : "Goal expired"}</p>
-          <p>Reward: {goal.reward}</p>
+    <div className="rounded border p-3">
+      <div className="flex justify-between">
+        <h3 className="font-semibold">{goal.description}</h3>
+        <span className="text-sm font-bold text-blue-600">{goal.progress?.toFixed(0)}%</span>
+      </div>
+      
+      <div className="mt-2">
+        <div className="h-2 w-full rounded-full bg-gray-200">
+          <div 
+            className="h-2 rounded-full bg-blue-600" 
+            style={{ width: `${goal.progress || 0}%` }}
+          ></div>
         </div>
       </div>
-
-      <div className="p-4">
-        <div className="mb-4">
-          <p className="text-sm font-medium mb-1">Progress: {goal.progress.toFixed(0)}%</p>
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div
-              className="bg-blue-600 h-2.5 rounded-full"
-              style={{ width: `${goal.progress}%` }}
-            ></div>
-          </div>
+      
+      <div className="mt-2 flex justify-between text-xs text-gray-500">
+        <span>Courses: {completedCount}/{coursesCount}</span>
+        <span>
+          {new Date(goal.startDate).toLocaleDateString()} - {new Date(goal.endDate).toLocaleDateString()}
+        </span>
+      </div>
+      
+      {/* Reward section */}
+      {goal.reward && (
+        <div className="mt-2 text-xs">
+          <span className="text-gray-500">Reward:</span> <span>{goal.reward}</span>
         </div>
-
-        <h4 className="font-semibold mb-2">Courses:</h4>
-        <ul className="space-y-2">
-          {Object.entries(goal.courses).map(([courseId, completed]) => {
-            const course = courseMap[parseInt(courseId)];
-            return (
-              <li key={courseId} className="flex items-center justify-between border-b pb-2">
-                <div>
-                  <p className="font-medium">{course?.title || `Course #${courseId}`}</p>
-                  {course && <p className="text-xs text-gray-500">Est. duration: {course.estimatedDuration}h</p>}
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={completed}
-                    onChange={(e) => handleCourseStatusChange(parseInt(courseId), e.target.checked)}
-                    disabled={isPending}
-                    className="h-5 w-5 text-blue-600 rounded cursor-pointer"
-                  />
-                  <span className="ml-2 text-sm">{completed ? "Completed" : "In progress"}</span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+      )}
+      
+      {/* Courses section */}
+      <div className="mt-2">
+        <button 
+          onClick={() => setShowCourses(!showCourses)}
+          className="text-xs text-blue-500 hover:text-blue-700 flex items-center"
+        >
+          {showCourses ? 'Hide' : 'Show'} Courses 
+          <svg 
+            className={`ml-1 w-3 h-3 transition-transform ${showCourses ? 'rotate-180' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        
+        {showCourses && (
+          <div className="mt-1 pl-1 text-xs">
+            {loading ? (
+              <p className="text-gray-400 italic">Loading courses...</p>
+            ) : courseDetails.length > 0 ? (
+              <ul className="space-y-2">
+                {courseDetails.map((course) => (
+                  <li key={course.id} className="flex items-center justify-between border-b pb-1">
+                    <div className="flex items-center">
+                      <span className={course.completed ? 'text-green-500' : 'text-gray-400'}>
+                        {course.completed ? '✓' : '○'}
+                      </span>
+                      <span className="ml-2">{course.title || course.name || `Course ${course.id}`}</span>
+                    </div>
+                    <button
+                      onClick={() => handleToggleCourseStatus(course.id, course.completed)}
+                      disabled={updatingCourseId === course.id}
+                      className={`
+                        ml-2 px-2 py-1 rounded text-xs 
+                        ${course.completed 
+                          ? 'bg-gray-100 hover:bg-gray-200 text-gray-600' 
+                          : 'bg-green-100 hover:bg-green-200 text-green-600'}
+                        ${updatingCourseId === course.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                      `}
+                    >
+                      {updatingCourseId === course.id ? (
+                        <span className="inline-block w-3 h-3 border-t-2 border-r-2 border-green-600 rounded-full animate-spin"></span>
+                      ) : course.completed ? (
+                        'Undo'
+                      ) : (
+                        'Complete'
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-400 italic">No courses available</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default GoalDashboardCard;
