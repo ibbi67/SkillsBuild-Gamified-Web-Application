@@ -5,6 +5,7 @@ export interface Course {
     link: string;
     estimatedDuration: number;
     difficulty: number;
+    views: number;
 }
 
 export interface Badge {

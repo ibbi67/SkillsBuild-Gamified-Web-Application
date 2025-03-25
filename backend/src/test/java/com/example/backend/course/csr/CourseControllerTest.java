@@ -157,4 +157,67 @@ public class CourseControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Invalid access token"));
     }
+
+
+
+
+    @Test
+    public void testGetTrendingCourses() throws Exception {
+
+        CourseDTO courseDTO = new CourseDTO("Course 1", "Description 1", "http://link1.com", 10, 1);
+        CourseDTO courseDTO2 = new CourseDTO("Course 2", "Description 2", "http://link2.com", 20, 1);
+
+
+        MvcResult result1 = mockMvc.perform(post("/courses")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        int courseId1 = objectMapper.readTree(result1.getResponse().getContentAsString()).get("data").get("id").asInt();
+
+
+        MvcResult result2 = mockMvc.perform(post("/courses")
+                        .cookie(cookies)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(courseDTO2)))
+                .andExpect(status().isCreated())
+                .andReturn();
+        int courseId2 = objectMapper.readTree(result2.getResponse().getContentAsString()).get("data").get("id").asInt();
+
+
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(post("/courses/{id}/view", courseId2))
+                    .andExpect(status().isOk());
+        }
+
+
+        for (int i = 0; i < 2; i++) {
+            mockMvc.perform(post("/courses/{id}/view", courseId1))
+                    .andExpect(status().isOk());
+        }
+
+
+        mockMvc.perform(get("/courses/trending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].title").value("Course 2")) // Course 2 should be first (more views)
+                .andExpect(jsonPath("$.data[1].title").value("Course 1")); // Course 1 should be second
+    }
+
+    @Test
+    public void testGetCourseById_Failure() throws Exception {
+        mockMvc.perform(post("/courses/99/view"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Course not found"));
+    }
+
+
+    @Test
+    public void testIncrementCourseView_invalidId() throws Exception {
+
+        mockMvc.perform(post("/courses/-1/view"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid id provided"));
+    }
 }

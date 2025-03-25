@@ -11,6 +11,8 @@ import com.example.backend.util.ServiceResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.backend.course.error.CourseGetTrendingError;
+import com.example.backend.course.error.CourseViewError;
 
 import java.util.List;
 
@@ -40,6 +42,39 @@ public class CourseController {
         return switch (error) {
             case GET_ALL_COURSES_FAILED ->
                     new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        };
+    }
+
+    @Operation(summary = "Get trending courses")
+    @GetMapping("/trending")
+    public ResponseEntity<ApiResponse<List<Course>>> getTrendingCourses() {
+        ServiceResult<List<Course>, CourseGetTrendingError> result = courseService.getTrendingCourses();
+        if (result.isSuccess()) {
+            return new ResponseEntity<>(ApiResponse.success(result.getData()), HttpStatus.OK);
+        }
+
+        CourseGetTrendingError error = result.getError();
+        return switch (error) {
+            case GET_TRENDING_COURSES_FAILED ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        };
+    }
+
+    @Operation(summary = "Increment course view count")
+    @PostMapping("/{id}/view")
+    public ResponseEntity<ApiResponse<Void>> incrementCourseView(@PathVariable Integer id) {
+        ServiceResult<Void, CourseViewError> result = courseService.incrementCourseViews(id);
+        if (result.isSuccess()) {
+            return new ResponseEntity<>(ApiResponse.success(null), HttpStatus.OK);
+        }
+
+        CourseViewError error = result.getError();
+        return switch (error) {
+            case COURSE_NOT_FOUND ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.NOT_FOUND);
+            case VIEW_INCREMENT_FAILED ->
+                    new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+            case INVALID_ID -> new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.BAD_REQUEST);
         };
     }
 
