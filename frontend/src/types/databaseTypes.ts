@@ -7,6 +7,15 @@ export interface Course {
     difficulty: number;
 }
 
+export interface Badge {
+    id: number;
+    name: string;
+    description: string;
+    imageUrl: string;
+    criteriaType: string;
+    criteriaValue: number;
+}
+
 export interface Person {
     id: number;
     username: string;
@@ -17,6 +26,7 @@ export interface Person {
     lastName: string;
     email: string;
     avatarLink: string;
+    badges: Badge[];
 }
 
 export interface Enrollment {

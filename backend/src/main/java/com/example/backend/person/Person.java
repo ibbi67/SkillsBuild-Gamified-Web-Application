@@ -1,6 +1,7 @@
 package com.example.backend.person;
 
 import com.example.backend.course.Course;
+import com.example.backend.badge.Badge;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,14 @@ public class Person {
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
     private List<Course> favoriteCourses = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "person_badges",
+            joinColumns = @JoinColumn(name = "person_id"),
+            inverseJoinColumns = @JoinColumn(name = "badge_id")
+    )
+    private List<Badge> badges = new ArrayList<>();
 
     // Constructor for creating a new person for signup
     public Person(String username, String password) {

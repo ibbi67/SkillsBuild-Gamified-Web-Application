@@ -140,5 +140,4 @@ public class AuthService {
         Person person = personOptional.get();
         return ServiceResult.success(person);
     }
-
 }

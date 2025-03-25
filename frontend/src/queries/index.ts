@@ -5,3 +5,4 @@ export * from "./favourites";
 export * from "./leaderboard";
 export * from "./profile";
 export * from "./streak";
+export * from "./badges";
