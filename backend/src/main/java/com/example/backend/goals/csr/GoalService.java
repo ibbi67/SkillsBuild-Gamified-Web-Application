@@ -1,133 +1,131 @@
 package com.example.backend.goals.csr;
 
+import com.example.backend.enrollment.Enrollment;
+import com.example.backend.enrollment.csr.EnrollmentService;
+import com.example.backend.goals.AddEnrollmentDTO;
 import com.example.backend.goals.Goal;
-import com.example.backend.goals.GoalProgressDTO;
-import org.springframework.stereotype.Service;
+import com.example.backend.goals.GoalDTO;
+import com.example.backend.goals.error.*;
 import com.example.backend.person.Person;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
+import com.example.backend.util.JWT;
+import com.example.backend.util.ServiceResult;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.Collections;
 
 @Service
 public class GoalService {
 
-    @Autowired
-    private GoalRepository goalRepository;
+    private final JWT jwt;
+    private final GoalRepository goalRepository;
+    private final EnrollmentService enrollmentService;
 
-    // Create a new goal
-    public Goal createGoal(Goal goal) {
-        return goalRepository.save(goal);
+    public GoalService(JWT jwt, GoalRepository goalRepository, EnrollmentService enrollmentService) {
+        this.jwt = jwt;
+        this.goalRepository = goalRepository;
+        this.enrollmentService = enrollmentService;
     }
 
-    // Get all goals for a person
-    public List<Goal> getGoalsByPerson(Person person) {
-        return goalRepository.findByPerson(person);
+    public Optional<Goal> save(Goal goal) {
+        return Optional.of(goalRepository.save(goal));
     }
 
-    // Get a specific goal by ID
-    public Optional<Goal> getGoalById(Long id) {
-        return goalRepository.findById(id);
+    public Optional<Goal> save(GoalDTO goalDTO, Person person) {
+        Goal goal = new Goal(goalDTO.getStartDate(), goalDTO.getEndDate(), goalDTO.getDescription(), goalDTO.getReward(), person);
+        return Optional.of(goalRepository.save(goal));
     }
 
-    // Delete a goal
-    public void deleteGoal(Long id) {
+    public void deleteById(Long id) {
         goalRepository.deleteById(id);
     }
 
-    // Add courses to a goal
-    public Goal addCoursesToGoal(Long goalId, Map<Integer, Boolean> courses) {
+    public Optional<Goal> findById(Long id) {
+        return goalRepository.findById(id);
+    }
+
+    public List<Goal> findByPersonId(Long personId) {
+        return goalRepository.findByPersonId(personId);
+    }
+
+    public ServiceResult<Void, GoalCreateError> createGoal(String accessToken, GoalDTO goalDTO) {
+        Optional<Person> personOptional = jwt.getPersonFromToken(accessToken);
+        if (personOptional.isEmpty()) {
+            return ServiceResult.error(GoalCreateError.INVALID_ACCESS_TOKEN);
+        }
+        Person person = personOptional.get();
+        Optional<Goal> goal = save(goalDTO, person);
+        if (goal.isEmpty()) {
+            return ServiceResult.error(GoalCreateError.FAILED_TO_CREATE_GOAL);
+        }
+        return ServiceResult.success(null);
+    }
+
+    public ServiceResult<Void, GoalDeleteError> deleteGoal(String accessToken, Long goalId) {
+        Optional<Person> personOptional = jwt.getPersonFromToken(accessToken);
+        if (personOptional.isEmpty()) {
+            return ServiceResult.error(GoalDeleteError.INVALID_ACCESS_TOKEN);
+        }
+        Person person = personOptional.get();
+        Optional<Goal> goal = goalRepository.findById(goalId);
+        if (goal.isEmpty()) {
+            return ServiceResult.error(GoalDeleteError.GOAL_NOT_FOUND);
+        }
+        if (!goal.get().getPerson().equals(person)) {
+            return ServiceResult.error(GoalDeleteError.PERMISSION_DENIED);
+        }
+        deleteById(goalId);
+        return ServiceResult.success(null);
+    }
+
+    public ServiceResult<Goal, GoalAddEnrollmentError> addEnrollmentToGoal(Long goalId, AddEnrollmentDTO addEnrollmentDTO) {
         Optional<Goal> goalOptional = goalRepository.findById(goalId);
-        if (goalOptional.isPresent()) {
-            Goal goal = goalOptional.get();
-            courses.forEach(goal::addCourse);
-            return goalRepository.save(goal);
+        if (goalOptional.isEmpty()) {
+            return ServiceResult.error(GoalAddEnrollmentError.GOAL_NOT_FOUND);
         }
-        return null;
+        Goal goal = goalOptional.get();
+        List<Enrollment> enrollments = addEnrollmentDTO.getEnrollmentIds().stream().map(enrollmentService::findById).filter(Optional::isPresent).map(Optional::get).toList();
+        if (enrollments.isEmpty()) {
+            return ServiceResult.error(GoalAddEnrollmentError.ENROLLMENTS_NOT_FOUND);
+        }
+        enrollments.forEach(goal::addEnrollment);
+        save(goal);
+        return ServiceResult.success(goal);
     }
 
-    // Update a course completion status
-    public Goal updateCourseStatus(Long goalId, Integer courseId, Boolean completed) {
-        Optional<Goal> goalOptional = goalRepository.findById(goalId);
-        if (goalOptional.isPresent()) {
-            Goal goal = goalOptional.get();
-            goal.updateCourseStatus(courseId, completed);
-
-            // Check if all courses are completed
-            boolean allCoursesCompleted = goal.getAllCourses().values().stream()
-                    .allMatch(status -> status);
-
-            if (allCoursesCompleted) {
-                goalRepository.deleteById(goalId);
-                return null; // Goal was deleted
-            }
-
-            return goalRepository.save(goal);
+    public ServiceResult<List<Goal>, GoalGetError> getGoals(String accessToken) {
+        Optional<Person> personOptional = jwt.getPersonFromToken(accessToken);
+        if (personOptional.isEmpty()) {
+            return ServiceResult.error(GoalGetError.INVALID_ACCESS_TOKEN);
         }
-        return null;
+        Person person = personOptional.get();
+        List<Goal> goals = findByPersonId(person.getId());
+        return ServiceResult.success(goals);
     }
 
-    // Get goal progress (percentage of completed courses)
-    public double getGoalProgress(Long goalId) {
-        Optional<Goal> goalOptional = goalRepository.findById(goalId);
-        if (goalOptional.isPresent()) {
-            Goal goal = goalOptional.get();
-            Map<Integer, Boolean> courses = goal.getAllCourses();
-
-            if (courses.isEmpty()) {
-                return 0.0;
-            }
-
-            long completedCount = courses.values().stream()
-                    .filter(status -> status)
-                    .count();
-
-            return (double) completedCount / courses.size() * 100;
+    // Toggle the completion status of an enrollment
+    public ServiceResult<Goal, GoalUpdateEnrollmentCompletionStatusError> updateEnrollmentCompletionStatus(String accessToken, Long goalId, Integer enrollmentId) {
+        Optional<Person> personOptional = jwt.getPersonFromToken(accessToken);
+        if (personOptional.isEmpty()) {
+            return ServiceResult.error(GoalUpdateEnrollmentCompletionStatusError.INVALID_ACCESS_TOKEN);
         }
-        return 0.0;
-    }
-
-    // Get all goals with their progress
-    public List<GoalProgressDTO> getAllGoalsWithProgress(Person person) {
-        List<Goal> goals = goalRepository.findByPerson(person);
-
-        if (goals.isEmpty()) {
-            return Collections.emptyList();
+        Person person = personOptional.get();
+        Optional<Goal> goalOptional = findById(goalId);
+        if (goalOptional.isEmpty()) {
+            return ServiceResult.error(GoalUpdateEnrollmentCompletionStatusError.GOAL_NOT_FOUND);
         }
-
-        return goals.stream()
-                .map(goal -> {
-                    Map<Integer, Boolean> courses = goal.getAllCourses();
-                    long completedCount = courses.values().stream()
-                            .filter(status -> status)
-                            .count();
-                    double progress = courses.isEmpty() ? 0.0 :
-                            (double) completedCount / courses.size() * 100;
-
-                    return new GoalProgressDTO(
-                            goal.getId(),
-                            goal.getDescription(),
-                            goal.getStartDate(),
-                            goal.getEndDate(),
-                            goal.getReward(),
-                            progress,
-                            goal.getAllCourses()
-                    );
-                })
-                .collect(Collectors.toList());
-    }
-
-    // Scheduled task to delete expired goals (runs daily at midnight)
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void deleteExpiredGoals() {
-        LocalDate currentDate = LocalDate.now();
-        List<Goal> goals = goalRepository.findByEndDateBefore(currentDate);
-        goalRepository.deleteAll(goals);
+        Goal goal = goalOptional.get();
+        if (!goal.getPerson().equals(person)) {
+            return ServiceResult.error(GoalUpdateEnrollmentCompletionStatusError.PERMISSION_DENIED);
+        }
+        Optional<Enrollment> enrollmentOptional = enrollmentService.findById(enrollmentId);
+        if (enrollmentOptional.isEmpty()) {
+            return ServiceResult.error(GoalUpdateEnrollmentCompletionStatusError.ENROLLMENTS_NOT_FOUND);
+        }
+        Enrollment enrollment = enrollmentOptional.get();
+        enrollment.setCompleted(!enrollment.getCompleted());
+        save(goal);
+        return ServiceResult.success(goal);
     }
 }

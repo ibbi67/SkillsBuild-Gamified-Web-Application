@@ -10,6 +10,6 @@ import java.util.List;
 
 @Repository
 public interface GoalRepository extends JpaRepository<Goal, Long> {
-    List<Goal> findByPerson(Person person);
+    List<Goal> findByPersonId(Long personId);
     List<Goal> findByEndDateBefore(LocalDate date);
 }

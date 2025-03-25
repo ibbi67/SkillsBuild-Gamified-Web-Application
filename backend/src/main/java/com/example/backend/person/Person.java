@@ -44,8 +44,7 @@ public class Person {
     )
     private List<Badge> badges = new ArrayList<>();
 
-    @OneToMany(mappedBy = "person")
-    @JsonManagedReference  // This works with JsonBackReference
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
     private List<Goal> goals;
 
     public Person(String username, String password) {

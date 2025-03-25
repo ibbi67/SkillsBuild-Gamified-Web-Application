@@ -1,5 +1,6 @@
 package com.example.backend.goals;
 
+import com.example.backend.enrollment.Enrollment;
 import com.example.backend.person.Person;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.example.backend.course.Course;
@@ -8,8 +9,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -23,52 +24,27 @@ public class Goal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate startDate; // Start date of the goal
-    private LocalDate endDate; // End date of the goal
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String description;
     private String reward;
-    private boolean achieved;
 
-    // Replace CourseID with a HashMap to store multiple courses and their completion status
-    @ElementCollection
-    @CollectionTable(name = "goal_courses", joinColumns = @JoinColumn(name = "goal_id"))
-    @MapKeyColumn(name = "course_id")
-    @Column(name = "completed")
-    private Map<Integer, Boolean> courses = new HashMap<>();
+    @OneToMany(mappedBy = "goal", cascade = CascadeType.ALL)
+    List<Enrollment> enrollments = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "person_id")
-    @JsonBackReference  // This prevents infinite recursion
+    @JoinColumn(name = "person_id", nullable = false)
     private Person person;
 
-    public Goal(LocalDate startDate, LocalDate endDate, String description, String reward, boolean achieved) {
+    public Goal(LocalDate startDate, LocalDate endDate, String description, String reward, Person person) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.description = description;
         this.reward = reward;
-        this.achieved = achieved;
-        this.courses = new HashMap<>();
+//        this.person = person;
     }
 
-    // Add a course with its completion status
-    public void addCourse(Integer courseId, Boolean completed) {
-        this.courses.put(courseId, completed);
-    }
-
-    // Update a course's completion status
-    public void updateCourseStatus(Integer courseId, Boolean completed) {
-        if (this.courses.containsKey(courseId)) {
-            this.courses.put(courseId, completed);
-        }
-    }
-
-    // Check if a specific course is completed
-    public Boolean isCourseCompleted(Integer courseId) {
-        return this.courses.getOrDefault(courseId, false);
-    }
-
-    // Get all courses with their completion status
-    public Map<Integer, Boolean> getAllCourses() {
-        return this.courses;
+    public void addEnrollment(Enrollment enrollment) {
+        enrollments.add(enrollment);
     }
 }
