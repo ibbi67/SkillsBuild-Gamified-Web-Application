@@ -41,10 +41,6 @@ public class BadgeService {
                 "/badges/streak-3.png", "STREAK", 3));
             createBadge(new BadgeDTO("Streak Master", "Maintained a 7-day streak",
                 "/badges/streak-7.png", "STREAK", 7));
-            createBadge(new BadgeDTO("Course Explorer", "Enrolled in your first course",
-                "/badges/enroll-1.png", "ENROLL", 1));
-            createBadge(new BadgeDTO("Learning Champion", "Enrolled in 5 courses",
-                "/badges/enroll-5.png", "ENROLL", 5));
         }
     }
 
@@ -169,6 +165,28 @@ public class BadgeService {
             }
         }
         
+        if (badgeAwarded) {
+            personRepository.save(person);
+        }
+    }
+
+    @Transactional
+    public void checkAndAwardStreakBadges(Person person) {
+        if (person == null) {
+            return;
+        }
+
+        List<Badge> streakBadges = badgeRepository.findByCriteriaType("STREAK");
+        boolean badgeAwarded = false;
+
+        for (Badge badge : streakBadges) {
+            if (person.getStreak() >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
+                person.getBadges().add(badge);
+                badge.addPerson(person);
+                badgeAwarded = true;
+            }
+        }
+
         if (badgeAwarded) {
             personRepository.save(person);
         }
