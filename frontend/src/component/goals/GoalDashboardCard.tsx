@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GoalProgressDTO } from '@/types/goalTypes';
 import axiosInstance from '@/component/axiosInstance';
-import { useUpdateCourseStatus } from '@/queries/goals/useUpdateCourseStatus';
+import { useUpdateEnrollmentCompletion } from '@/queries/goals/useUpdateEnrollmentCompletion';
 import { useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
@@ -22,7 +22,8 @@ const GoalDashboardCard: React.FC<GoalDashboardCardProps> = ({ goal }) => {
   const [loading, setLoading] = useState(false);
   const [updatingCourseId, setUpdatingCourseId] = useState<number | null>(null);
   
-  const updateCourseStatus = useUpdateCourseStatus();
+  // Use our new hook for updating enrollment completion status
+  const updateEnrollmentStatus = useUpdateEnrollmentCompletion();
   const queryClient = useQueryClient();
   
   useEffect(() => {
@@ -93,11 +94,10 @@ const GoalDashboardCard: React.FC<GoalDashboardCardProps> = ({ goal }) => {
     setUpdatingCourseId(courseId);
     
     try {
-      // Call the API to update the course status
-      await updateCourseStatus.mutateAsync({
+      // Call the API to update the enrollment status
+      await updateEnrollmentStatus.mutateAsync({
         goalId: goal.id,
-        courseId: courseId,
-        completed: !currentStatus // Toggle the current status
+        enrollmentId: courseId
       });
       
       // Update the local state for immediate feedback
@@ -111,7 +111,7 @@ const GoalDashboardCard: React.FC<GoalDashboardCardProps> = ({ goal }) => {
       toast.success(`Course ${!currentStatus ? 'completed' : 'marked as incomplete'}`);
       
       // Refresh the dashboard data
-      queryClient.invalidateQueries(['dashboard']);
+      queryClient.invalidateQueries(['goals', 'dashboard']);
     } catch (error) {
       toast.error('Failed to update course status');
       console.error('Error updating course status:', error);

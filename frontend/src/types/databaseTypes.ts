@@ -44,5 +44,12 @@ export interface Comment {
     person: {
         id: number;
         username: string;
-    };
+}
+
+export interface Goal {
+    id: number;
+    person: Person;
+    enrollemntList: Enrollment[];
+    startDate: string;
+    endDate: string;
 }
