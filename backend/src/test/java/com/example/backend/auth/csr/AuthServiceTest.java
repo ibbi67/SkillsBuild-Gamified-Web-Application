@@ -30,6 +30,7 @@ public class AuthServiceTest {
         personService = mock(PersonService.class);
         jwt = mock(JWT.class);
         response = mock(HttpServletResponse.class);
+        authService = new AuthService(personService, jwt);
     }
 
     @Test

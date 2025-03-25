@@ -28,8 +28,8 @@ public class BadgeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Badge>> getBadgeById(@CookieValue("accessToken") String accessToken, @PathVariable Integer id) {
-        ServiceResult<Badge, BadgeGetByIdError> result = badgeService.getBadgeById(accessToken, id);
+    public ResponseEntity<ApiResponse<Badge>> getBadgeById(@PathVariable Integer id) {
+        ServiceResult<Badge, BadgeGetByIdError> result = badgeService.getBadgeById( id);
         if (result.isSuccess()) {
             return new ResponseEntity<>(ApiResponse.success(result.getData()), HttpStatus.OK);
         }
@@ -50,7 +50,7 @@ public class BadgeController {
 
         BadgeGetByUserError error = result.getError();
         return switch (error) {
-            case INVALID_ACCESS_TOKEN -> new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.BAD_REQUEST);
+            case INVALID_ACCESS_TOKEN -> new ResponseEntity<>(ApiResponse.failed(error.getMessage()), HttpStatus.UNAUTHORIZED);
         };
     }
 }

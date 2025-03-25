@@ -24,6 +24,7 @@ public class DevDataInitializer {
     @PostConstruct
     public void init() {
         initCourseData();
+        initBadgeData();
     }
 
     public void initCourseData() {

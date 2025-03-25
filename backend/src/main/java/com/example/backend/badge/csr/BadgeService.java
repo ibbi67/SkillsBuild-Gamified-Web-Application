@@ -31,34 +31,33 @@ public class BadgeService {
         return badgeRepository.findByCriteriaType(criteriaType);
     }
 
-    private void checkAndAwardStreakBadges(Person person) {
+    private Person checkAndAwardStreakBadges(Person person) {
         List<Badge> streakBadges = getBadgesByCriteriaType("STREAK");
         for (Badge badge : streakBadges) {
             if (person.getStreak() >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
                 person.getBadges().add(badge);
-                badge.addPerson(person);
             }
         }
-        personService.save(person);
+        return person;
     }
 
-    private void checkAndAwardFavoriteBadges(Person person) {
+    private Person checkAndAwardFavoriteBadges(Person person) {
         List<Badge> favoriteBadges = getBadgesByCriteriaType("FAVORITE");
         int favoriteCount = person.getFavoriteCourses().size();
         for (Badge badge : favoriteBadges) {
             if (favoriteCount >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
                 person.getBadges().add(badge);
-                badge.addPerson(person);
             }
         }
-        personService.save(person);
+        return person;
     }
 
     // The accessToken must be valid
     private void updateBadges(String accessToken) {
         Person person = jwt.getPersonFromToken(accessToken).get();
-        checkAndAwardStreakBadges(person);
-        checkAndAwardFavoriteBadges(person);
+        Person streakUpdatedPerson = checkAndAwardStreakBadges(person);
+        Person favouriteUpdatedPerson = checkAndAwardFavoriteBadges(streakUpdatedPerson);
+        personService.save(favouriteUpdatedPerson);
     }
 
     public ServiceResult<List<Badge>, Void> getAllBadges() {
@@ -66,11 +65,10 @@ public class BadgeService {
         return ServiceResult.success(badges);
     }
 
-    public ServiceResult<Badge, BadgeGetByIdError> getBadgeById(String accessToken, Integer id) {
+    public ServiceResult<Badge, BadgeGetByIdError> getBadgeById(Integer id) {
         if (id == null || id <= 0) {
             return ServiceResult.error(BadgeGetByIdError.INVALID_ID);
         }
-        updateBadges(accessToken);
         Optional<Badge> badge = badgeRepository.findById(id);
         if (badge.isEmpty()) {
             return ServiceResult.error(BadgeGetByIdError.BADGE_NOT_FOUND);
