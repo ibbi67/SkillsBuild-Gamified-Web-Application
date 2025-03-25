@@ -16,9 +16,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 @Service
 public class BadgeService {
+    private static final Logger logger = Logger.getLogger(BadgeService.class.getName());
 
     private final BadgeRepository badgeRepository;
     private final PersonRepository personRepository;
@@ -46,6 +49,10 @@ public class BadgeService {
 
     public ServiceResult<Badge, BadgeCreateError> createBadge(BadgeDTO badgeDTO) {
         try {
+            if (badgeDTO == null) {
+                return ServiceResult.error(BadgeCreateError.BADGE_CREATION_FAILED);
+            }
+            
             Badge badge = new Badge(
                 badgeDTO.getName(),
                 badgeDTO.getDescription(),
@@ -55,6 +62,7 @@ public class BadgeService {
             );
             return ServiceResult.success(badgeRepository.save(badge));
         } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to create badge", e);
             return ServiceResult.error(BadgeCreateError.BADGE_CREATION_FAILED);
         }
     }
@@ -67,6 +75,7 @@ public class BadgeService {
             }
             return ServiceResult.success(badges);
         } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to get all badges", e);
             return ServiceResult.error(BadgeGetError.GET_BADGE_FAILED);
         }
     }
@@ -83,6 +92,7 @@ public class BadgeService {
             }
             return ServiceResult.success(badge.get());
         } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to get badge by ID: " + id, e);
             return ServiceResult.error(BadgeGetError.GET_BADGE_FAILED);
         }
     }
@@ -92,11 +102,16 @@ public class BadgeService {
             return ServiceResult.error(BadgeGetError.GET_BADGE_FAILED);
         }
 
-        Optional<Badge> badgeOptional = badgeRepository.findByName(name);
-        if (badgeOptional.isEmpty()) {
-            return ServiceResult.error(BadgeGetError.BADGE_NOT_FOUND);
+        try {
+            Optional<Badge> badgeOptional = badgeRepository.findByName(name);
+            if (badgeOptional.isEmpty()) {
+                return ServiceResult.error(BadgeGetError.BADGE_NOT_FOUND);
+            }
+            return ServiceResult.success(badgeOptional.get());
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to get badge by name: " + name, e);
+            return ServiceResult.error(BadgeGetError.GET_BADGE_FAILED);
         }
-        return ServiceResult.success(badgeOptional.get());
     }
 
     public ServiceResult<List<Badge>, BadgeGetError> getBadgesByCriteriaType(String criteriaType) {
@@ -111,6 +126,7 @@ public class BadgeService {
             }
             return ServiceResult.success(badges);
         } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to get badges by criteria type: " + criteriaType, e);
             return ServiceResult.error(BadgeGetError.GET_BADGE_FAILED);
         }
     }
@@ -143,6 +159,7 @@ public class BadgeService {
 
             return ServiceResult.success(null);
         } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to award badge (userId: " + userId + ", badgeId: " + badgeId + ")", e);
             return ServiceResult.error(BadgeAwardError.BADGE_AWARD_FAILED);
         }
     }
@@ -153,20 +170,29 @@ public class BadgeService {
             return;
         }
 
-        int favoriteCount = person.getFavoriteCourses().size();
-        List<Badge> favoriteBadges = badgeRepository.findByCriteriaType("FAVORITE");
-        
-        boolean badgeAwarded = false;
-        for (Badge badge : favoriteBadges) {
-            if (favoriteCount >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
-                person.getBadges().add(badge);
-                badge.addPerson(person);
-                badgeAwarded = true;
+        try {
+            int favoriteCount = person.getFavoriteCourses().size();
+            if (favoriteCount == 0) {
+                return;
             }
-        }
-        
-        if (badgeAwarded) {
-            personRepository.save(person);
+            
+            List<Badge> favoriteBadges = badgeRepository.findByCriteriaType("FAVORITE");
+            
+            boolean badgeAwarded = false;
+            for (Badge badge : favoriteBadges) {
+                if (favoriteCount >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
+                    person.getBadges().add(badge);
+                    badge.addPerson(person);
+                    badgeAwarded = true;
+                }
+            }
+            
+            if (badgeAwarded) {
+                personRepository.save(person);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error in checkAndAwardFavoriteBadges for person: " + person.getId(), e);
+            // Don't propagate the exception to avoid breaking the calling method
         }
     }
 
@@ -176,19 +202,24 @@ public class BadgeService {
             return;
         }
 
-        List<Badge> streakBadges = badgeRepository.findByCriteriaType("STREAK");
-        boolean badgeAwarded = false;
+        try {
+            List<Badge> streakBadges = badgeRepository.findByCriteriaType("STREAK");
+            boolean badgeAwarded = false;
 
-        for (Badge badge : streakBadges) {
-            if (person.getStreak() >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
-                person.getBadges().add(badge);
-                badge.addPerson(person);
-                badgeAwarded = true;
+            for (Badge badge : streakBadges) {
+                if (person.getStreak() >= badge.getCriteriaValue() && !person.getBadges().contains(badge)) {
+                    person.getBadges().add(badge);
+                    badge.addPerson(person);
+                    badgeAwarded = true;
+                }
             }
-        }
 
-        if (badgeAwarded) {
-            personRepository.save(person);
+            if (badgeAwarded) {
+                personRepository.save(person);
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error in checkAndAwardStreakBadges for person: " + person.getId(), e);
+            // Don't propagate the exception to avoid breaking the calling method
         }
     }
 
@@ -206,7 +237,21 @@ public class BadgeService {
             Person person = personOpt.get();
             return ServiceResult.success(person.getBadges());
         } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to get user badges for userId: " + userId, e);
             return ServiceResult.error(BadgeGetError.GET_BADGE_FAILED);
+        }
+    }
+    
+    public Optional<Badge> findBadgeByCriteriaTypeAndValue(String criteriaType, Integer criteriaValue) {
+        try {
+            if (criteriaType == null || criteriaValue == null) {
+                return Optional.empty();
+            }
+            return badgeRepository.findByCriteriaTypeAndCriteriaValue(criteriaType, criteriaValue);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Failed to find badge by criteria type: " + criteriaType + 
+                       " and value: " + criteriaValue, e);
+            return Optional.empty();
         }
     }
 }

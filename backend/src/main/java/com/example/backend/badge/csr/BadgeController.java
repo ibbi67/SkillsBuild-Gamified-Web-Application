@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 import java.util.Set;
@@ -86,8 +87,12 @@ public class BadgeController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Badge>> createBadge(@RequestBody BadgeDTO badgeDTO, @CookieValue("accessToken") String accessToken) {
-        if (!isValidToken(accessToken)) {
+    public ResponseEntity<ApiResponse<Badge>> createBadge(@RequestBody BadgeDTO badgeDTO, @CookieValue(value = "accessToken", required = false) String accessToken) {
+        if (accessToken == null) {
+            return new ResponseEntity<>(ApiResponse.failed("Missing access token"), HttpStatus.BAD_REQUEST);
+        }
+
+        if (accessToken.isEmpty() || jwt.getPersonFromToken(accessToken).isEmpty()) {
             return new ResponseEntity<>(ApiResponse.failed(BadgeCreateError.UNAUTHORIZED.getMessage()), HttpStatus.FORBIDDEN);
         }
 
@@ -109,9 +114,13 @@ public class BadgeController {
     public ResponseEntity<ApiResponse<String>> awardBadgeToUser(
             @PathVariable Integer userId,
             @PathVariable Integer badgeId,
-            @CookieValue("accessToken") String accessToken
+            @CookieValue(value = "accessToken", required = false) String accessToken
     ) {
-        if (!isValidToken(accessToken)) {
+        if (accessToken == null) {
+            return new ResponseEntity<>(ApiResponse.failed("Missing access token"), HttpStatus.BAD_REQUEST);
+        }
+
+        if (accessToken.isEmpty() || jwt.getPersonFromToken(accessToken).isEmpty()) {
             return new ResponseEntity<>(ApiResponse.failed(BadgeAwardError.UNAUTHORIZED.getMessage()), HttpStatus.FORBIDDEN);
         }
 
@@ -130,7 +139,10 @@ public class BadgeController {
         };
     }
 
-    private boolean isValidToken(String accessToken) {
-        return jwt.getPersonFromToken(accessToken).isPresent();
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String message = String.format("Invalid value '%s' for parameter '%s'. Expected type: %s",
+                ex.getValue(), ex.getName(), ex.getRequiredType().getSimpleName());
+        return new ResponseEntity<>(ApiResponse.failed(message), HttpStatus.BAD_REQUEST);
     }
 }

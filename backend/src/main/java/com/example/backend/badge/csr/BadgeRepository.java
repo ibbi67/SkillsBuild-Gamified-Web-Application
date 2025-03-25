@@ -13,4 +13,6 @@ public interface BadgeRepository extends JpaRepository<Badge, Integer> {
     Optional<Badge> findByName(String name);
 
     List<Badge> findByCriteriaType(String criteriaType);
+    
+    Optional<Badge> findByCriteriaTypeAndCriteriaValue(String criteriaType, Integer criteriaValue);
 } 
