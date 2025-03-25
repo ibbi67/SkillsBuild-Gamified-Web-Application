@@ -55,6 +55,24 @@
     - [Backend](#backend)
     - [Frontend](#frontend)
     - [Error Handling](#error-handling)
+  - [Course Recommendation System](#course-recommendation-system)
+    - [Course Recommendation System for Backend](#course-recommendation-system-for-backend)
+    - [Course Recommendation System for Frontend](#course-recommendation-system-for-frontend)
+    - [Flow of Course Recommendation](#flow-of-course-recommendation)
+    - [Testing](#testing-4)
+  - [Update Enrollment Progress](#update-enrollment-progress)
+    - [Enrollment](#enrollment)
+    - [Update Progress](#update-progress)
+    - [Tracking User Enrollment Progress](#tracking-user-enrollment-progress)
+    - [Course Page](#course-page)
+    - [Dashboard Page](#dashboard-page)
+    - [Course Components](#course-components)
+    - [CourseActions](#courseactions)
+    - [CourseCard](#coursecard)
+    - [CourseDescription](#coursedescription)
+    - [EnrollButton](#enrollbutton)
+    - [FavoriteButton](#favoritebutton)
+    - [Timer](#timer)
 
 ---
 
@@ -582,3 +600,68 @@ The Comments feature allows users to engage in discussions about courses, share 
     - Comprehensive test cases for different user scenarios
     - Validation of UI states (loading, error, empty)
     - Cross-browser compatibility testing
+
+## Update Enrollment Progress
+**Author: Justin Fung**
+
+#### Enrollment
+The `Enrollment` class represents an enrollment in a course. It includes methods to check if the course is completed and to add time spent on the course.
+
+- **isCompleted()**: Checks if the time spent on the course is greater than or equal to the estimated duration of the course.
+- **addTimeSpent(Integer time)**: Adds the specified time to the total time spent on the course.
+
+#### Update Progress
+The `UpdateProgressDTO` class is used to transfer data related to updating the progress of an enrollment. It includes the following field:
+
+- **timeSpent**: The amount of time spent on the course.
+
+The `EnrollmentController` class includes an endpoint to update the progress of an enrollment:
+
+- **PUT /{enrollmentId}/progress**: Updates the time spent on the course for the specified enrollment ID.
+
+The `EnrollmentService` class includes the following methods related to updating progress:
+
+- **updateProgress(Integer enrollmentId, UpdateProgressDTO updateProgressDTO)**: Updates the progress of an enrollment based on the provided enrollment ID and time spent.
+
+#### Tracking User Enrollment Progress
+
+The system includes a feature to track the progress of user enrollments in courses. This feature allows users to see how much time they have spent on a course and whether they have completed it.
+
+- **Enrollment Class**: Represents an enrollment in a course and includes methods to check if the course is completed and to add time spent on the course.
+  - **isCompleted()**: Checks if the time spent on the course is greater than or equal to the estimated duration of the course.
+  - **addTimeSpent(Integer time)**: Adds the specified time to the total time spent on the course.
+
+- **UpdateProgressDTO Class**: Used to transfer data related to updating the progress of an enrollment. It includes the following field:
+  - **timeSpent**: The amount of time spent on the course.
+
+- **EnrollmentController Class**: Includes an endpoint to update the progress of an enrollment:
+  - **PUT /{enrollmentId}/progress**: Updates the time spent on the course for the specified enrollment ID.
+
+- **EnrollmentService Class**: Includes the following methods related to updating progress:
+  - **updateProgress(Integer enrollmentId, UpdateProgressDTO updateProgressDTO)**: Updates the progress of an enrollment based on the provided enrollment ID and time spent.
+
+#### Course Page
+The `CoursePage` component displays a list of courses with tabs for all courses, favourite courses, and recommended courses. It uses the `useMe` hook to fetch user data.
+
+#### Dashboard Page
+The `DashboardPage` component displays the user's profile information, streak, and favourite courses. It also includes the `EnrolledCoursesSection` component to display the courses the user is enrolled in.
+
+#### Course Components
+
+##### CourseActions
+The `CourseActions` component displays buttons for enrolling in a course, adding/removing the course from favourites, and a timer for tracking time spent on the course.
+
+##### CourseCard
+The `CourseCard` component displays information about a course, including the title and description. It uses the `CourseActions` component to provide actions related to the course.
+
+##### CourseDescription
+The `CourseDescription` component displays the description of a course with a toggle to show more or less text.
+
+##### EnrollButton
+The `EnrollButton` component allows the user to enroll in a course. It uses the `useCreateEnrollment` hook to handle the enrollment process.
+
+##### FavoriteButton
+The `FavoriteButton` component allows the user to add or remove a course from their favourites. It uses the `useAddFavourite` and `useRemoveFavourite` hooks to handle the process.
+
+##### Timer
+The `Timer` component tracks the time spent on a course. It uses the `useTimer` hook to manage the timer state and update the progress.
