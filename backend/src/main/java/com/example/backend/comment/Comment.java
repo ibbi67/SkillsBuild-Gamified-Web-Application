@@ -23,7 +23,7 @@ public class Comment {
     private String content;
 
     @Column(nullable = false)
-    private LocalDateTime CreatedAt = LocalDateTime.now();
+    private LocalDateTime reatedAt = LocalDateTime.now();
 
     @ManyToOne
     @JoinColumn(name = "person_id", nullable = false)
