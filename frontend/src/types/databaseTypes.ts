@@ -35,3 +35,13 @@ export interface Enrollment {
     person: Person;
     timeSpent: number;
 }
+
+export interface Comment {
+    id: number;
+    content: string;
+    createdAt: string;
+    person: {
+        id: number;
+        username: string;
+    };
+}

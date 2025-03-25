@@ -37,5 +37,3 @@ export default function CourseCard({ course }: CourseCardProps) {
         </div>
     );
 }
-
-
