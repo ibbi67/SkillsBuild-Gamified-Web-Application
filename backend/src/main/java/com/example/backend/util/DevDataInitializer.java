@@ -6,13 +6,9 @@ import com.example.backend.course.Course;
 import com.example.backend.course.csr.CourseRepository;
 import com.example.backend.person.Person;
 import com.example.backend.person.csr.PersonRepository;
-import com.example.backend.person.csr.PersonService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
-import java.util.Random;
 
 @Component
 @Profile("dev")
