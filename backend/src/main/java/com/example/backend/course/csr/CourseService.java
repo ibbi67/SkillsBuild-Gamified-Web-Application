@@ -82,10 +82,6 @@ public class CourseService {
             return ServiceResult.error(CourseViewError.INVALID_ID);
         }
 
-        if (id == null || id <= 0) {
-            return ServiceResult.error(CourseViewError.COURSE_NOT_FOUND);
-        }
-
         Optional<Course> courseOptional = findById(id);
         if (courseOptional.isEmpty()) {
             return ServiceResult.error(CourseViewError.COURSE_NOT_FOUND);
