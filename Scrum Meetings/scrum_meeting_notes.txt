@@ -1,0 +1,88 @@
+Meeting 1 - 25/02/25 - Zain
+Met with the team on call. We went round and everyone spoke about how they
+thought sprint 1 went. Comments that we encouraged were what we thought
+went well and what caused issues for us later down the line. A large issue was
+time management and so we have decided to conduct more scrum meetings.
+This is in hopes that issues will arise faster and can be addressed faster. We
+have also proposed the idea of daily scrum meetings (for weekdays). Current
+task for everyone is to ensure that a feature is chosen before the session on
+27/02.
+
+Meeting 2 - 03/03/25 - Zain
+First official start of the scrum meeting and working on sprint 2. All issues
+have been assigned and there are no current issues with the assignment. As
+scrum master I will create a ruleset for the scrum meetings to ensure that
+everyone comes prepared to the meetings. This will ensure that people are
+getting the most out of the meetings. So far no one has started coding their
+issue.
+
+Meeting 3 - 04/02/25 - Zain
+No major team changes, no one has started coding just yet. An extra channel
+of communication has been added on discord to separate notes that were
+made in the meetings. This will be used to update anyone that was not present
+at the meeting. Have decided not to create a scrum rule document to keep the
+meetings less formal. given that they are daily we can allow the team to take a
+natural course to what we value from the meetings. A notion page has been
+created with a tracker for all the tasks. An inline database has been used for
+the task tracker which allows for date tracking and status tracking. I will be
+adding everyone to this shared page so that they can also view the current
+tasks.
+
+Meeting 4 - 05/03/25 - Zain
+No major team changes. there is currently an issue with main. Justin and I will
+work on restoring main so that there are no errors. The idea for a development
+branch has been suggested so that we can catch any errors upon merging
+before merging to main.
+
+Meeting 5 - 06/03/25 - Zain
+In order to spread the responsibility of submission I have assigned roles to
+everyone in the team:
+Zain - Scrum master/admin
+Justin - Git management
+Eren - Scrum board management and screenshots
+Sonny - User manual Manager
+Dan - Floater/checks for announcements
+Ibrahim - Video manager
+In order to give notice to the other members in the group on what the
+specification requires, the video manager and user manual manager (Ibrahim
+and Sonny) will provide a report to the rest of the group on what the
+requirements will be.
+
+Meeting 6 - 10/03/25 - Zain
+Reviewed report documents from Ibrahim and Sonny on the video spec and
+user manual spec. No major changes from rest of team.
+
+Meeting 7 - 12/03/25 - Eren
+Management of the schedule of tasks. Making sure everything is on track to
+being finished on time, with the internal deadlines still in place. No major
+changes from the rest of the team, however plans to start development in
+place.
+
+Meeting 8 - 14/03/25 - Ibrahim
+Had a team meeting today to check on everyone’s progress, progression is
+going great and we plan to have all features completed well before the soft
+deadline that we have set.
+
+Meeting 9 - 18/03/25 - Sonny
+Met with the team on call. Reviewed everyone's individual issues on their
+branches making sure there were no bugs and general maintenance of the
+code. Also updated the scrum notes after reviewing the feedback from sprint
+one of what we could improve on.
+
+Meeting 10 - 20/03/25 - Dan
+The scrum meetings that we attended online, we discussed the updates we
+had to any of the code we had. I mentioned that I finished my code and
+needed someone to review the code for merging into the main branch. Justin
+had offered to do so. Within the meeting we also discussed an extension of
+the internal deadline for the features due to the team members all agreeing to
+more time required to complete each feature.
+
+Meeting 11 - 25/03/25 - Justin
+Today we had an in person meeting so that we could finalise our features and
+merge together. Energy drinks were provided by amazing scrum master for
+motivation to meet in person. Almost all features have been completed with a
+few features still being worked on. A script has been created for the video as
+well as user manuals for all features. Dan and Ibrahim spent time looking
+though the specifications for anything that we may have missed out. Mostly
+we have spent time going through feature integration and prepping for the
+video.
