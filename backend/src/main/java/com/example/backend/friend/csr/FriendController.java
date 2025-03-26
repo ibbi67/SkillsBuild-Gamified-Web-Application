@@ -65,11 +65,11 @@ public class FriendController {
     }
 
     @Operation(summary = "Remove a friend")
-    @DeleteMapping
+    @DeleteMapping("/{friendId}")
     public ResponseEntity<ApiResponse<Void>> removeFriend(
             @CookieValue(name = "accessToken") String accessToken,
-            @RequestBody FriendDTO friendDTO) {
-        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend(accessToken, friendDTO);
+            @PathVariable Long friendId) {
+        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend(accessToken, friendId);
         if (result.isSuccess()) {
             return new ResponseEntity<>(ApiResponse.success(null), HttpStatus.OK);
         }

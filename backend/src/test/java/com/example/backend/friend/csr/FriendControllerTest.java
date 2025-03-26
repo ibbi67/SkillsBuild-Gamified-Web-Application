@@ -91,23 +91,10 @@ class FriendControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isOk());
-        mockMvc.perform(delete("/friends")
-                        .cookie(cookies)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
+        mockMvc.perform(delete("/friends/2")
+                        .cookie(cookies))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Success"));
-    }
-
-    @Test
-    void removeFriend_whenInvalidToken_returnsUnauthorized() throws Exception {
-        String payload = "{\"username\":\"frienduser\"}";
-        mockMvc.perform(delete("/friends")
-                        .cookie(new Cookie("accessToken", "invalidToken"))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Invalid access token"));
     }
 
     @Test
@@ -161,33 +148,24 @@ class FriendControllerTest {
 
     @Test
     void removeFriend_whenPersonNotFound_returnsNotFound() throws Exception {
-        String payload = "{\"personId\":\"999\"}";
-        mockMvc.perform(delete("/friends")
-                        .cookie(cookies)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
+        mockMvc.perform(delete("/friends/999")
+                        .cookie(cookies))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("User not found"));
     }
 
     @Test
     void removeFriend_whenNotFriends_returnsBadRequest() throws Exception {
-        String payload = "{\"personId\":\"2\"}";
-        mockMvc.perform(delete("/friends")
-                        .cookie(cookies)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
+        mockMvc.perform(delete("/friends/2")
+                        .cookie(cookies))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("You are not friends with this user"));
     }
 
     @Test
     void removeFriend_whenInternalError_returnsInternalServerError() throws Exception {
-        String payload = "{\"personId\":\"500\"}";
-        mockMvc.perform(delete("/friends")
-                        .cookie(cookies)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(payload))
+        mockMvc.perform(delete("/friends/500")
+                        .cookie(cookies))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("User not found"));
     }

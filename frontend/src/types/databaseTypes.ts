@@ -28,6 +28,7 @@ export interface Person {
     email: string;
     avatarLink: string;
     badges: Badge[];
+    friends: Person[];
 }
 
 export interface Enrollment {

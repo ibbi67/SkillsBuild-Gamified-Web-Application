@@ -29,7 +29,7 @@ public class DevDataInitializer {
         initCourseData();
         initBadgeData();
         initPersonData();
-        initFriendRelationships();
+//        initFriendRelationships();
     }
 
     public void initCourseData() {

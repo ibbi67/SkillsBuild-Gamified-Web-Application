@@ -50,9 +50,6 @@ public class Person {
     )
     private List<Person> friends = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "friends")
-    private List<Person> friendOf = new ArrayList<>();
-
     public Person(String username, String password) {
         this.username = username;
         this.password = password;

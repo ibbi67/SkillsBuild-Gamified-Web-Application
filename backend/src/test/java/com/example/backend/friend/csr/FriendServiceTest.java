@@ -187,7 +187,7 @@ class FriendServiceTest {
         when(personService.save(any(Person.class))).thenReturn(Optional.of(testPerson));
         
         // Test
-        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend(validToken, friendDTO);
+        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend(validToken, friendDTO.getPersonId());
         
         // Assert
         assertTrue(result.isSuccess());
@@ -196,7 +196,7 @@ class FriendServiceTest {
     @Test
     void removeFriend_withInvalidToken_returnsError() {
         // Test
-        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend("invalidToken", friendDTO);
+        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend("invalidToken", friendDTO.getPersonId());
         
         // Assert
         assertFalse(result.isSuccess());
@@ -209,7 +209,7 @@ class FriendServiceTest {
         when(personService.findById(friendDTO.getPersonId())).thenReturn(Optional.empty());
         
         // Test
-        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend(validToken, friendDTO);
+        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend(validToken, friendDTO.getPersonId());
         
         // Assert
         assertFalse(result.isSuccess());
@@ -222,7 +222,7 @@ class FriendServiceTest {
         when(personService.findById(friendDTO.getPersonId())).thenReturn(Optional.of(friendPerson));
         
         // Test
-        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend(validToken, friendDTO);
+        ServiceResult<Void, FriendRemoveError> result = friendService.removeFriend(validToken, friendDTO.getPersonId());
         
         // Assert
         assertFalse(result.isSuccess());

@@ -87,7 +87,7 @@ public class FriendService {
         return ServiceResult.success(null);
     }
     
-    public ServiceResult<Void, FriendRemoveError> removeFriend(String accessToken, FriendDTO friendDTO) {
+    public ServiceResult<Void, FriendRemoveError> removeFriend(String accessToken, Long friendId) {
         Optional<Person> personOptional = jwt.getPersonFromToken(accessToken);
         if (personOptional.isEmpty()) {
             return ServiceResult.error(FriendRemoveError.INVALID_ACCESS_TOKEN);
@@ -95,7 +95,7 @@ public class FriendService {
         
         Person person = personOptional.get();
         
-        Optional<Person> friendOptional = personService.findById(friendDTO.getPersonId());
+        Optional<Person> friendOptional = personService.findById(friendId);
         if (friendOptional.isEmpty()) {
             return ServiceResult.error(FriendRemoveError.PERSON_NOT_FOUND);
         }
