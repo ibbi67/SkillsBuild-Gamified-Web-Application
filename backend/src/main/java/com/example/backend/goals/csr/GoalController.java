@@ -6,6 +6,10 @@ import com.example.backend.goals.GoalDTO;
 import com.example.backend.goals.error.*;
 import com.example.backend.util.ApiResponse;
 import com.example.backend.util.ServiceResult;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/goals")
+@Tag(name = "Goal Controller", description = "API for managing user goals")
 public class GoalController {
 
     private final GoalService goalService;
@@ -24,6 +29,7 @@ public class GoalController {
 
     // Create a new goal
     @PostMapping
+    @Operation(summary = "Create a new goal", description = "Creates a new goal for the user.")
     public ResponseEntity<ApiResponse<Void>> createGoal(@CookieValue("accessToken") String accessToken, @RequestBody GoalDTO goalDTO) {
         ServiceResult<Void, GoalCreateError> result = goalService.createGoal(accessToken, goalDTO);
         if (result.isSuccess()) {
@@ -40,6 +46,7 @@ public class GoalController {
 
     // Delete a goal
     @DeleteMapping("/{goalId}")
+    @Operation(summary = "Delete a goal", description = "Deletes a goal for the user.")
     public ResponseEntity<ApiResponse<Void>> deleteGoal(@CookieValue("accessToken") String accessToken, @PathVariable Long goalId) {
         ServiceResult<Void, GoalDeleteError> result = goalService.deleteGoal(accessToken, goalId);
         if (result.isSuccess()) {
@@ -58,6 +65,7 @@ public class GoalController {
 
     // Add courses to a goal
     @PostMapping("/{goalId}")
+    @Operation(summary = "Add courses to a goal", description = "Adds courses to an existing goal.")
     public ResponseEntity<ApiResponse<Goal>> addEnrollmentToGoal(@PathVariable Long goalId, @RequestBody AddEnrollmentDTO addEnrollmentDTO) {
         ServiceResult<Goal, GoalAddEnrollmentError> result = goalService.addEnrollmentToGoal(goalId, addEnrollmentDTO);
         if (result.isSuccess()) {
@@ -72,6 +80,7 @@ public class GoalController {
 
     // update enrollment completion status
     @PutMapping("/{goalId}/enrollments/{enrollmentId}")
+    @Operation(summary = "Update enrollment completion status", description = "Updates the completion status of a specific enrollment in a goal.")
     public ResponseEntity<ApiResponse<Goal>> updateEnrollmentCompletionStatus(@CookieValue("accessToken") String accessToken, @PathVariable Long goalId, @PathVariable Integer enrollmentId) {
         ServiceResult<Goal, GoalUpdateEnrollmentCompletionStatusError> result = goalService.updateEnrollmentCompletionStatus(accessToken, goalId, enrollmentId);
         if (result.isSuccess()) {
@@ -89,6 +98,7 @@ public class GoalController {
     }
 
     @GetMapping
+    @Operation(summary = "Get all goals", description = "Retrieves all goals for the user.")
     public ResponseEntity<ApiResponse<List<Goal>>> getGoals(@CookieValue("accessToken") String accessToken) {
         ServiceResult<List<Goal>, GoalGetError> result = goalService.getGoals(accessToken);
         if (result.isSuccess()) {
@@ -100,6 +110,4 @@ public class GoalController {
                     new ResponseEntity<>(ApiResponse.failed(result.getError().getMessage()), HttpStatus.UNAUTHORIZED);
         };
     }
-
-
 }

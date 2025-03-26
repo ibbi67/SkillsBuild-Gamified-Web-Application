@@ -9,6 +9,7 @@ import com.example.backend.profile.error.ProfileUpdateError;
 import com.example.backend.util.ApiResponse;
 import com.example.backend.util.ServiceResult;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
@@ -23,6 +24,7 @@ public class ProfileController {
     }
 
     @PutMapping
+    @Operation(summary = "Update user profile", description = "Updates the user's profile information.")
     public ResponseEntity<ApiResponse<Void>> update(@CookieValue("accessToken") String accessToken, @RequestBody ProfileDTO profileDTO) {
         ServiceResult<Void, ProfileUpdateError> result = profileService.update(accessToken, profileDTO);
         if (result.isSuccess()) {
