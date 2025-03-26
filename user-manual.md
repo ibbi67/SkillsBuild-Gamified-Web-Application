@@ -600,16 +600,24 @@ The Comments feature allows users to engage in discussions about courses, share 
     - Scroll to the bottom to see the comments section
     - Comments load automatically with the course details
 
+    ![alt text](<CleanShot 2025-03-26 at 04.55.22.png>)
+
+
+
 2. **Creating a Comment**
     - Type your comment in the text area
     - Click "Post Comment" to submit
     - New comment appears immediately in the list
     - Error handling is provided if submission fails
 
+    ![alt text](<CleanShot 2025-03-26 at 04.56.52-1.png>)
+
 3. **Comment Validation**
     - Empty comments cannot be submitted
     - Button is disabled until comment is entered
     - Feedback is displayed during submission process
+
+    ![alt text](<CleanShot 2025-03-26 at 04.57.56.png>)
 
 ### Testing
 
@@ -957,11 +965,15 @@ CREATE TABLE person_friends (
    - Backend searches for matching users
    - Frontend displays the search results
 
+   
+
 2. **Adding a Friend**:
    - User clicks the "Add Friend" button next to a user
    - System sends a request to the `/friends/{username}` endpoint
    - Backend adds the friendship relationship
    - Frontend updates to reflect the new friendship
+
+  
 
 3. **Viewing Friends**:
    - User navigates to the Friends page
