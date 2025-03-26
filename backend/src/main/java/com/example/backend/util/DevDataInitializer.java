@@ -29,6 +29,7 @@ public class DevDataInitializer {
         initCourseData();
         initBadgeData();
         initPersonData();
+//        initFriendRelationships();
     }
 
     public void initCourseData() {
@@ -329,6 +330,36 @@ public class DevDataInitializer {
                 "ryan.taylor@email.com",
                 "https://randomuser.me/api/portraits/men/10.jpg"
         ));
+    }
+    
+    public void initFriendRelationships() {
+        // Get existing people from the repository
+        Person sarah = personRepository.findByUsername("sarah_dev").orElse(null);
+        Person alex = personRepository.findByUsername("alex_coder").orElse(null);
+        Person emma = personRepository.findByUsername("emma_tech").orElse(null);
+        Person marcus = personRepository.findByUsername("marcus_js").orElse(null);
+        Person priya = personRepository.findByUsername("priya_code").orElse(null);
+        
+        if (sarah != null && alex != null && emma != null && marcus != null && priya != null) {
+            // Add friend relationships
+            // Sarah is friends with Alex and Emma
+            sarah.getFriends().add(alex);
+            sarah.getFriends().add(emma);
+            
+            // Alex is friends with Emma and Marcus
+            alex.getFriends().add(emma);
+            alex.getFriends().add(marcus);
+            
+            // Emma is friends with Priya
+            emma.getFriends().add(priya);
+            
+            // Save the updated person entities
+            personRepository.save(sarah);
+            personRepository.save(alex);
+            personRepository.save(emma);
+            personRepository.save(marcus);
+            personRepository.save(priya);
+        }
     }
 
 }

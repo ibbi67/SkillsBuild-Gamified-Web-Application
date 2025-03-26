@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import ProfileUpdateForm from "@/component/profile/ProfileUpdateForm";
 import { EnrolledCoursesSection } from "@/component/dashboard/EnrolledCoursesSection";
 import { BadgeSection } from "@/component/badge/BadgeSection";
+import { FriendsList } from "@/component/Friends/FriendsList";
 
 export default function DashboardPage() {
     const { data: user, isLoading: isLoadingUser, isError: isErrorUser, error: errorUser } = useMe();
@@ -60,6 +61,7 @@ export default function DashboardPage() {
                     </div>
                 </div>
                 <ProfileUpdateForm />
+                <FriendsList />
                 <div className="rounded-lg border p-4 shadow">
                     <h2 className="mb-2 font-bold">
                         Your Favourite Courses

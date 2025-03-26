@@ -99,15 +99,7 @@
     - [Goal System for Frontend](#goal-system-for-frontend)
     - [Flow of Goal Management](#flow-of-goal-management)
     - [Testing](#testing-4)
->>>>>>> 7e48b2d (feat: updated user manual)
-=======
-  - [Course Goal System](#course-goal-system)
-    - [Overview](#overview-3)
-    - [Goal System for Backend](#goal-system-for-backend)
-    - [Goal System for Frontend](#goal-system-for-frontend)
-    - [Flow of Goal Management](#flow-of-goal-management)
-    - [Testing](#testing-4)
->>>>>>> 23d0f33 (feat: updated user manual)
+  - [Friends System](#friends-system)
 
 ---
 
@@ -901,3 +893,92 @@ The Goal System allows users to set, track, and manage their course goals. Users
     - Comprehensive test cases for different user scenarios.
     - Validation of UI states (loading, error, empty).
     - Cross-browser compatibility testing
+
+## Friends System
+**Author: Your Name**
+
+### Overview
+The Friends System allows users to connect with each other on the platform. Users can search for other users, add them as friends, view their friends list, and remove friends. This feature enhances the social aspect of the learning platform and encourages collaborative learning.
+
+### Backend
+The backend provides several endpoints to manage the friend relationships:
+
+1. **Get All Friends**:
+   - Endpoint: `GET /friends`
+   - Description: Retrieves the list of all friends for the authenticated user.
+   - Response: A list of friend objects containing username, first name, last name, email, avatar link, and streak.
+
+2. **Search Users**:
+   - Endpoint: `GET /friends/search?query={searchQuery}`
+   - Description: Searches for users based on username, first name, or last name.
+   - Response: A list of matching users excluding the current user.
+
+3. **Add a Friend**:
+   - Endpoint: `POST /friends/{username}`
+   - Description: Adds the specified user as a friend to the authenticated user.
+   - Response: Success or appropriate error message.
+
+4. **Remove a Friend**:
+   - Endpoint: `DELETE /friends/{username}`
+   - Description: Removes the specified user from the authenticated user's friends list.
+   - Response: Success or appropriate error message.
+
+The friend relationships are bidirectional, meaning that when User A adds User B as a friend, User B is automatically added to User A's friend list, and User A is automatically added to User B's friend list.
+
+### Error Handling
+The Friends System includes comprehensive error handling for various scenarios:
+
+- **Invalid Access Token**: Returned when the authentication token is invalid.
+- **Person Not Found**: Returned when the specified user does not exist.
+- **Already Friends**: Returned when attempting to add a user who is already a friend.
+- **Cannot Add Self**: Returned when a user attempts to add themselves as a friend.
+- **Not Friends**: Returned when attempting to remove a user who is not currently a friend.
+- **Search Query Empty**: Returned when the search query is empty.
+- **No Matching Users**: Returned when no users match the search criteria.
+
+### Database Schema
+The friend relationships are stored in the database using a many-to-many relationship:
+
+```sql
+CREATE TABLE person_friends (
+    person_id BIGINT NOT NULL,
+    friend_id BIGINT NOT NULL,
+    PRIMARY KEY (person_id, friend_id),
+    FOREIGN KEY (person_id) REFERENCES person(id),
+    FOREIGN KEY (friend_id) REFERENCES person(id)
+);
+```
+
+### Flow of Friend Management
+
+1. **Searching for Users**:
+   - User enters a search query in the search field
+   - System sends a request to the `/friends/search` endpoint
+   - Backend searches for matching users
+   - Frontend displays the search results
+
+2. **Adding a Friend**:
+   - User clicks the "Add Friend" button next to a user
+   - System sends a request to the `/friends/{username}` endpoint
+   - Backend adds the friendship relationship
+   - Frontend updates to reflect the new friendship
+
+3. **Viewing Friends**:
+   - User navigates to the Friends page
+   - System sends a request to the `/friends` endpoint
+   - Backend retrieves all friends
+   - Frontend displays the list of friends
+
+4. **Removing a Friend**:
+   - User clicks the "Remove Friend" button next to a friend
+   - System sends a DELETE request to the `/friends/{username}` endpoint
+   - Backend removes the friendship relationship
+   - Frontend updates to remove the friend from the list
+
+### Testing
+The Friends System includes comprehensive tests:
+
+- **Unit Tests**: Test the service and controller behavior for various scenarios.
+- **Integration Tests**: Ensure that the endpoints work correctly and the database relationships are properly maintained.
+
+These tests verify that all error cases are properly handled and that the friend management flows work as expected.
