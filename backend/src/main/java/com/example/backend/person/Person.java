@@ -42,7 +42,6 @@ public class Person {
     )
     private List<Badge> badges = new ArrayList<>();
 
-    // Constructor for creating a new person for signup
     public Person(String username, String password) {
         this.username = username;
         this.password = password;

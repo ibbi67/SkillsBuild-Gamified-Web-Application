@@ -5,6 +5,7 @@ import CourseCard from "@/component/course/CourseCard";
 import { useMe } from "@/queries/auth/useMe";
 import { useStreak } from "@/queries/streak/useStreak";
 import { useFavourites } from "@/queries/favourites/useFavourites";
+import { useGoalDashboard } from "@/queries/goals/useGoalDashboard";
 import toast from "react-hot-toast";
 import ProfileUpdateForm from "@/component/profile/ProfileUpdateForm";
 import { EnrolledCoursesSection } from "@/component/dashboard/EnrolledCoursesSection";
@@ -14,6 +15,7 @@ export default function DashboardPage() {
     const { data: user, isLoading: isLoadingUser, isError: isErrorUser, error: errorUser } = useMe();
     const { data: streak, isLoading: isLoadingStreak, isError: isErrorStreak, error: errorStreak } = useStreak();
     const { data: favouriteCourses, isLoading: isLoadingFavourites, isError: isErrorFavourites, error: errorFavourites } = useFavourites();
+    const { data: goals, isLoading: isLoadingGoals, isError: isErrorGoals, error: errorGoals } = useGoalDashboard();
 
     const hasFetched = useRef(false);
 
@@ -33,9 +35,12 @@ export default function DashboardPage() {
         if (isErrorFavourites) {
             toast.error(errorFavourites?.response?.data?.message || "Error fetching favourite courses");
         }
-    }, [isErrorUser, isErrorStreak, isErrorFavourites, errorUser, errorStreak, errorFavourites]);
+        if (isErrorGoals) {
+            toast.error(errorGoals?.response?.data?.message || "Error fetching goals data");
+        }
+    }, [isErrorUser, isErrorStreak, isErrorFavourites, isErrorGoals, errorUser, errorStreak, errorFavourites, errorGoals]);
 
-    if (isLoadingFavourites || isLoadingStreak || isLoadingUser) {
+    if (isLoadingFavourites || isLoadingStreak || isLoadingUser || isLoadingGoals) {
         return <div>Loading...</div>;
     }
 

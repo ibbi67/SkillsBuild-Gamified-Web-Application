@@ -29,50 +29,49 @@
       - [Streak Rules](#streak-rules)
       - [Time Zones](#time-zones)
     - [Implementation](#implementation)
-    - [Save to Favourite Courses](#save-to-favourite-courses)  
-  - [Save to Favourite Courses for Backend](#save-to-favourite-courses-for-backend)  
-    - [FavouriteCourse Service](#favouritecourse-service)  
-    - [FavouriteCourse Controller](#favouritecourse-controller)  
-    - [FavouriteCourse Repository](#favouritecourse-repository)  
-    - [Authentication Integration](#authentication-integration)  
-  - [Save to Favourite Courses for Frontend](#save-to-favourite-courses-for-frontend)  
-    - [Favourite Courses Dashboard](#favourite-courses-dashboard)  
-    - [User Interaction](#user-interaction)  
-  - [Flow of Save to Favourite Courses](#flow-of-save-to-favourite-courses)  
-    - [Saving a Course](#saving-a-course)  
-    - [Removing a Course](#removing-a-course)  
-  - [Testing](#testing)  
-    - [Unit Tests](#unit-tests)  
-    - [Integration Tests](#integration-tests) 
+  - [Course Recommendation System](#course-recommendation-system)
+    - [Course Recommendation System for Backend](#course-recommendation-system-for-backend)
+    - [Course Recommendation System for Frontend](#course-recommendation-system-for-frontend)
+    - [Flow of Course Recommendation](#flow-of-course-recommendation)
+    - [Testing](#testing-1)
+  - [Save to Favourite Courses for Backend](#save-to-favourite-courses-for-backend)
+    - [FavouriteCourse Service](#favouritecourse-service)
+    - [FavouriteCourse Controller](#favouritecourse-controller)
+    - [FavouriteCourse Repository](#favouritecourse-repository)
+    - [Authentication Integration](#authentication-integration)
+  - [Save to Favourite Courses for Frontend](#save-to-favourite-courses-for-frontend)
+    - [Favourite Courses Dashboard](#favourite-courses-dashboard)
+    - [User Interaction](#user-interaction)
+  - [Flow of Save to Favourite Courses](#flow-of-save-to-favourite-courses)
+    - [Saving a Course](#saving-a-course)
+    - [Removing a Course](#removing-a-course)
+  - [Testing](#testing-2)
+    - [Unit Tests](#unit-tests)
+    - [Integration Tests](#integration-tests)
+  - [Profile Customization](#profile-customization)
+    - [Overview](#overview-1)
+    - [Backend](#backend)
+    - [Frontend](#frontend)
+    - [Error Handling](#error-handling)
   - [Comments System](#comments-system)
     - [Overview](#overview-2)
     - [Comments System for Backend](#comments-system-for-backend)
     - [Comments System for Frontend](#comments-system-for-frontend)
     - [Flow of Comments Feature](#flow-of-comments-feature)
     - [Testing](#testing-3)
-  - [Profile Customization](#profile-customization)
-    - [Overview](#overview-1)
-    - [Backend](#backend)
-    - [Frontend](#frontend)
-    - [Error Handling](#error-handling)
-  - [Course Recommendation System](#course-recommendation-system)
-    - [Course Recommendation System for Backend](#course-recommendation-system-for-backend)
-    - [Course Recommendation System for Frontend](#course-recommendation-system-for-frontend)
-    - [Flow of Course Recommendation](#flow-of-course-recommendation)
-    - [Testing](#testing-4)
   - [Update Enrollment Progress](#update-enrollment-progress)
-    - [Enrollment](#enrollment)
-    - [Update Progress](#update-progress)
-    - [Tracking User Enrollment Progress](#tracking-user-enrollment-progress)
-    - [Course Page](#course-page)
-    - [Dashboard Page](#dashboard-page)
-    - [Course Components](#course-components)
-    - [CourseActions](#courseactions)
-    - [CourseCard](#coursecard)
-    - [CourseDescription](#coursedescription)
-    - [EnrollButton](#enrollbutton)
-    - [FavoriteButton](#favoritebutton)
-    - [Timer](#timer)
+      - [Enrollment](#enrollment)
+      - [Update Progress](#update-progress)
+      - [Tracking User Enrollment Progress](#tracking-user-enrollment-progress)
+      - [Course Page](#course-page)
+      - [Dashboard Page](#dashboard-page)
+      - [Course Components](#course-components)
+        - [CourseActions](#courseactions)
+        - [CourseCard](#coursecard)
+        - [CourseDescription](#coursedescription)
+        - [EnrollButton](#enrollbutton)
+        - [FavoriteButton](#favoritebutton)
+        - [Timer](#timer)
   - [Badges System](#badges-system)
     - [Overview](#overview-3)
     - [Badges System for Backend](#badges-system-for-backend)
@@ -83,10 +82,32 @@
     - [Badges System for Frontend](#badges-system-for-frontend)
       - [Badge Display Components](#badge-display-components)
       - [User Interface Features](#user-interface-features)
-      - [Badge Types and Criteria](#badge-types-and-criteria)
-      - [Flow of Badge System](#flow-of-badge-system)
-      - [Technical Implementation](#technical-implementation)
-      - [Error Handling](#error-handling-1)
+    - [Badge Types and Criteria](#badge-types-and-criteria)
+      - [Streak Badges](#streak-badges)
+      - [Favorite Course Badges](#favorite-course-badges)
+    - [Flow of Badge System](#flow-of-badge-system)
+      - [Badge Awarding Process](#badge-awarding-process)
+      - [Badge Display Process](#badge-display-process)
+      - [Badge Progress Tracking](#badge-progress-tracking)
+    - [Technical Implementation](#technical-implementation)
+      - [Backend API Endpoints](#backend-api-endpoints)
+      - [Frontend Queries](#frontend-queries)
+    - [Error Handling](#error-handling-1)
+  - [Course Goal System](#course-goal-system)
+    - [Overview](#overview-4)
+    - [Goal System for Backend](#goal-system-for-backend)
+    - [Goal System for Frontend](#goal-system-for-frontend)
+    - [Flow of Goal Management](#flow-of-goal-management)
+    - [Testing](#testing-4)
+>>>>>>> 7e48b2d (feat: updated user manual)
+=======
+  - [Course Goal System](#course-goal-system)
+    - [Overview](#overview-3)
+    - [Goal System for Backend](#goal-system-for-backend)
+    - [Goal System for Frontend](#goal-system-for-frontend)
+    - [Flow of Goal Management](#flow-of-goal-management)
+    - [Testing](#testing-4)
+>>>>>>> 23d0f33 (feat: updated user manual)
 
 ---
 
@@ -795,3 +816,88 @@ The Badges System is a gamification feature that rewards users for their engagem
 - Loading states for data fetching
 - Error messages for failed API calls
 - Fallback UI for missing data
+## Course Goal System
+**Author: Zain Altaf**
+
+### Overview
+The Goal System allows users to set, track, and manage their course goals. Users can create goals, add courses to goals, and monitor their progress towards completing these goals.
+
+### Goal System for Backend
+
+1. **Goal Service**
+    - Manages the creation, retrieval, updating, and deletion of goals.
+    - Associates goals with specific users and courses.
+    - Implements business logic for goal progress tracking.
+
+2. **Goal Controller**
+    - Provides REST API endpoints for goal operations.
+    - Handles authentication for goal-related actions.
+    - Routes requests to appropriate service methods.
+
+3. **Goal Repository**
+    - Manages goal data storage and retrieval.
+    - Efficiently fetches goals by user ID.
+    - Implements data access patterns for goal operations.
+
+4. **Authentication Integration**
+    - Ensures only authenticated users can manage goals.
+    - Stores user information with each goal.
+    - Uses JWT authentication for secure access.
+
+### Goal System for Frontend
+
+1. **Goals Dashboard**
+    - Displays all goals for the logged-in user.
+    - Shows progress for each goal, including completed and remaining courses.
+    - Provides options to create, update, and delete goals.
+
+2. **Goal Creation Interface**
+    - Offers a form for creating new goals.
+    - Validates input before submission.
+    - Shows loading and error states during submission.
+
+3. **Goal Progress Tracking**
+    - Visualizes progress towards goal completion.
+    - Updates in real-time as courses are completed.
+    - Provides feedback on goal status.
+
+### Flow of Goal Management
+
+1. **Creating a Goal**
+    - User navigates to the goal creation page.
+    - Fills out the form with goal details and associated courses.
+    - Clicks "Create Goal" to submit.
+    - New goal appears in the goals dashboard.
+
+2. **Updating a Goal**
+    - User selects a goal to update from the dashboard.
+    - Modifies goal details or adds/removes courses.
+    - Clicks "Update Goal" to save changes.
+    - Updated goal information is reflected in the dashboard.
+
+3. **Deleting a Goal**
+    - User selects a goal to delete from the dashboard.
+    - Confirms the deletion action.
+    - Goal is removed from the dashboard and database.
+
+4. **Tracking Goal Progress**
+    - User views goal progress on the dashboard.
+    - Progress updates automatically as courses are completed.
+    - Provides visual indicators of goal status.
+
+### Testing
+
+1. **Unit Tests**
+    - Validate goal service and controller methods.
+    - Ensure proper handling of goal creation, update, and deletion.
+    - Test progress tracking logic.
+
+2. **Integration Tests**
+    - Verify API endpoints function correctly.
+    - Test authentication integration.
+    - Ensure proper data relationships between users, goals, and courses.
+
+3. **Manual Tests**
+    - Comprehensive test cases for different user scenarios.
+    - Validation of UI states (loading, error, empty).
+    - Cross-browser compatibility testing

@@ -25,6 +25,7 @@ public class Enrollment {
     private Person person;
 
     private Integer timeSpent = 0;
+    private Boolean completed = false;
 
     public Enrollment(Course course, Person person) {
         this.course = course;
@@ -32,7 +33,7 @@ public class Enrollment {
     }
 
     public boolean isCompleted() {
-        return timeSpent >= course.getEstimatedDuration();
+        return timeSpent >= course.getEstimatedDuration() || completed;
     }
 
     public void addTimeSpent(Integer time) {
