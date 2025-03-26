@@ -5,6 +5,7 @@ import com.example.backend.course.Course;
 import com.example.backend.person.Person;
 import com.example.backend.person.PersonDTO;
 import com.example.backend.profile.ProfileDTO;
+import com.example.backend.util.ServiceResult;
 
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,10 @@ public class PersonService {
 
     public Optional<Person> findByUsername(String username) {
         return personRepository.findByUsername(username);
+    }
+
+    public Optional<Person> findById(Long id) {
+        return personRepository.findById(id);
     }
 
     public List<Person> findAll() {
@@ -83,5 +88,31 @@ public class PersonService {
         }
         person.getFavoriteCourses().remove(course);
         return save(person);
+    }
+    
+    public Optional<Person> addFriend(Person person, Person friend) {
+        // Check if already friends
+        if (person.getFriends().contains(friend)) {
+            return Optional.empty();
+        }
+        person.getFriends().add(friend);
+        return save(person);
+    }
+    
+    public Optional<Person> removeFriend(Person person, Person friend) {
+        // Check if they are friends
+        if (!person.getFriends().contains(friend)) {
+            return Optional.empty();
+        }
+        person.getFriends().remove(friend);
+        return save(person);
+    }
+    
+    public List<Person> getFriends(Person person) {
+        return person.getFriends();
+    }
+
+    public ServiceResult<List<Person>, Void> getAll() {
+        return ServiceResult.success(findAll());
     }
 }

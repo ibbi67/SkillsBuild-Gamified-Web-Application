@@ -1,15 +1,12 @@
-package com.example.backend.profile;
+package com.example.backend.friend;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class ProfileDTO {
+public class FriendResponseDTO {
     private String username;
-    private String password;
     private String firstName;
     private String lastName;
     private String email;

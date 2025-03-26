@@ -42,6 +42,17 @@ public class Person {
     )
     private List<Badge> badges = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "person_friends",
+            joinColumns = @JoinColumn(name = "person_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private List<Person> friends = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "friends")
+    private List<Person> friendOf = new ArrayList<>();
+
     public Person(String username, String password) {
         this.username = username;
         this.password = password;

@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -185,7 +186,7 @@ public class GoalControllerTest {
         createTestGoal();
 
         Long goalId = 1L;
-        AddEnrollmentDTO addEnrollmentDTO = new AddEnrollmentDTO(Arrays.asList(999));
+        AddEnrollmentDTO addEnrollmentDTO = new AddEnrollmentDTO(List.of(999));
 
         mockMvc.perform(post("/goals/{goalId}", goalId)
                 .contentType(MediaType.APPLICATION_JSON)
