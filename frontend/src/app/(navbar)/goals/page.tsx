@@ -8,6 +8,7 @@ import { useEnrollments } from '@/queries';
 import AddGoalModal from '@/component/goals/AddGoalModal';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { Goal } from '@/types/databaseTypes';
 
 export default function GoalsPage() {
     const [isAddGoalModalOpen, setIsAddGoalModalOpen] = useState(false);
@@ -77,7 +78,7 @@ export default function GoalsPage() {
     });
 
     // Check if a goal is overdue but not completed
-    const isOverdue = (goal: any) => {
+    const isOverdue = (goal: Goal) => {
         const now = new Date();
         const endDate = new Date(goal.endDate);
         const isCompleted = goal.enrollments.length > 0 && 

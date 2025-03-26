@@ -35,21 +35,23 @@ export interface Enrollment {
     course: Course;
     person: Person;
     timeSpent: number;
+    completed: boolean;
 }
 
 export interface Comment {
     id: number;
     content: string;
     createdAt: string;
-    person: {
-        id: number;
-        username: string;
+    person: Person;
+    course: Course;
 }
 
 export interface Goal {
     id: number;
-    person: Person;
-    enrollemntList: Enrollment[];
     startDate: string;
     endDate: string;
+    description: string;
+    reward: string;
+    person: Person;
+    enrollments: Enrollment[];
 }
