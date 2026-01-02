@@ -1,5 +1,7 @@
 # Group 20 - CO2302
 
+A web application that uses gamification to help users learn skills by completing challenges and earning rewards. Built as part of a group project for CO2302.
+
 ## How to Setup your Development Environment
 
 The project is split into two sections: the frontend, and the backend. The frontend is a React
